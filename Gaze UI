@@ -186,7 +186,7 @@ end
 local homePage = createTab("Home")
 local settingsPage = createTab("Settings")
 local profilePage = createTab("Profile")
-local insanePage = createTab("Insane")
+
 
 --// idk
 
@@ -343,7 +343,7 @@ inputBox.Text = tostring(math.floor(clampedValue)) -- Ensures no commas or unnec
 
     UserInputService.InputChanged:Connect(onInputChanged)
 
-    -- Input Validation for TextBox
+    
     inputBox.FocusLost:Connect(function()
         local value = tonumber(inputBox.Text)
         if value then
