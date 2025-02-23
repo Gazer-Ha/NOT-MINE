@@ -3,6 +3,7 @@
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local playerGui = player:FindFirstChild("PlayerGui")
+-- Yes Not CoreGui Cuz Im Awsom
 local camera = game:GetService("Workspace").CurrentCamera
 
 
