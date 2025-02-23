@@ -1,9 +1,12 @@
 --I dont care just use it
 
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local playerGui = player:FindFirstChild("PlayerGui")
--- Yes Not CoreGui Cuz Im Awsom
+local cloneref = cloneref or function(o) return o end
+COREGUI = cloneref(game:GetService("CoreGui"))
+
+
+local Players = cloneref(game:GetService("Players"))
+local playerGui = COREGUI
+
 local camera = game:GetService("Workspace").CurrentCamera
 
 
