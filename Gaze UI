@@ -1,1 +1,445 @@
-local v0=game:GetService("Players");local v1=v0.LocalPlayer;local v2=v1:FindFirstChild("PlayerGui");local v3=game:GetService("Workspace").CurrentCamera;local function v4(v68,v69) local v70=v3.ViewportSize;return UDim2.new(0,v70.X * v68 ,0,v70.Y * v69 );end local function v5(v71) local v72=v3.ViewportSize;local v73=math.min(v72.X,v72.Y);return v73 * v71 ;end local v6=Instance.new("ScreenGui");v6.Parent=v2;v6.Name="GazeUI";local function v9(v74,v75) local v76=Instance.new("UICorner");v76.CornerRadius=UDim.new(0,v75);v76.Parent=v74;end local function v10(v79,v80,v81) local v82=Instance.new("UIStroke");v82.Thickness=v80;v82.Color=v81;v82.Parent=v79;end local v11=Instance.new("Frame");v11.Size=v4(0.5,0.6);v11.Position=UDim2.new(0.5, -200,0.5, -150);v11.BackgroundColor3=Color3.fromRGB(30,30,30);v11.BackgroundTransparency=0.1;v11.BorderSizePixel=0;v11.Draggable=true;v11.Active=true;v11.Parent=v6;v9(v11,10);v10(v11,2,Color3.fromRGB(255,255,255));local v20=Instance.new("TextLabel");v20.Size=UDim2.new(1,0,0,40);v20.BackgroundTransparency=1;v20.Text="Gaze UI";v20.Font=Enum.Font.GothamBold;v20.TextSize=18;v20.TextWrapped=true;v20.TextColor3=Color3.fromRGB(255,255,255);v20.Parent=v11;local v30=Instance.new("ScrollingFrame");v30.Size=UDim2.new(0,50,1, -40);v30.Position=UDim2.new(0,0,0,40);v30.BackgroundTransparency=1;v30.Parent=v11;v30.CanvasSize=UDim2.new(0,0,0,0);v30.ScrollBarThickness=0;local v37=Instance.new("UIListLayout");v37.Parent=v30;v37.Padding=UDim.new(0,5);local v40=Instance.new("ScrollingFrame");v40.Size=UDim2.new(1, -60,1, -50);v40.Position=UDim2.new(0,60,0,50);v40.BackgroundTransparency=1;v40.CanvasSize=UDim2.new(0,0,0,0);v40.ScrollBarThickness=0;v40.Parent=v11;local v47=game:GetService("RunService");v47.RenderStepped:Connect(function() v40.CanvasPosition=Vector2.new(0,v40.CanvasPosition.Y);v30.CanvasPosition=Vector2.new(0,v40.CanvasPosition.Y);end);local v48=Instance.new("UIListLayout");v48.Parent=v40;v48.Padding=UDim.new(0,5);v40.CanvasSize=UDim2.new(0,v48.AbsoluteContentSize.X,0,v48.AbsoluteContentSize.Y);local v51={};local v52={};local v53=nil;local v54=game:GetService("TweenService");local function v55(v88,v89,v90,v91) local v92=v54:Create(v88,TweenInfo.new(v90,Enum.EasingStyle.Quad,Enum.EasingDirection.Out,0,false,v91),{Size=v89});v92:Play();return v92;end local function v56(v93) if (v53==v93) then return;end if v53 then local v232=v53:GetChildren();for v234,v235 in ipairs(v232) do if v235:IsA("GuiObject") then local v241=UDim2.new(0,v235.Size.X.Offset,0,v235.Size.Y.Offset);v55(v235,v241,0.2,(v234-1) * 0.03 );end end task.wait(0.25);v53.Visible=false;end v93.Visible=true;v53=v93;local v95=v93:GetChildren();for v217,v218 in ipairs(v95) do if v218:IsA("GuiObject") then local v236=UDim2.new(0,v218.Size.X.Offset,0,v218.Size.Y.Offset);v218.Size=v236;v55(v218,UDim2.new(1,v218.Size.X.Offset,0,v218.Size.Y.Offset),0.2,(v217-1) * 0.03 );end end end local function v57(v96) local v97=Instance.new("TextButton");v97.Size=UDim2.new(1,0,0,40);v97.BackgroundColor3=Color3.fromRGB(50,50,50);v97.Text=v96:sub(1,1);v97.TextColor3=Color3.fromRGB(255,255,255);v97.Font=Enum.Font.GothamBold;v97.TextScaled=true;v97.Parent=v30;v9(v97,8);local v106=Instance.new("ScrollingFrame");v106.Size=UDim2.new(1,0,1,0);v106.BackgroundTransparency=1;v106.ScrollBarThickness=5;v106.Parent=v40;v106.Visible=false;local v112=Instance.new("UIListLayout");v112.Parent=v106;v112.SortOrder=Enum.SortOrder.LayoutOrder;v112.Padding=UDim.new(0,10);v51[v96]=v97;v52[v96]=v106;v97.MouseButton1Click:Connect(function() v56(v106);end);return v106;end local v58=v57("Home");local v59=v57("Settings");local v60=v57("Profile");local v61=v57("Insane");local function v62(v119,v120,v121) local v122=Instance.new("TextButton");v122.Size=UDim2.new(1, -10,0,40);v122.BackgroundColor3=Color3.fromRGB(50,50,50);v122.TextColor3=Color3.new(1,1,1);v122.Font=Enum.Font.Gotham;v122.TextScaled=true;v122.TextWrapped=true;v122.TextXAlignment=Enum.TextXAlignment.Left;v122.TextYAlignment=Enum.TextYAlignment.Top;v122.Text=v120;v122.Parent=v119;if v121 then v122.MouseButton1Click:Connect(v121);else v122.MouseButton1Click:Connect(function() print(v120);end);end v9(v122,8);end local function v63(v136,v137) local v138=Instance.new("TextLabel");v138.Size=UDim2.new(1, -10,0,0);v138.BackgroundColor3=Color3.fromRGB(40,40,40);v138.TextColor3=Color3.new(0.9,0.9,0.9);v138.Font=Enum.Font.Gotham;v138.TextSize=v5(0.05);v138.TextWrapped=true;v138.TextXAlignment=Enum.TextXAlignment.Left;v138.TextYAlignment=Enum.TextYAlignment.Top;v138.Text=v137;v138.AutomaticSize=Enum.AutomaticSize.Y;v138.Parent=v136;v9(v138,8);end local v54=game:GetService("TweenService");local v64=game:GetService("UserInputService");local v54=game:GetService("TweenService");local function v9(v154,v155) local v156=Instance.new("UICorner");v156.CornerRadius=UDim.new(0,v155);v156.Parent=v154;end local function v65(v159,v160,v161,v162,v163) local v164=Instance.new("Frame");v164.Size=UDim2.new(1, -10,0,50);v164.BackgroundColor3=Color3.fromRGB(50,50,50);v164.Parent=v159;v9(v164,8);local v168=Instance.new("TextLabel");v168.Size=UDim2.new(0,60,1,0);v168.Position=UDim2.new(0,5,0,0);v168.BackgroundTransparency=1;v168.Text=tostring(v162);v168.Font=Enum.Font.Gotham;v168.TextScaled=true;v168.TextColor3=Color3.new(1,1,1);v168.TextXAlignment=Enum.TextXAlignment.Left;v168.Parent=v164;local v180=Instance.new("Frame");v180.Size=UDim2.new(1, -130,0,8);v180.Position=UDim2.new(0,70,0.5, -4);v180.BackgroundColor3=Color3.fromRGB(70,70,70);v180.Parent=v164;v9(v180,4);local v185=Instance.new("Frame");v185.Size=UDim2.new((v162-v160)/(v161-v160) ,0,1,0);v185.BackgroundColor3=Color3.fromRGB(0,200,255);v185.Parent=v180;v9(v185,4);local v189=Instance.new("Frame");v189.Size=UDim2.new(0,20,0,20);v189.Position=UDim2.new(v185.Size.X.Scale, -7,0.5, -7);v189.BackgroundColor3=Color3.fromRGB(255,255,255);v189.Parent=v180;v9(v189,8);local v194=Instance.new("TextBox");v194.Size=UDim2.new(0,50,1,0);v194.Position=UDim2.new(1, -55,0,0);v194.BackgroundColor3=Color3.fromRGB(40,40,40);v194.Text=tostring(v162);v194.Font=Enum.Font.Gotham;v194.TextSize=16;v194.TextColor3=Color3.new(1,1,1);v194.Parent=v164;v9(v194,4);local function v203(v219) local v220=math.clamp(v219,v160,v161);local v221=(v220-v160)/(v161-v160) ;local v222=UDim2.new(v221,0,1,0);local v223=UDim2.new(v221, -7,0.5, -7);v185.Size=v222;v189.Position=v223;v168.Text=tostring(math.floor(v220));v194.Text=tostring(math.floor(v220));if v163 then v163(math.floor(v220));end end local v204=false;local function v205(v228) if ((v204 and (v228.UserInputType==Enum.UserInputType.Touch)) or (v228.UserInputType==Enum.UserInputType.MouseMovement)) then local v238=(v228.Position.X-v180.AbsolutePosition.X)/v180.AbsoluteSize.X ;local v239=v160 + ((v161-v160) * math.clamp(v238,0,1)) ;v203(v239);end end v189.InputBegan:Connect(function(v229) if ((v229.UserInputType==Enum.UserInputType.MouseButton1) or (v229.UserInputType==Enum.UserInputType.Touch)) then v204=true;end end);v189.InputEnded:Connect(function(v230) if ((v230.UserInputType==Enum.UserInputType.MouseButton1) or (v230.UserInputType==Enum.UserInputType.Touch)) then v204=false;end end);v64.InputChanged:Connect(v205);v194.FocusLost:Connect(function() local v231=tonumber(v194.Text);if v231 then v203(v231);else v194.Text=tostring(v162);end end);return v164;end v63(v58,"Welcome to Gaze UI\nThis text adjusts its height dynamically.\nNot that smart bruh but its cool");v62(v58,"Hello Im Cool");v65(v58,0,100,50,function(v206) end);v65(v59,10,200,75,function(v207) end);v65(v60,1,10,5,function(v208) end);v63(v59,"Settings Panel\nYou can toggle options here.");v62(v59,"Toggle Music");v63(v60,"Profile Info:\nThis UI now supports multi-line text.");v62(v60,"Edit Profile");v56(v58);local function v66(v209,v210) v209.CanvasSize=UDim2.new(0,v210.AbsoluteContentSize.X,0,v210.AbsoluteContentSize.Y);end local function v67(v212,v213) v213:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() v66(v212,v213);end);v66(v212,v213);end v67(v30,v37);v67(v40,v48);for v214,v215 in pairs(v52) do local v216=v215:FindFirstChildOfClass("UIListLayout");if v216 then v67(v215,v216);end end
+--I dont care just use it
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local playerGui = player:FindFirstChild("PlayerGui")
+local camera = game:GetService("Workspace").CurrentCamera
+
+
+
+
+local function getScaledSize(relativeWidth, relativeHeight)
+    local viewportSize = camera.ViewportSize
+    return UDim2.new(0, viewportSize.X * relativeWidth, 0, viewportSize.Y * relativeHeight)
+end
+
+local function getScaledSize2(relativeScale)
+    local viewportSize = camera.ViewportSize
+    local screenSize = math.min(viewportSize.X, viewportSize.Y) -- Base scaling on the smallest screen dimension
+    return screenSize * relativeScale
+end
+
+
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = playerGui
+screenGui.Name = "GazeUI"
+
+
+local function createUICorner(parent, radius)
+    local uiCorner = Instance.new("UICorner")
+    uiCorner.CornerRadius = UDim.new(0, radius)
+    uiCorner.Parent = parent
+end
+
+
+local function createOutline(parent, thickness, color)
+    local uiStroke = Instance.new("UIStroke")
+    uiStroke.Thickness = thickness
+    uiStroke.Color = color
+    uiStroke.Parent = parent
+end
+
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = getScaledSize(0.5,0.6)
+mainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.BackgroundTransparency = 0.1
+mainFrame.BorderSizePixel = 0
+mainFrame.Draggable = true
+mainFrame.Active = true
+mainFrame.Parent = screenGui
+createUICorner(mainFrame, 10)
+createOutline(mainFrame, 2, Color3.fromRGB(255, 255, 255))
+
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 40)
+title.BackgroundTransparency = 1
+title.Text = "Gaze UI"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 18
+title.TextWrapped = true
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Parent = mainFrame
+
+
+local tabHolder = Instance.new("ScrollingFrame")
+tabHolder.Size = UDim2.new(0, 50, 1, -40)
+tabHolder.Position = UDim2.new(0, 0, 0, 40)
+tabHolder.BackgroundTransparency = 1
+tabHolder.Parent = mainFrame
+tabHolder.CanvasSize = UDim2.new(0, 0, 0, 0)
+tabHolder.ScrollBarThickness = 0
+
+local uiListLayoutTabs = Instance.new("UIListLayout")
+uiListLayoutTabs.Parent = tabHolder
+uiListLayoutTabs.Padding = UDim.new(0, 5)
+
+
+local contentFrame = Instance.new("ScrollingFrame")
+contentFrame.Size = UDim2.new(1, -60, 1, -50)
+contentFrame.Position = UDim2.new(0, 60, 0, 50)
+contentFrame.BackgroundTransparency = 1
+contentFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+contentFrame.ScrollBarThickness = 0
+contentFrame.Parent = mainFrame
+
+local runService = game:GetService("RunService")
+
+runService.RenderStepped:Connect(function()
+    contentFrame.CanvasPosition = Vector2.new(0, contentFrame.CanvasPosition.Y)
+    tabHolder.CanvasPosition = Vector2.new(0, contentFrame.CanvasPosition.Y)
+end)
+
+
+
+local uiListLayoutContent = Instance.new("UIListLayout")
+uiListLayoutContent.Parent = contentFrame
+uiListLayoutContent.Padding = UDim.new(0, 5)
+
+
+
+
+
+--//Tables Idk
+local tabs = {}
+local pages = {}
+local activePage = nil
+
+local TweenService = game:GetService("TweenService")
+
+local function scaleTween(obj, goalSize, duration, delayTime)
+    local tween = TweenService:Create(obj, TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, delayTime), {
+        Size = goalSize
+    })
+    tween:Play()
+    return tween
+end
+
+local function switchTab(newPage)
+    if activePage == newPage then return end
+
+    
+    if activePage then
+        local children = activePage:GetChildren()
+        for i, obj in ipairs(children) do
+            if obj:IsA("GuiObject") then
+                local exitSize = UDim2.new(0, obj.Size.X.Offset, 0, obj.Size.Y.Offset) -- Shrink to zero
+                scaleTween(obj, exitSize, 0.2, (i - 1) * 0.03)
+            end
+        end
+        task.wait(0.25) -- Wait for animation to finish
+        activePage.Visible = false
+    end
+
+    
+    newPage.Visible = true
+    activePage = newPage
+    local children = newPage:GetChildren()
+    for i, obj in ipairs(children) do
+        if obj:IsA("GuiObject") then
+            local startSize = UDim2.new(0, obj.Size.X.Offset, 0, obj.Size.Y.Offset) -- Start fully shrunk
+            obj.Size = startSize
+            scaleTween(obj, UDim2.new(1, obj.Size.X.Offset, 0, obj.Size.Y.Offset), 0.2, (i - 1) * 0.03)
+        end
+    end
+end
+
+
+local function createTab(name)
+    local tabButton = Instance.new("TextButton")
+    tabButton.Size = UDim2.new(1, 0, 0, 40)
+    tabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    tabButton.Text = name:sub(1, 1)
+    tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    tabButton.Font = Enum.Font.GothamBold
+    tabButton.TextScaled = true
+    tabButton.Parent = tabHolder
+
+    createUICorner(tabButton, 8)
+
+    local page = Instance.new("ScrollingFrame")
+    page.Size = UDim2.new(1, 0, 1, 0)
+    page.BackgroundTransparency = 1
+    page.ScrollBarThickness = 5
+    page.Parent = contentFrame
+    page.Visible = false
+
+    local listLayout = Instance.new("UIListLayout")
+    listLayout.Parent = page
+    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    listLayout.Padding = UDim.new(0, 10)
+
+    tabs[name] = tabButton
+    pages[name] = page
+
+    tabButton.MouseButton1Click:Connect(function()
+        switchTab(page)
+    end)
+
+    return page
+end
+
+--// Tabs
+local homePage = createTab("Home")
+local settingsPage = createTab("Settings")
+local profilePage = createTab("Profile")
+local insanePage = createTab("Insane")
+
+--// idk
+
+local function createButton(parent, text, callback)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, -10, 0, 40)
+    button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.Font = Enum.Font.Gotham
+    button.TextScaled = true
+    button.TextWrapped = true
+    button.TextXAlignment = Enum.TextXAlignment.Left
+    button.TextYAlignment = Enum.TextYAlignment.Top
+    button.Text = text
+    button.Parent = parent
+    if callback then
+    button.MouseButton1Click:Connect(callback)
+    else 
+    button.MouseButton1Click:Connect(function()
+    print("clicked button : " .. text)
+    end)
+    end
+
+    createUICorner(button, 8)
+end
+
+
+local function createParagraph(parent, text)
+    local paragraph = Instance.new("TextLabel")
+    paragraph.Size = UDim2.new(1, -10, 0, 0) -- Start with 0 height
+    paragraph.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    paragraph.TextColor3 = Color3.new(0.9, 0.9, 0.9)
+    paragraph.Font = Enum.Font.Gotham
+    paragraph.TextSize = getScaledSize2(0.05)
+    paragraph.TextWrapped = true
+    paragraph.TextXAlignment = Enum.TextXAlignment.Left
+    paragraph.TextYAlignment = Enum.TextYAlignment.Top
+    paragraph.Text = text
+    paragraph.AutomaticSize = Enum.AutomaticSize.Y -- Enables auto height!
+    paragraph.Parent = parent
+
+    createUICorner(paragraph, 8)
+end
+
+
+local TweenService = game:GetService("TweenService")
+
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+
+local function createUICorner(parent, radius)
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, radius)
+    corner.Parent = parent
+end
+
+local function createSliderWithInput(parent, min, max, defaultValue, onValueChanged)
+    local sliderFrame = Instance.new("Frame")
+    sliderFrame.Size = UDim2.new(1, -10, 0, 50)
+    sliderFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    sliderFrame.Parent = parent
+    createUICorner(sliderFrame, 8)
+
+    
+    local sliderLabel = Instance.new("TextLabel")
+    sliderLabel.Size = UDim2.new(0, 60, 1, 0)
+    sliderLabel.Position = UDim2.new(0, 5, 0, 0)
+    sliderLabel.BackgroundTransparency = 1
+    sliderLabel.Text = tostring(defaultValue)
+    sliderLabel.Font = Enum.Font.Gotham
+    sliderLabel.TextScaled = true
+    sliderLabel.TextColor3 = Color3.new(1, 1, 1)
+    sliderLabel.TextXAlignment = Enum.TextXAlignment.Left
+    sliderLabel.Parent = sliderFrame
+
+    
+    local sliderBar = Instance.new("Frame")
+    sliderBar.Size = UDim2.new(1, -130, 0, 8)
+    sliderBar.Position = UDim2.new(0, 70, 0.5, -4)
+    sliderBar.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    sliderBar.Parent = sliderFrame
+    createUICorner(sliderBar, 4)
+
+    
+    local sliderFill = Instance.new("Frame")
+    sliderFill.Size = UDim2.new((defaultValue - min) / (max - min), 0, 1, 0)
+    sliderFill.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
+    sliderFill.Parent = sliderBar
+    createUICorner(sliderFill, 4)
+
+    
+    local sliderHandle = Instance.new("Frame")
+    sliderHandle.Size = UDim2.new(0, 20, 0, 20)
+    sliderHandle.Position = UDim2.new(sliderFill.Size.X.Scale, -7, 0.5, -7)
+    sliderHandle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    sliderHandle.Parent = sliderBar
+    createUICorner(sliderHandle, 8)
+
+    
+    local inputBox = Instance.new("TextBox")
+    inputBox.Size = UDim2.new(0, 50, 1, 0)
+    inputBox.Position = UDim2.new(1, -55, 0, 0)
+    inputBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    inputBox.Text = tostring(defaultValue)
+    inputBox.Font = Enum.Font.Gotham
+    inputBox.TextSize = 16
+    inputBox.TextColor3 = Color3.new(1, 1, 1)
+    inputBox.Parent = sliderFrame
+    createUICorner(inputBox, 4)
+
+    
+    local function updateSlider(value)
+        local clampedValue = math.clamp(value, min, max)
+        local normalizedValue = (clampedValue - min) / (max - min)
+        
+        local targetSize = UDim2.new(normalizedValue, 0, 1, 0)
+        local targetPosition = UDim2.new(normalizedValue, -7, 0.5, -7)
+
+        
+        sliderFill.Size = targetSize
+sliderHandle.Position = targetPosition
+
+
+        sliderLabel.Text = tostring(math.floor(clampedValue)) -- Formats to 2 decimal places
+inputBox.Text = tostring(math.floor(clampedValue)) -- Ensures no commas or unnecessary decimals
+        
+        if onValueChanged then
+            onValueChanged(math.floor(clampedValue))
+        end
+    end
+
+    
+    local dragging = false
+
+    local function onInputChanged(input)
+        if dragging and input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement then
+            local relativeX = (input.Position.X - sliderBar.AbsolutePosition.X) / sliderBar.AbsoluteSize.X
+            local newValue = min + (max - min) * math.clamp(relativeX, 0, 1)
+            updateSlider(newValue)
+        end
+    end
+
+    sliderHandle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+        end
+    end)
+
+    sliderHandle.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(onInputChanged)
+
+    -- Input Validation for TextBox
+    inputBox.FocusLost:Connect(function()
+        local value = tonumber(inputBox.Text)
+        if value then
+            updateSlider(value)
+        else
+            inputBox.Text = tostring(defaultValue)
+        end
+    end)
+
+    return sliderFrame
+end
+
+
+createParagraph(homePage, "Welcome to Gaze UI\nThis text adjusts its height dynamically.\nNot that smart bruh but its cool")
+createButton(homePage, "Cool Button", function()
+local ts = game:GetService("TweenService")
+local plr = game:GetService("Players").LocalPlayer
+local gui = plr:WaitForChild("PlayerGui"):FindFirstChild("ScreenGui") or Instance.new("ScreenGui", plr.PlayerGui)
+
+local word = "Cool"
+local w, h = workspace.CurrentCamera.ViewportSize.X, 50
+local y1, y2, y3 = math.random(100, 400), 200, 500
+local letters = {}
+
+for i = 1, #word do
+    local lbl = Instance.new("TextLabel")
+    lbl.Text, lbl.Font, lbl.TextSize, lbl.TextColor3 = word:sub(i, i), Enum.Font.FredokaOne, h, Color3.new(1, 1, 1)
+    lbl.BackgroundTransparency, lbl.Size, lbl.Parent = 1, UDim2.new(0, h, 0, h), gui
+    lbl.Position = UDim2.new(0, math.random(0, w - h), 0, y1)
+    table.insert(letters, lbl)
+end
+
+for i, lbl in ipairs(letters) do
+    local x = (w / 2) - (#word * h / 2) + ((i - 1) * h * 1.2)
+    ts:Create(lbl, TweenInfo.new(1, Enum.EasingStyle.Quint), { Position = UDim2.new(0, x, 0, y2) }):Play()
+    task.wait(1)
+end
+
+task.wait(1)
+
+for _, lbl in ipairs(letters) do
+    ts:Create(lbl, TweenInfo.new(0.7, Enum.EasingStyle.Quint, Enum.EasingDirection.In), { Position = UDim2.new(lbl.Position.X.Scale, lbl.Position.X.Offset, 0, y3) }):Play()
+    task.wait(0.7)
+    lbl:Destroy()
+end
+end)
+
+
+createSliderWithInput(homePage, 0, 100, 50, function(newValue)
+    --print(tonumber(newValue))
+end)
+
+createSliderWithInput(settingsPage, 10, 200, 75, function(newValue)
+    --print(tonumber(newValue))
+end)
+
+createSliderWithInput(profilePage, 1, 10, 5, function(newValue)
+    --print(tonumber(newValue))
+end)
+
+
+createParagraph(settingsPage, "Settings Panel\nYou can toggle options here.")
+createButton(settingsPage, "Toggle Music")
+
+createParagraph(profilePage, "Profile Info:\nThis UI now supports multi-line text.")
+createButton(profilePage, "Edit Profile")
+
+
+switchTab(homePage)
+
+
+
+local function updateCanvasSize(scrollFrame, layout)
+    
+    scrollFrame.CanvasSize = UDim2.new(0, layout.AbsoluteContentSize.X, 0, layout.AbsoluteContentSize.Y)
+end
+
+local function setupAutoResize(scrollFrame, layout)
+    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        updateCanvasSize(scrollFrame, layout)
+    end)
+    
+    
+    updateCanvasSize(scrollFrame, layout)
+end
+
+
+setupAutoResize(tabHolder, uiListLayoutTabs)
+
+
+setupAutoResize(contentFrame, uiListLayoutContent)
+
+
+for _, page in pairs(pages) do
+    local layout = page:FindFirstChildOfClass("UIListLayout")
+    if layout then
+        setupAutoResize(page, layout)
+    end
+end
