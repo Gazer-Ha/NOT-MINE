@@ -40,7 +40,7 @@ local mainFrame = Create("Frame", {
     BackgroundTransparency = 0.1,
     Draggable = true,
     Active = true,
-    Parent = cloneref(game:GetService("CoreGui")),
+    Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui"),
     Children = {
         Create("UICorner", { CornerRadius = UDim.new(0, 10) }),
         Create("UIStroke", { Thickness = 2, Color = Color3.fromRGB(255, 255, 255) }),
@@ -159,7 +159,7 @@ function GazeUI.createParagraph(parent, text)
     })
 end
 
--- this slider is not woking
+
 function GazeUI.createSlider(parent, min, max, defaultValue, onValueChanged)
     local sliderFill, sliderHandle, sliderLabel, inputBox
     local dragging = false
