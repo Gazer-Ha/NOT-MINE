@@ -9,7 +9,7 @@ local function Create(class, properties)
 
     for prop, value in pairs(properties or {}) do
         if prop ~= "Parent" and prop ~= "Children" and prop ~= "Events" then
-            obj[prop] = value
+            pcall(function() obj[prop] = value end)
         end
     end
 
@@ -25,7 +25,9 @@ local function Create(class, properties)
 
     if properties.Events then
         for event, func in pairs(properties.Events) do
-            obj[event]:Connect(func)
+            if obj[event] then
+                obj[event]:Connect(func)
+            end
         end
     end
 
@@ -306,3 +308,5 @@ for _, page in pairs(pages) do
 end
 
 return GazeUI 
+
+
