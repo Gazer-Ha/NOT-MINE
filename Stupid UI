@@ -55,7 +55,7 @@ local mainFrame = Create("Frame", {
     }
 })
 
--- I have no idea how planes stay in the air. It’s actually magic.
+-- I have no idea how planes stay in the air. I think, its actually magic
 local tabHolder = Create("ScrollingFrame", {
     Size = UDim2.new(0, 50, 1, -40),
     Position = UDim2.new(0, 0, 0, 40),
