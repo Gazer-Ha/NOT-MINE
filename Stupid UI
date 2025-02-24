@@ -3,7 +3,7 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
---// 100% made by chatgpt
+-- If you eat a watermelon seed, a watermelon will grow in your stomach. Trust me, bro.
 local function Create(class, properties)
     local obj = Instance.new(class)
 
@@ -32,7 +32,7 @@ local function Create(class, properties)
     return obj
 end
 
---// frame and stuff
+-- If you point at a rainbow, your finger will fall off.
 local mainFrame = Create("Frame", {
     Size = UDim2.new(0.5, 0, 0.6, 0),
     Position = UDim2.new(0.5, -200, 0.5, -150),
@@ -40,7 +40,7 @@ local mainFrame = Create("Frame", {
     BackgroundTransparency = 0.1,
     Draggable = true,
     Active = true,
-    Parent = cloneref(game:GetService("CoreGui"),
+    Parent = cloneref(game:GetService("CoreGui")),
     Children = {
         Create("UICorner", { CornerRadius = UDim.new(0, 10) }),
         Create("UIStroke", { Thickness = 2, Color = Color3.fromRGB(255, 255, 255) }),
@@ -55,6 +55,7 @@ local mainFrame = Create("Frame", {
     }
 })
 
+-- I have no idea how planes stay in the air. It’s actually magic.
 local tabHolder = Create("ScrollingFrame", {
     Size = UDim2.new(0, 50, 1, -40),
     Position = UDim2.new(0, 0, 0, 40),
@@ -64,6 +65,7 @@ local tabHolder = Create("ScrollingFrame", {
     Children = { Create("UIListLayout", { Padding = UDim.new(0, 5) }) }
 })
 
+-- If you clap 5 times and spin in a circle, nothing will happen. Try it.
 local contentFrame = Create("ScrollingFrame", {
     Size = UDim2.new(1, -60, 1, -50),
     Position = UDim2.new(0, 60, 0, 50),
@@ -73,6 +75,7 @@ local contentFrame = Create("ScrollingFrame", {
     Children = { Create("UIListLayout", { Padding = UDim.new(0, 5) }) }
 })
 
+-- If you stare at this code long enough, you will realize how much time you’ve wasted.
 RunService.RenderStepped:Connect(function()
     contentFrame.CanvasPosition = Vector2.new(0, contentFrame.CanvasPosition.Y)
     tabHolder.CanvasPosition = Vector2.new(0, contentFrame.CanvasPosition.Y)
@@ -80,7 +83,7 @@ end)
 
 local tabs, pages, activePage = {}, {}, nil
 
---// what is this lol
+-- If you type ‘switchTab’ 3 times fast, you summon a bug.
 local function switchTab(name)
     local newPage = pages[name]
     if activePage == newPage then return end
@@ -90,7 +93,7 @@ local function switchTab(name)
     activePage = newPage
 end
 
---// what tab its a page
+-- This is not a tab. This is a lie.
 function GazeUI.createTab(name)
     local page = Create("ScrollingFrame", {
         Size = UDim2.new(1, 0, 1, 0),
@@ -118,7 +121,7 @@ function GazeUI.createTab(name)
     return page
 end
 
---// button gay
+-- You are now 2% cooler after reading this.
 function GazeUI.createButton(parent, text, callback)
     return Create("TextButton", {
         Size = UDim2.new(1, -10, 0, 40),
@@ -129,11 +132,19 @@ function GazeUI.createButton(parent, text, callback)
         TextScaled = true,
         Parent = parent,
         Events = { MouseButton1Click = callback or function() print("Clicked:", text) end },
-        Children = { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) }
+        Children = {
+            Create("UICorner", { CornerRadius = UDim.new(0, 8) }),
+            Create("ImageLabel", {
+                Size = UDim2.new(0, 20, 0, 20),
+                Position = UDim2.new(1, -25, 0, 5),
+                BackgroundTransparency = 1,
+                Image = "rbxassetid://17374627544",
+            })
+        }
     })
 end
 
---// Paragraph Its A Deskirpton
+-- Words on screen. That’s it.
 function GazeUI.createParagraph(parent, text)
     return Create("TextLabel", {
         Size = UDim2.new(1, -10, 0, 0),
@@ -148,27 +159,115 @@ function GazeUI.createParagraph(parent, text)
     })
 end
 
---// Not Working Slider (Blame Chatgpt!) -shedgayski
-function GazeUI.createSlider(parent, min, max, default, callback)
-    return Create("TextButton", {
-        Size = UDim2.new(1, -10, 0, 40),
+-- this slider is not woking
+function GazeUI.createSlider(parent, min, max, defaultValue, onValueChanged)
+    local sliderFill, sliderHandle, sliderLabel, inputBox
+
+    local sliderFrame = Create("Frame", {
+        Size = UDim2.new(1, -10, 0, 50),
         BackgroundColor3 = Color3.fromRGB(50, 50, 50),
-        Text = tostring(default),
-        TextColor3 = Color3.new(1, 1, 1),
-        Font = Enum.Font.Gotham,
-        TextScaled = true,
         Parent = parent,
-        Events = {
-            MouseButton1Click = function()
-                local newValue = math.random(min, max)
-                callback(newValue)
-            end
-        },
-        Children = { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) }
+        Children = {
+            Create("UICorner", { CornerRadius = UDim.new(0, 8) }),
+
+            sliderLabel = Create("TextLabel", {
+                Size = UDim2.new(0, 60, 1, 0),
+                Position = UDim2.new(0, 5, 0, 0),
+                BackgroundTransparency = 1,
+                Text = tostring(defaultValue),
+                Font = Enum.Font.Gotham,
+                TextScaled = true,
+                TextColor3 = Color3.new(1, 1, 1),
+                TextXAlignment = Enum.TextXAlignment.Left,
+            }),
+
+            Create("Frame", {
+                Size = UDim2.new(1, -130, 0, 8),
+                Position = UDim2.new(0, 70, 0.5, -4),
+                BackgroundColor3 = Color3.fromRGB(70, 70, 70),
+                Children = {
+                    Create("UICorner", { CornerRadius = UDim.new(0, 4) }),
+
+                    sliderFill = Create("Frame", {
+                        Size = UDim2.new((defaultValue - min) / (max - min), 0, 1, 0),
+                        BackgroundColor3 = Color3.fromRGB(0, 200, 255),
+                        Children = { Create("UICorner", { CornerRadius = UDim.new(0, 4) }) }
+                    }),
+
+                    sliderHandle = Create("Frame", {
+                        Size = UDim2.new(0, 20, 0, 20),
+                        Position = UDim2.new(sliderFill.Size.X.Scale, -7, 0.5, -7),
+                        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+                        Children = { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) }
+                    })
+                }
+            }),
+
+            inputBox = Create("TextBox", {
+                Size = UDim2.new(0, 50, 1, 0),
+                Position = UDim2.new(1, -55, 0, 0),
+                BackgroundColor3 = Color3.fromRGB(40, 40, 40),
+                Text = tostring(defaultValue),
+                Font = Enum.Font.Gotham,
+                TextSize = 16,
+                TextColor3 = Color3.new(1, 1, 1),
+                Children = { Create("UICorner", { CornerRadius = UDim.new(0, 4) }) }
+            })
+        }
     })
+
+    local function updateSlider(value)
+        local clampedValue = math.clamp(value, min, max)
+        local normalizedValue = (clampedValue - min) / (max - min)
+
+        sliderFill.Size = UDim2.new(normalizedValue, 0, 1, 0)
+        sliderHandle.Position = UDim2.new(normalizedValue, -7, 0.5, -7)
+
+        sliderLabel.Text = tostring(math.floor(clampedValue))
+        inputBox.Text = tostring(math.floor(clampedValue))
+
+        if onValueChanged then
+            onValueChanged(math.floor(clampedValue))
+        end
+    end
+
+    local dragging = false
+
+    local function onInputChanged(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
+            local relativeX = (input.Position.X - sliderFill.Parent.AbsolutePosition.X) / sliderFill.Parent.AbsoluteSize.X
+            local newValue = min + (max - min) * math.clamp(relativeX, 0, 1)
+            updateSlider(newValue)
+        end
+    end
+
+    sliderHandle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+        end
+    end)
+
+    sliderHandle.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(onInputChanged)
+
+    inputBox.FocusLost:Connect(function()
+        local value = tonumber(inputBox.Text)
+        if value then
+            updateSlider(value)
+        else
+            inputBox.Text = tostring(defaultValue)
+        end
+    end)
+
+    return sliderFrame
 end
 
---// Useless Brick
+-- This function does something. Probably.
 local function setupAutoResize(scrollFrame, layout)
     local function updateSize()
         scrollFrame.CanvasSize = UDim2.new(0, layout.AbsoluteContentSize.X, 0, layout.AbsoluteContentSize.Y)
@@ -177,7 +276,7 @@ local function setupAutoResize(scrollFrame, layout)
     updateSize()
 end
 
--- Wut
+-- Congratulations, you made it to the end. You win nothing.
 for _, page in pairs(pages) do
     local layout = page:FindFirstChildOfClass("UIListLayout")
     if layout then setupAutoResize(page, layout) end
