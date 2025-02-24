@@ -84,7 +84,7 @@ end)
 local tabs, pages, activePage = {}, {}, nil
 
 -- If you type ‘switchTab’ 3 times fast, you summon a bug.
-local function switchTab(name)
+local function GazeUI.switchTab(name)
     local newPage = pages[name]
     if activePage == newPage then return end
 
@@ -297,4 +297,4 @@ for _, page in pairs(pages) do
     if layout then setupAutoResize(page, layout) end
 end
 
-return GazeUI
+return GazeUI 
