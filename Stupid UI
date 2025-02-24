@@ -162,6 +162,7 @@ end
 -- this slider is not woking
 function GazeUI.createSlider(parent, min, max, defaultValue, onValueChanged)
     local sliderFill, sliderHandle, sliderLabel, inputBox
+    local dragging = false
 
     local sliderFrame = Create("Frame", {
         Size = UDim2.new(1, -10, 0, 50),
@@ -188,7 +189,6 @@ function GazeUI.createSlider(parent, min, max, defaultValue, onValueChanged)
                 Children = {
                     Create("UICorner", { CornerRadius = UDim.new(0, 4) }),
 
-                    -- ✅ Assign sliderFill properly
                     (function()
                         sliderFill = Create("Frame", {
                             Size = UDim2.new((defaultValue - min) / (max - min), 0, 1, 0),
@@ -198,11 +198,10 @@ function GazeUI.createSlider(parent, min, max, defaultValue, onValueChanged)
                         return sliderFill
                     end)(),
 
-                    -- ✅ Assign sliderHandle properly
                     (function()
                         sliderHandle = Create("Frame", {
                             Size = UDim2.new(0, 20, 0, 20),
-                            Position = UDim2.new(sliderFill.Size.X.Scale, -7, 0.5, -7),
+                            Position = UDim2.new(sliderFill.Size.X.Scale, -10, 0.5, -10),
                             BackgroundColor3 = Color3.fromRGB(255, 255, 255),
                             Children = { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) }
                         })
@@ -211,27 +210,28 @@ function GazeUI.createSlider(parent, min, max, defaultValue, onValueChanged)
                 }
             }),
 
-            inputBox = Create("TextBox", {
-                Size = UDim2.new(0, 50, 1, 0),
-                Position = UDim2.new(1, -55, 0, 0),
-                BackgroundColor3 = Color3.fromRGB(40, 40, 40),
-                Text = tostring(defaultValue),
-                Font = Enum.Font.Gotham,
-                TextSize = 16,
-                TextColor3 = Color3.new(1, 1, 1),
-                Children = { Create("UICorner", { CornerRadius = UDim.new(0, 4) }) }
-            })
+            (function()
+                inputBox = Create("TextBox", {
+                    Size = UDim2.new(0, 50, 1, 0),
+                    Position = UDim2.new(1, -55, 0, 0),
+                    BackgroundColor3 = Color3.fromRGB(40, 40, 40),
+                    Text = tostring(defaultValue),
+                    Font = Enum.Font.Gotham,
+                    TextSize = 16,
+                    TextColor3 = Color3.new(1, 1, 1),
+                    Children = { Create("UICorner", { CornerRadius = UDim.new(0, 4) }) }
+                })
+                return inputBox
+            end)()
         }
     })
-
-           
 
     local function updateSlider(value)
         local clampedValue = math.clamp(value, min, max)
         local normalizedValue = (clampedValue - min) / (max - min)
 
         sliderFill.Size = UDim2.new(normalizedValue, 0, 1, 0)
-        sliderHandle.Position = UDim2.new(normalizedValue, -7, 0.5, -7)
+        sliderHandle.Position = UDim2.new(normalizedValue, -10, 0.5, -10)
 
         sliderLabel.Text = tostring(math.floor(clampedValue))
         inputBox.Text = tostring(math.floor(clampedValue))
@@ -241,10 +241,8 @@ function GazeUI.createSlider(parent, min, max, defaultValue, onValueChanged)
         end
     end
 
-    local dragging = false
-
     local function onInputChanged(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
             local relativeX = (input.Position.X - sliderFill.Parent.AbsolutePosition.X) / sliderFill.Parent.AbsoluteSize.X
             local newValue = min + (max - min) * math.clamp(relativeX, 0, 1)
             updateSlider(newValue)
