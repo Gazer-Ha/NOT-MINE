@@ -188,18 +188,26 @@ function GazeUI.createSlider(parent, min, max, defaultValue, onValueChanged)
                 Children = {
                     Create("UICorner", { CornerRadius = UDim.new(0, 4) }),
 
-                    sliderFill = Create("Frame", {
-                        Size = UDim2.new((defaultValue - min) / (max - min), 0, 1, 0),
-                        BackgroundColor3 = Color3.fromRGB(0, 200, 255),
-                        Children = { Create("UICorner", { CornerRadius = UDim.new(0, 4) }) }
-                    }),
+                    -- ✅ Assign sliderFill properly
+                    (function()
+                        sliderFill = Create("Frame", {
+                            Size = UDim2.new((defaultValue - min) / (max - min), 0, 1, 0),
+                            BackgroundColor3 = Color3.fromRGB(0, 200, 255),
+                            Children = { Create("UICorner", { CornerRadius = UDim.new(0, 4) }) }
+                        })
+                        return sliderFill
+                    end)(),
 
-                    sliderHandle = Create("Frame", {
-                        Size = UDim2.new(0, 20, 0, 20),
-                        Position = UDim2.new(sliderFill.Size.X.Scale, -7, 0.5, -7),
-                        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-                        Children = { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) }
-                    })
+                    -- ✅ Assign sliderHandle properly
+                    (function()
+                        sliderHandle = Create("Frame", {
+                            Size = UDim2.new(0, 20, 0, 20),
+                            Position = UDim2.new(sliderFill.Size.X.Scale, -7, 0.5, -7),
+                            BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+                            Children = { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) }
+                        })
+                        return sliderHandle
+                    end)()
                 }
             }),
 
@@ -215,6 +223,8 @@ function GazeUI.createSlider(parent, min, max, defaultValue, onValueChanged)
             })
         }
     })
+
+           
 
     local function updateSlider(value)
         local clampedValue = math.clamp(value, min, max)
