@@ -3,6 +3,12 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
+local function getScaledSize2(relativeScale)
+    local viewportSize = camera.ViewportSize
+    local screenSize = math.min(viewportSize.X, viewportSize.Y) -- Base scaling on the smallest screen dimension
+    return screenSize * relativeScale
+end
+
 -- If you eat a watermelon seed, a watermelon will grow in your stomach. Trust me, bro.
 local function Create(class, properties)
     local obj = Instance.new(class)
@@ -135,6 +141,7 @@ function GazeUI.createButton(parent, text, callback)
         TextColor3 = Color3.new(1, 1, 1),
         Font = Enum.Font.Gotham,
         TextScaled = true,
+        TextXAlignment = Enum.TextXAlignment.Left,
         Parent = parent,
         Events = { MouseButton1Click = callback or function() print("Clicked:", text) end },
         Children = {
@@ -142,7 +149,7 @@ function GazeUI.createButton(parent, text, callback)
             Create("ImageLabel", {
                 Size = UDim2.new(0, 20, 0, 20),
                 Position = UDim2.new(1, -25, 0, 5),
-                BackgroundTransparency = 1,
+                BackgroundTransparency = 0,
                 Image = "rbxassetid://17374627544",
             })
         }
@@ -155,10 +162,13 @@ function GazeUI.createParagraph(parent, text)
         Size = UDim2.new(1, -10, 0, 0),
         BackgroundColor3 = Color3.fromRGB(40, 40, 40),
         Text = text,
+        TextSize = getScaledSize2(0.05)
         TextColor3 = Color3.new(0.9, 0.9, 0.9),
         Font = Enum.Font.Gotham,
         TextWrapped = true,
         AutomaticSize = Enum.AutomaticSize.Y,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextYAlignment = Enum.TextYAlignment.Top,
         Parent = parent,
         Children = { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) }
     })
@@ -302,10 +312,10 @@ function setupAutoResize(scrollFrame, layout)
 end
 
 
-setupAutoResize(tabHolder, uiListLayoutTabs)
+setupAutoResize(tabHolder, tabHolder:FindFirstChildOfClass("UIListLayout") or tabHolder:WaitForChild("UIListLayout"))
 
 
-setupAutoResize(contentFrame, uiListLayoutContent)
+setupAutoResize(contentFrame, contentFrame:FindFirstChildOfClass("UIListLayout") or contentFrame:WaitForChild("UIListLayout"))
 
 -- Congratulations, you made it to the end. You win nothing.
 for _, page in pairs(pages) do
