@@ -84,7 +84,7 @@ end)
 local tabs, pages, activePage = {}, {}, nil
 
 -- If you type ‘switchTab’ 3 times fast, you summon a bug.
-local function GazeUI.switchTab(name)
+function GazeUI.switchTab(name)
     local newPage = pages[name]
     if activePage == newPage then return end
 
@@ -93,7 +93,7 @@ local function GazeUI.switchTab(name)
     activePage = newPage
 end
 
--- This is not a tab. This is a lie.
+-- This is not a tab. This is a lie
 function GazeUI.createTab(name)
     local page = Create("ScrollingFrame", {
         Size = UDim2.new(1, 0, 1, 0),
