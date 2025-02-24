@@ -171,16 +171,20 @@ function GazeUI.createSlider(parent, min, max, defaultValue, onValueChanged)
         Children = {
             Create("UICorner", { CornerRadius = UDim.new(0, 8) }),
 
-            sliderLabel = Create("TextLabel", {
-                Size = UDim2.new(0, 60, 1, 0),
-                Position = UDim2.new(0, 5, 0, 0),
-                BackgroundTransparency = 1,
-                Text = tostring(defaultValue),
-                Font = Enum.Font.Gotham,
-                TextScaled = true,
-                TextColor3 = Color3.new(1, 1, 1),
-                TextXAlignment = Enum.TextXAlignment.Left,
-            }),
+            (function()
+                local label = Create("TextLabel", {
+                    Size = UDim2.new(0, 60, 1, 0),
+                    Position = UDim2.new(0, 5, 0, 0),
+                    BackgroundTransparency = 1,
+                    Text = tostring(defaultValue),
+                    Font = Enum.Font.Gotham,
+                    TextScaled = true,
+                    TextColor3 = Color3.new(1, 1, 1),
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                })
+                sliderLabel = label
+                return label
+            end)(),
 
             Create("Frame", {
                 Size = UDim2.new(1, -130, 0, 8),
@@ -190,28 +194,30 @@ function GazeUI.createSlider(parent, min, max, defaultValue, onValueChanged)
                     Create("UICorner", { CornerRadius = UDim.new(0, 4) }),
 
                     (function()
-                        sliderFill = Create("Frame", {
+                        local fill = Create("Frame", {
                             Size = UDim2.new((defaultValue - min) / (max - min), 0, 1, 0),
                             BackgroundColor3 = Color3.fromRGB(0, 200, 255),
                             Children = { Create("UICorner", { CornerRadius = UDim.new(0, 4) }) }
                         })
-                        return sliderFill
+                        sliderFill = fill
+                        return fill
                     end)(),
 
                     (function()
-                        sliderHandle = Create("Frame", {
+                        local handle = Create("Frame", {
                             Size = UDim2.new(0, 20, 0, 20),
                             Position = UDim2.new(sliderFill.Size.X.Scale, -10, 0.5, -10),
                             BackgroundColor3 = Color3.fromRGB(255, 255, 255),
                             Children = { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) }
                         })
-                        return sliderHandle
+                        sliderHandle = handle
+                        return handle
                     end)()
                 }
             }),
 
             (function()
-                inputBox = Create("TextBox", {
+                local box = Create("TextBox", {
                     Size = UDim2.new(0, 50, 1, 0),
                     Position = UDim2.new(1, -55, 0, 0),
                     BackgroundColor3 = Color3.fromRGB(40, 40, 40),
@@ -221,7 +227,8 @@ function GazeUI.createSlider(parent, min, max, defaultValue, onValueChanged)
                     TextColor3 = Color3.new(1, 1, 1),
                     Children = { Create("UICorner", { CornerRadius = UDim.new(0, 4) }) }
                 })
-                return inputBox
+                inputBox = box
+                return box
             end)()
         }
     })
