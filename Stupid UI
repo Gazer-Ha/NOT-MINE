@@ -1,0 +1,186 @@
+local GazeUI = {}
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+--// 100% made by chatgpt
+local function Create(class, properties)
+    local obj = Instance.new(class)
+
+    for prop, value in pairs(properties or {}) do
+        if prop ~= "Parent" and prop ~= "Children" and prop ~= "Events" then
+            obj[prop] = value
+        end
+    end
+
+    if properties.Parent then
+        obj.Parent = properties.Parent
+    end
+
+    if properties.Children then
+        for _, child in pairs(properties.Children) do
+            child.Parent = obj
+        end
+    end
+
+    if properties.Events then
+        for event, func in pairs(properties.Events) do
+            obj[event]:Connect(func)
+        end
+    end
+
+    return obj
+end
+
+--// frame and stuff
+local mainFrame = Create("Frame", {
+    Size = UDim2.new(0.5, 0, 0.6, 0),
+    Position = UDim2.new(0.5, -200, 0.5, -150),
+    BackgroundColor3 = Color3.fromRGB(30, 30, 30),
+    BackgroundTransparency = 0.1,
+    Draggable = true,
+    Active = true,
+    Parent = cloneref(game:GetService("CoreGui"),
+    Children = {
+        Create("UICorner", { CornerRadius = UDim.new(0, 10) }),
+        Create("UIStroke", { Thickness = 2, Color = Color3.fromRGB(255, 255, 255) }),
+        Create("TextLabel", {
+            Size = UDim2.new(1, 0, 0, 40),
+            BackgroundTransparency = 1,
+            Text = "Gaze UI",
+            Font = Enum.Font.GothamBold,
+            TextSize = 18,
+            TextColor3 = Color3.fromRGB(255, 255, 255)
+        })
+    }
+})
+
+local tabHolder = Create("ScrollingFrame", {
+    Size = UDim2.new(0, 50, 1, -40),
+    Position = UDim2.new(0, 0, 0, 40),
+    BackgroundTransparency = 1,
+    ScrollBarThickness = 0,
+    Parent = mainFrame,
+    Children = { Create("UIListLayout", { Padding = UDim.new(0, 5) }) }
+})
+
+local contentFrame = Create("ScrollingFrame", {
+    Size = UDim2.new(1, -60, 1, -50),
+    Position = UDim2.new(0, 60, 0, 50),
+    BackgroundTransparency = 1,
+    ScrollBarThickness = 0,
+    Parent = mainFrame,
+    Children = { Create("UIListLayout", { Padding = UDim.new(0, 5) }) }
+})
+
+RunService.RenderStepped:Connect(function()
+    contentFrame.CanvasPosition = Vector2.new(0, contentFrame.CanvasPosition.Y)
+    tabHolder.CanvasPosition = Vector2.new(0, contentFrame.CanvasPosition.Y)
+end)
+
+local tabs, pages, activePage = {}, {}, nil
+
+--// what is this lol
+local function switchTab(name)
+    local newPage = pages[name]
+    if activePage == newPage then return end
+
+    if activePage then activePage.Visible = false end
+    newPage.Visible = true
+    activePage = newPage
+end
+
+--// what tab its a page
+function GazeUI.createTab(name)
+    local page = Create("ScrollingFrame", {
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+        ScrollBarThickness = 5,
+        Visible = false,
+        Parent = contentFrame,
+        Children = { Create("UIListLayout", { Padding = UDim.new(0, 10) }) }
+    })
+
+    local tabButton = Create("TextButton", {
+        Size = UDim2.new(1, 0, 0, 40),
+        BackgroundColor3 = Color3.fromRGB(50, 50, 50),
+        Text = name:sub(1, 1),
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        Font = Enum.Font.GothamBold,
+        TextScaled = true,
+        Parent = tabHolder,
+        Events = { MouseButton1Click = function() switchTab(name) end },
+        Children = { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) }
+    })
+
+    tabs[name] = tabButton
+    pages[name] = page
+    return page
+end
+
+--// button gay
+function GazeUI.createButton(parent, text, callback)
+    return Create("TextButton", {
+        Size = UDim2.new(1, -10, 0, 40),
+        BackgroundColor3 = Color3.fromRGB(50, 50, 50),
+        Text = text,
+        TextColor3 = Color3.new(1, 1, 1),
+        Font = Enum.Font.Gotham,
+        TextScaled = true,
+        Parent = parent,
+        Events = { MouseButton1Click = callback or function() print("Clicked:", text) end },
+        Children = { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) }
+    })
+end
+
+--// Paragraph Its A Deskirpton
+function GazeUI.createParagraph(parent, text)
+    return Create("TextLabel", {
+        Size = UDim2.new(1, -10, 0, 0),
+        BackgroundColor3 = Color3.fromRGB(40, 40, 40),
+        Text = text,
+        TextColor3 = Color3.new(0.9, 0.9, 0.9),
+        Font = Enum.Font.Gotham,
+        TextWrapped = true,
+        AutomaticSize = Enum.AutomaticSize.Y,
+        Parent = parent,
+        Children = { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) }
+    })
+end
+
+--// Not Working Slider (Blame Chatgpt!) -shedgayski
+function GazeUI.createSlider(parent, min, max, default, callback)
+    return Create("TextButton", {
+        Size = UDim2.new(1, -10, 0, 40),
+        BackgroundColor3 = Color3.fromRGB(50, 50, 50),
+        Text = tostring(default),
+        TextColor3 = Color3.new(1, 1, 1),
+        Font = Enum.Font.Gotham,
+        TextScaled = true,
+        Parent = parent,
+        Events = {
+            MouseButton1Click = function()
+                local newValue = math.random(min, max)
+                callback(newValue)
+            end
+        },
+        Children = { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) }
+    })
+end
+
+--// Useless Brick
+local function setupAutoResize(scrollFrame, layout)
+    local function updateSize()
+        scrollFrame.CanvasSize = UDim2.new(0, layout.AbsoluteContentSize.X, 0, layout.AbsoluteContentSize.Y)
+    end
+    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSize)
+    updateSize()
+end
+
+-- Wut
+for _, page in pairs(pages) do
+    local layout = page:FindFirstChildOfClass("UIListLayout")
+    if layout then setupAutoResize(page, layout) end
+end
+
+return GazeUI
