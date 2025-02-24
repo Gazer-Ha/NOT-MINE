@@ -122,7 +122,7 @@ function GazeUI.createTab(name)
         Font = Enum.Font.GothamBold,
         TextScaled = true,
         Parent = tabHolder,
-        Events = { MouseButton1Click = function() switchTab(name) end },
+        Events = { MouseButton1Click = function() GazeUI.switchTab(name) end },
         Children = { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) }
     })
 
@@ -308,5 +308,3 @@ for _, page in pairs(pages) do
 end
 
 return GazeUI 
-
-
