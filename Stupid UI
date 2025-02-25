@@ -3,6 +3,7 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local camera = game:GetService("Workspace").CurrentCamera
+local cloneref = cloneref or function(o) return o end
 
 local function getScaledSize2(relativeScale)
     local viewportSize = camera.ViewportSize
@@ -38,12 +39,7 @@ end
 
 -- If you point at a rainbow, your finger will fall off.
 
-local playerGui = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-local screenGui = playerGui:FindFirstChild("GazeUIScreen") or Create("ScreenGui", {
-    Name = "GazeUIScreen",
-    ResetOnSpawn = false,
-    Parent = playerGui
-})
+COREGUI = cloneref(game:GetService("CoreGui"))
 
 local mainFrame = Create("Frame", {
     Size = UDim2.new(0.5, 0, 0.6, 0),
@@ -52,7 +48,7 @@ local mainFrame = Create("Frame", {
     BackgroundTransparency = 0.1,
     Draggable = true,
     Active = true,
-    Parent = screenGui, -- Parent it inside a ScreenGui
+    Parent = COREGUI, 
     Children = {
         Create("UICorner", { CornerRadius = UDim.new(0, 10) }),
         Create("UIStroke", { Thickness = 2, Color = Color3.fromRGB(255, 255, 255) }),
