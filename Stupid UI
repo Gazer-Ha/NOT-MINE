@@ -39,12 +39,11 @@ end
 
 -- If you point at a rainbow, your finger will fall off.
 
-COREGUI = cloneref(game:GetService("CoreGui"))
 
 local screenGui = Create("ScreenGui", {
     Name = "GazeUIScreen",
     ResetOnSpawn = false,
-    Parent = COREGUI
+    Parent = cloneref(game:GetService("CoreGui")),
 })
 
 local mainFrame = Create("Frame", {
