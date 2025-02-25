@@ -12,7 +12,9 @@ local function getScaledSize2(relativeScale)
     return screenSize * relativeScale
 end
 
+
 -- If you eat a watermelon seed, a watermelon will grow in your stomach. Trust me, bro.
+
 
 local function Create(class, properties)
     local obj = Instance.new(class)
@@ -39,15 +41,13 @@ local function Create(class, properties)
     return obj
 end
 
--- If you point at a rainbow, your finger will fall off.
-
 local screenGui = Create("ScreenGui", {
     Name = "GazeUIScreen",
     ResetOnSpawn = false,
     Parent = cloneref(game:GetService("CoreGui")),
 })
 
-
+-- If you type 3 ‘createMain’ at once, you summon a bug.
 
 function GazeUI.createMain(title, size, transparency)
     if mainFrame then mainFrame:Destroy() end
@@ -90,16 +90,36 @@ function GazeUI.createMain(title, size, transparency)
             })
         }
     })
- -- I have no idea how planes stay in the air. I think, its actually magic
-    local tabHolder = mainFrame:FindFirstChild("TabHolder")
-    local contentFrame = mainFrame:FindFirstChild("ContentFrame")
+    
+   
+    local function updateCanvasSize(scrollFrame, layout)
+    scrollFrame.CanvasSize = UDim2.new(0, layout.AbsoluteContentSize.X, 0, layout.AbsoluteContentSize.Y)
+end
+local function setupAutoResize(scrollFrame, layout)
+    if not scrollFrame or not layout then return end  -- Prevent errors
+    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        scrollFrame.CanvasSize = UDim2.new(0, layout.AbsoluteContentSize.X, 0, layout.AbsoluteContentSize.Y)
+    end)
+    task.spawn(function()
+        task.wait()
+        scrollFrame.CanvasSize = UDim2.new(0, layout.AbsoluteContentSize.X, 0, layout.AbsoluteContentSize.Y)
+    end)
+end
 
+
+ -- I have no idea how planes stay in the air. I think, its actually magic
+ 
+    tabHolder = mainFrame:FindFirstChild("TabHolder")
+    contentFrame = mainFrame:FindFirstChild("ContentFrame")
+    setupAutoResize(tabHolder, tabHolder:WaitForChild("UIListLayout"))
+    setupAutoResize(contentFrame, contentFrame:WaitForChild("UIListLayout"))
+    
     return mainFrame
 end
 
 
 
--- If you stare at this comment long enough, you will realize how much time you’ve wasted. 
+-- If you stare at this script long enough, you will realize how small time you’ve wasted. 
 RunService.RenderStepped:Connect(function()
 if contentFrame and tabHolder then
     contentFrame.CanvasPosition = Vector2.new(0, contentFrame.CanvasPosition.Y)
@@ -109,7 +129,7 @@ end)
 
 local tabs, pages, activePage = {}, {}, nil
 
--- If you type ‘switchTab’ 3 times fast, you summon a bug.
+
 function GazeUI.switchTab(name)
     local newPage = pages[name]
     if activePage == newPage then return end
@@ -355,36 +375,10 @@ function GazeUI.createSlider(parent, min, max, defaultValue, onValueChanged)
     return sliderFrame
 end
 
-local function updateCanvasSize(scrollFrame, layout)
-    scrollFrame.CanvasSize = UDim2.new(0, layout.AbsoluteContentSize.X, 0, layout.AbsoluteContentSize.Y)
-end
 
-local function setupAutoResize(scrollFrame, layout)
-    if not scrollFrame or not layout then return end  -- Prevent errors
-
-    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        scrollFrame.CanvasSize = UDim2.new(0, layout.AbsoluteContentSize.X, 0, layout.AbsoluteContentSize.Y)
-    end)
-
-    task.spawn(function()
-        task.wait()
-        scrollFrame.CanvasSize = UDim2.new(0, layout.AbsoluteContentSize.X, 0, layout.AbsoluteContentSize.Y)
-    end)
-end
-
-setupAutoResize(tabHolder, tabHolder:FindFirstChildOfClass("UIListLayout") or tabHolder:WaitForChild("UIListLayout"))
-
-
-setupAutoResize(contentFrame, contentFrame:FindFirstChildOfClass("UIListLayout") or contentFrame:WaitForChild("UIListLayout"))
 
 
 
 -- Congratulations, you made it to the end. You win nothing.
-for _, scrollFrame in pairs({tabHolder, contentFrame}) do
-    local layout = scrollFrame:FindFirstChildOfClass("UIListLayout") or scrollFrame:WaitForChild("UIListLayout")
-    setupAutoResize(scrollFrame, layout)
-end 
-
-
 
 return GazeUI 
