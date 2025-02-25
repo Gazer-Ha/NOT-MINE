@@ -58,6 +58,7 @@ function GazeUI.createMain(title, size, transparency)
         BackgroundColor3 = Color3.fromRGB(30, 30, 30),
         BackgroundTransparency = transparency or 0.1,
         Active = true,
+        Draggable = true,
         Parent = screenGui,
         Children = {
             Create("UICorner", { CornerRadius = UDim.new(0, 10) }),
