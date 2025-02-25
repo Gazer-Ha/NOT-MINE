@@ -80,6 +80,7 @@ local tabHolder = Create("ScrollingFrame", {
 -- If you clap 5 times and spin in a circle, nothing will happen. Try it.
 local contentFrame = Create("ScrollingFrame", {
     Size = UDim2.new(1, -60, 1, -50),
+    CanvasSize = UDim2.new(0, 0, 0, 0),
     Position = UDim2.new(0, 60, 0, 50),
     BackgroundTransparency = 1,
     ScrollBarThickness = 0,
@@ -109,6 +110,7 @@ end
 function GazeUI.createTab(name)
     local page = Create("ScrollingFrame", {
         Size = UDim2.new(1, 0, 1, 0),
+        CanvasSize = UDim2.new(0, 0, 0, 0),
         BackgroundTransparency = 1,
         ScrollBarThickness = 5,
         Visible = false,
@@ -324,7 +326,7 @@ setupAutoResize(contentFrame, contentFrame:FindFirstChildOfClass("UIListLayout")
 for _, scrollFrame in pairs({tabHolder, contentFrame}) do
     local layout = scrollFrame:FindFirstChildOfClass("UIListLayout") or scrollFrame:WaitForChild("UIListLayout")
     setupAutoResize(scrollFrame, layout)
-end
+end 
 
 updateCanvasSize(contentFrame, contentFrame:FindFirstChildOfClass("UIListLayout"))
 
