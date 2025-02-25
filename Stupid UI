@@ -41,6 +41,12 @@ end
 
 COREGUI = cloneref(game:GetService("CoreGui"))
 
+local screenGui = Create("ScreenGui", {
+    Name = "GazeUIScreen",
+    ResetOnSpawn = false,
+    Parent = COREGUI
+})
+
 local mainFrame = Create("Frame", {
     Size = UDim2.new(0.5, 0, 0.6, 0),
     Position = UDim2.new(0.5, -200, 0.5, -150),
@@ -48,7 +54,7 @@ local mainFrame = Create("Frame", {
     BackgroundTransparency = 0.1,
     Draggable = true,
     Active = true,
-    Parent = COREGUI, 
+    Parent = screenGui, 
     Children = {
         Create("UICorner", { CornerRadius = UDim.new(0, 10) }),
         Create("UIStroke", { Thickness = 2, Color = Color3.fromRGB(255, 255, 255) }),
@@ -57,7 +63,7 @@ local mainFrame = Create("Frame", {
             BackgroundTransparency = 1,
             Text = "Gaze UI",
             Font = Enum.Font.GothamBold,
-            TextSize = 18,
+            TextScaled = true,
             TextColor3 = Color3.fromRGB(255, 255, 255)
         })
     }
