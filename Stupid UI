@@ -170,6 +170,8 @@ end
 
 -- You are now 2% cooler after reading this.
 function GazeUI.createButton(parent, text, callback)
+local layout = parent:FindFirstChildOfClass("UIListLayout")
+    local order = layout and #parent:GetChildren() or 1
     return Create("TextButton", {
         Size = UDim2.new(1, -10, 0, 40),
         BackgroundColor3 = Color3.fromRGB(50, 50, 50),
@@ -178,7 +180,7 @@ function GazeUI.createButton(parent, text, callback)
         Font = Enum.Font.Gotham,
         TextScaled = true,
         Parent = parent,
-        LayoutOrder = #parent:GetChildren() + 1,
+        LayoutOrder = order,
         TextXAlignment = Enum.TextXAlignment.Left,
         Events = { MouseButton1Click = callback or function() print("Clicked:", text) end },
         Children = {
@@ -195,6 +197,8 @@ end
 
 -- Words on screen. That’s it.
 function GazeUI.createParagraph(parent, text)
+local layout = parent:FindFirstChildOfClass("UIListLayout")
+    local order = layout and #parent:GetChildren() or 1
     return Create("TextLabel", {
         Size = UDim2.new(1, -10, 0, 0),
         BackgroundColor3 = Color3.fromRGB(40, 40, 40),
@@ -207,13 +211,15 @@ function GazeUI.createParagraph(parent, text)
         TextXAlignment = Enum.TextXAlignment.Left,
         TextYAlignment = Enum.TextYAlignment.Top,
         Parent = parent,
-        LayoutOrder = #parent:GetChildren() + 1,
+        LayoutOrder = order,
         Children = { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) }
     })
 end
 
 -- "Ur Mom is gay" me 2025
 function GazeUI.createInput(parent, placeholder, onlyNumber, onFocusLost, callback)
+local layout = parent:FindFirstChildOfClass("UIListLayout")
+    local order = layout and #parent:GetChildren() or 1
     local lastValidText = ""
 
     local inputBox = Create("TextBox", {
@@ -225,7 +231,7 @@ function GazeUI.createInput(parent, placeholder, onlyNumber, onFocusLost, callba
         TextScaled = true,
         TextColor3 = Color3.new(1, 1, 1),
         Parent = parent,
-        LayoutOrder = #parent:GetChildren() + 1,
+        LayoutOrder = order,
         Children = { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) }
     })
 
@@ -257,6 +263,8 @@ function GazeUI.createInput(parent, placeholder, onlyNumber, onFocusLost, callba
 end
 
 function GazeUI.createSlider(parent, min, max, defaultValue, onValueChanged)
+local layout = parent:FindFirstChildOfClass("UIListLayout")
+    local order = layout and #parent:GetChildren() or 1
     local sliderFill, sliderHandle, sliderLabel, inputBox
     local dragging = false
 
@@ -264,7 +272,7 @@ function GazeUI.createSlider(parent, min, max, defaultValue, onValueChanged)
         Size = UDim2.new(1, -10, 0, 50),
         BackgroundColor3 = Color3.fromRGB(50, 50, 50),
         Parent = parent,
-        LayoutOrder = #parent:GetChildren() + 1,
+        LayoutOrder = order,
         Children = {
             Create("UICorner", { CornerRadius = UDim.new(0, 8) }),
 
