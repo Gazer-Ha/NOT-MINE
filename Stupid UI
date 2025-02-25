@@ -178,6 +178,7 @@ function GazeUI.createButton(parent, text, callback)
         Font = Enum.Font.Gotham,
         TextScaled = true,
         Parent = parent,
+        LayoutOrder = #parent:GetChildren() + 1,
         TextXAlignment = Enum.TextXAlignment.Left,
         Events = { MouseButton1Click = callback or function() print("Clicked:", text) end },
         Children = {
@@ -206,6 +207,7 @@ function GazeUI.createParagraph(parent, text)
         TextXAlignment = Enum.TextXAlignment.Left,
         TextYAlignment = Enum.TextYAlignment.Top,
         Parent = parent,
+        LayoutOrder = #parent:GetChildren() + 1,
         Children = { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) }
     })
 end
@@ -223,6 +225,7 @@ function GazeUI.createInput(parent, placeholder, onlyNumber, onFocusLost, callba
         TextScaled = true,
         TextColor3 = Color3.new(1, 1, 1),
         Parent = parent,
+        LayoutOrder = #parent:GetChildren() + 1,
         Children = { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) }
     })
 
@@ -261,6 +264,7 @@ function GazeUI.createSlider(parent, min, max, defaultValue, onValueChanged)
         Size = UDim2.new(1, -10, 0, 50),
         BackgroundColor3 = Color3.fromRGB(50, 50, 50),
         Parent = parent,
+        LayoutOrder = #parent:GetChildren() + 1,
         Children = {
             Create("UICorner", { CornerRadius = UDim.new(0, 8) }),
 
