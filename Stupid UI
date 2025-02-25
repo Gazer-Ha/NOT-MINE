@@ -18,19 +18,31 @@ end
 
 local function Create(class, properties)
     local obj = Instance.new(class)
+
+    -- Ensure LayoutOrder is assigned properly
+    if properties.Parent then
+        local layout = properties.Parent:FindFirstChildOfClass("UIListLayout")
+        if layout then
+            properties.LayoutOrder = #properties.Parent:GetChildren()
+        end
+    end
+
     for prop, value in pairs(properties or {}) do
         if prop ~= "Parent" and prop ~= "Children" and prop ~= "Events" then
             pcall(function() obj[prop] = value end)
         end
     end
+
     if properties.Parent then
         obj.Parent = properties.Parent
     end
+
     if properties.Children then
         for _, child in pairs(properties.Children) do
             child.Parent = obj
         end
     end
+
     if properties.Events then
         for event, func in pairs(properties.Events) do
             if obj[event] then
@@ -38,6 +50,7 @@ local function Create(class, properties)
             end
         end
     end
+
     return obj
 end
 
