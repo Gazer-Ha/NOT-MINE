@@ -1,449 +1,71 @@
---I dont care just use it
 
-local cloneref = cloneref or function(o) return o end
-COREGUI = cloneref(game:GetService("CoreGui"))
+local GazeUI = loadstring(game:HttpGet('https://raw.githubusercontent.com/Gazer-Ha/bruh/refs/heads/main/Stupid%20UI'))()
 
 
-local Players = cloneref(game:GetService("Players"))
-local playerGui = COREGUI
-
-local camera = game:GetService("Workspace").CurrentCamera
-
-
-
-
-local function getScaledSize(relativeWidth, relativeHeight)
-    local viewportSize = camera.ViewportSize
-    return UDim2.new(0, viewportSize.X * relativeWidth, 0, viewportSize.Y * relativeHeight)
+--// wrapper function
+local function createMain(args)
+wait()
+    return GazeUI.createMain(args.title, args.size, args.transparency) 
 end
-
-local function getScaledSize2(relativeScale)
-    local viewportSize = camera.ViewportSize
-    local screenSize = math.min(viewportSize.X, viewportSize.Y) -- Base scaling on the smallest screen dimension
-    return screenSize * relativeScale
+local function createButton(args)
+wait()
+    return GazeUI.createButton(args.tabs, args.text, args.callback) 
 end
-
-
-
-local screenGui = Instance.new("ScreenGui")
-screenGui.Parent = playerGui
-screenGui.Name = "GazeUI"
-
-
-local function createUICorner(parent, radius)
-    local uiCorner = Instance.new("UICorner")
-    uiCorner.CornerRadius = UDim.new(0, radius)
-    uiCorner.Parent = parent
+local function createParagraph(args)
+wait()
+    return GazeUI.createParagraph(args.tabs, args.text) 
+end
+local function createSlider(args)
+wait()
+    return GazeUI.createSlider(args.tabs, args.min, args.max, args.default, args.callback) 
+end
+local function createInput(args)
+wait()
+    return GazeUI.createInput(args.tabs, args.placeholder, args.numbersOnly, args.callOnChange, args.callback) 
 end
 
 
-local function createOutline(parent, thickness, color)
-    local uiStroke = Instance.new("UIStroke")
-    uiStroke.Thickness = thickness
-    uiStroke.Color = color
-    uiStroke.Parent = parent
-end
 
 
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = getScaledSize(0.5,0.6)
-mainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
-mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-mainFrame.BackgroundTransparency = 0.1
-mainFrame.BorderSizePixel = 0
-mainFrame.Draggable = true
-mainFrame.Active = true
-mainFrame.Parent = screenGui
-createUICorner(mainFrame, 10)
-createOutline(mainFrame, 2, Color3.fromRGB(255, 255, 255))
+createMain({
+    title = "Gaze UI",
+    size = UDim2.fromOffset(500, 350),
+    transparency = 0.3 -- From 0 (fully visible) to 1 (fully transparent) i think its swapped.
+})
 
 
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 40)
-title.BackgroundTransparency = 1
-title.Text = "Gaze UI"
-title.Font = Enum.Font.GothamBold
-title.TextSize = 18
-title.TextWrapped = true
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.Parent = mainFrame
-
-
-local tabHolder = Instance.new("ScrollingFrame")
-tabHolder.Size = UDim2.new(0, 50, 1, -40)
-tabHolder.Position = UDim2.new(0, 0, 0, 40)
-tabHolder.BackgroundTransparency = 1
-tabHolder.Parent = mainFrame
-tabHolder.CanvasSize = UDim2.new(0, 0, 0, 0)
-tabHolder.ScrollBarThickness = 0
-
-local uiListLayoutTabs = Instance.new("UIListLayout")
-uiListLayoutTabs.Parent = tabHolder
-uiListLayoutTabs.Padding = UDim.new(0, 5)
-
-
-local contentFrame = Instance.new("ScrollingFrame")
-contentFrame.Size = UDim2.new(1, -60, 1, -50)
-contentFrame.Position = UDim2.new(0, 60, 0, 50)
-contentFrame.BackgroundTransparency = 1
-contentFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-contentFrame.ScrollBarThickness = 0
-contentFrame.Parent = mainFrame
-
-local runService = game:GetService("RunService")
-
-runService.RenderStepped:Connect(function()
-    contentFrame.CanvasPosition = Vector2.new(0, contentFrame.CanvasPosition.Y)
-    tabHolder.CanvasPosition = Vector2.new(0, contentFrame.CanvasPosition.Y)
-end)
-
-
-
-local uiListLayoutContent = Instance.new("UIListLayout")
-uiListLayoutContent.Parent = contentFrame
-uiListLayoutContent.Padding = UDim.new(0, 5)
-
-
-
-
-
---//Tables Idk
-local tabs = {}
-local pages = {}
-local activePage = nil
-
-local TweenService = game:GetService("TweenService")
-
-local function scaleTween(obj, goalSize, duration, delayTime)
-    local tween = TweenService:Create(obj, TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, delayTime), {
-        Size = goalSize
-    })
-    tween:Play()
-    return tween
-end
-
-local function switchTab(newPage)
-    if activePage == newPage then return end
-
+local tabs = {
+    Main = GazeUI.createTab("Main"),
+    Settings = GazeUI.createTab("Settings"),
     
-    if activePage then
-        local children = activePage:GetChildren()
-        for i, obj in ipairs(children) do
-            if obj:IsA("GuiObject") then
-                local exitSize = UDim2.new(0, obj.Size.X.Offset, 0, obj.Size.Y.Offset) -- Shrink to zero
-                scaleTween(obj, exitSize, 0.2, (i - 1) * 0.03)
-            end
-        end
-        task.wait(0.25) -- Wait for animation to finish
-        activePage.Visible = false
+}
+
+
+
+
+
+createParagraph({
+    tabs = tabs.Main,
+    text = "Welcome to the Main tab,\nyou think im gonna said 'New Line!'?"
+})
+
+createSlider({
+    tabs = tabs.Main,
+    min = 0,
+    max = 100,
+    default = 50,
+    callback = function(value)
+        print("Slider Value:", value)
     end
+})
 
-    
-    newPage.Visible = true
-    activePage = newPage
-    local children = newPage:GetChildren()
-    for i, obj in ipairs(children) do
-        if obj:IsA("GuiObject") then
-            local startSize = UDim2.new(0, obj.Size.X.Offset, 0, obj.Size.Y.Offset) -- Start fully shrunk
-            obj.Size = startSize
-            scaleTween(obj, UDim2.new(1, obj.Size.X.Offset, 0, obj.Size.Y.Offset), 0.2, (i - 1) * 0.03)
-        end
-    end
-end
+createParagraph({
+    tabs = tabs.Main,
+    text = "'Look at this fresh slider mmh~"
+})
 
 
-local function createTab(name)
-    local tabButton = Instance.new("TextButton")
-    tabButton.Size = UDim2.new(1, 0, 0, 40)
-    tabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    tabButton.Text = name:sub(1, 1)
-    tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    tabButton.Font = Enum.Font.GothamBold
-    tabButton.TextScaled = true
-    tabButton.Parent = tabHolder
 
-    createUICorner(tabButton, 8)
 
-    local page = Instance.new("ScrollingFrame")
-    page.Size = UDim2.new(1, 0, 1, 0)
-    page.BackgroundTransparency = 1
-    page.ScrollBarThickness = 5
-    page.Parent = contentFrame
-    page.Visible = false
 
-    local listLayout = Instance.new("UIListLayout")
-    listLayout.Parent = page
-    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    listLayout.Padding = UDim.new(0, 10)
-
-    tabs[name] = tabButton
-    pages[name] = page
-
-    tabButton.MouseButton1Click:Connect(function()
-        switchTab(page)
-    end)
-
-    return page
-end
-
---// Tabs
-local homePage = createTab("Home")
-local settingsPage = createTab("Settings")
-local profilePage = createTab("Profile")
-
-
---// idk
-
-local function createButton(parent, text, callback)
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, -10, 0, 40)
-    button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    button.TextColor3 = Color3.new(1, 1, 1)
-    button.Font = Enum.Font.Gotham
-    button.TextScaled = true
-    button.TextWrapped = true
-    button.TextXAlignment = Enum.TextXAlignment.Left
-    button.TextYAlignment = Enum.TextYAlignment.Top
-    button.Text = text
-    button.Parent = parent
-    if callback then
-    button.MouseButton1Click:Connect(callback)
-    else 
-    button.MouseButton1Click:Connect(function()
-    print("clicked button : " .. text)
-    end)
-    end
-
-    createUICorner(button, 8)
-end
-
-
-local function createParagraph(parent, text)
-    local paragraph = Instance.new("TextLabel")
-    paragraph.Size = UDim2.new(1, -10, 0, 0) -- Start with 0 height
-    paragraph.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    paragraph.TextColor3 = Color3.new(0.9, 0.9, 0.9)
-    paragraph.Font = Enum.Font.Gotham
-    paragraph.TextSize = getScaledSize2(0.05)
-    paragraph.TextWrapped = true
-    paragraph.TextXAlignment = Enum.TextXAlignment.Left
-    paragraph.TextYAlignment = Enum.TextYAlignment.Top
-    paragraph.Text = text
-    paragraph.AutomaticSize = Enum.AutomaticSize.Y -- Enables auto height!
-    paragraph.Parent = parent
-
-    createUICorner(paragraph, 8)
-end
-
-
-local TweenService = game:GetService("TweenService")
-
-local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
-
-local function createUICorner(parent, radius)
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, radius)
-    corner.Parent = parent
-end
-
-local function createSliderWithInput(parent, min, max, defaultValue, onValueChanged)
-    local sliderFrame = Instance.new("Frame")
-    sliderFrame.Size = UDim2.new(1, -10, 0, 50)
-    sliderFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    sliderFrame.Parent = parent
-    createUICorner(sliderFrame, 8)
-
-    
-    local sliderLabel = Instance.new("TextLabel")
-    sliderLabel.Size = UDim2.new(0, 60, 1, 0)
-    sliderLabel.Position = UDim2.new(0, 5, 0, 0)
-    sliderLabel.BackgroundTransparency = 1
-    sliderLabel.Text = tostring(defaultValue)
-    sliderLabel.Font = Enum.Font.Gotham
-    sliderLabel.TextScaled = true
-    sliderLabel.TextColor3 = Color3.new(1, 1, 1)
-    sliderLabel.TextXAlignment = Enum.TextXAlignment.Left
-    sliderLabel.Parent = sliderFrame
-
-    
-    local sliderBar = Instance.new("Frame")
-    sliderBar.Size = UDim2.new(1, -130, 0, 8)
-    sliderBar.Position = UDim2.new(0, 70, 0.5, -4)
-    sliderBar.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-    sliderBar.Parent = sliderFrame
-    createUICorner(sliderBar, 4)
-
-    
-    local sliderFill = Instance.new("Frame")
-    sliderFill.Size = UDim2.new((defaultValue - min) / (max - min), 0, 1, 0)
-    sliderFill.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
-    sliderFill.Parent = sliderBar
-    createUICorner(sliderFill, 4)
-
-    
-    local sliderHandle = Instance.new("Frame")
-    sliderHandle.Size = UDim2.new(0, 20, 0, 20)
-    sliderHandle.Position = UDim2.new(sliderFill.Size.X.Scale, -7, 0.5, -7)
-    sliderHandle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    sliderHandle.Parent = sliderBar
-    createUICorner(sliderHandle, 8)
-
-    
-    local inputBox = Instance.new("TextBox")
-    inputBox.Size = UDim2.new(0, 50, 1, 0)
-    inputBox.Position = UDim2.new(1, -55, 0, 0)
-    inputBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    inputBox.Text = tostring(defaultValue)
-    inputBox.Font = Enum.Font.Gotham
-    inputBox.TextSize = 16
-    inputBox.TextColor3 = Color3.new(1, 1, 1)
-    inputBox.Parent = sliderFrame
-    createUICorner(inputBox, 4)
-
-    
-    local function updateSlider(value)
-        local clampedValue = math.clamp(value, min, max)
-        local normalizedValue = (clampedValue - min) / (max - min)
-        
-        local targetSize = UDim2.new(normalizedValue, 0, 1, 0)
-        local targetPosition = UDim2.new(normalizedValue, -7, 0.5, -7)
-
-        
-        sliderFill.Size = targetSize
-sliderHandle.Position = targetPosition
-
-
-        sliderLabel.Text = tostring(math.floor(clampedValue)) -- Formats to 2 decimal places
-inputBox.Text = tostring(math.floor(clampedValue)) -- Ensures no commas or unnecessary decimals
-        
-        if onValueChanged then
-            onValueChanged(math.floor(clampedValue))
-        end
-    end
-
-    
-    local dragging = false
-
-    local function onInputChanged(input)
-        if dragging and input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement then
-            local relativeX = (input.Position.X - sliderBar.AbsolutePosition.X) / sliderBar.AbsoluteSize.X
-            local newValue = min + (max - min) * math.clamp(relativeX, 0, 1)
-            updateSlider(newValue)
-        end
-    end
-
-    sliderHandle.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-        end
-    end)
-
-    sliderHandle.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = false
-        end
-    end)
-
-    UserInputService.InputChanged:Connect(onInputChanged)
-
-    
-    inputBox.FocusLost:Connect(function()
-        local value = tonumber(inputBox.Text)
-        if value then
-            updateSlider(value)
-        else
-            inputBox.Text = tostring(defaultValue)
-        end
-    end)
-
-    return sliderFrame
-end
-
-
-createParagraph(homePage, "Welcome to Gaze UI\nThis text adjusts its height dynamically.\nNot that smart bruh but its cool")
-createButton(homePage, "Cool Button", function()
-local ts = game:GetService("TweenService")
-local plr = game:GetService("Players").LocalPlayer
-local gui = plr:WaitForChild("PlayerGui"):FindFirstChild("ScreenGui") or Instance.new("ScreenGui", plr.PlayerGui)
-
-local word = "Cool"
-local w, h = workspace.CurrentCamera.ViewportSize.X, 50
-local y1, y2, y3 = math.random(100, 400), 200, 500
-local letters = {}
-
-for i = 1, #word do
-    local lbl = Instance.new("TextLabel")
-    lbl.Text, lbl.Font, lbl.TextSize, lbl.TextColor3 = word:sub(i, i), Enum.Font.FredokaOne, h, Color3.new(1, 1, 1)
-    lbl.BackgroundTransparency, lbl.Size, lbl.Parent = 1, UDim2.new(0, h, 0, h), gui
-    lbl.Position = UDim2.new(0, math.random(0, w - h), 0, y1)
-    table.insert(letters, lbl)
-end
-
-for i, lbl in ipairs(letters) do
-    local x = (w / 2) - (#word * h / 2) + ((i - 1) * h * 1.2)
-    ts:Create(lbl, TweenInfo.new(1, Enum.EasingStyle.Quint), { Position = UDim2.new(0, x, 0, y2) }):Play()
-    task.wait(1)
-end
-
-task.wait(1)
-
-for _, lbl in ipairs(letters) do
-    ts:Create(lbl, TweenInfo.new(0.7, Enum.EasingStyle.Quint, Enum.EasingDirection.In), { Position = UDim2.new(lbl.Position.X.Scale, lbl.Position.X.Offset, 0, y3) }):Play()
-    task.wait(0.7)
-    lbl:Destroy()
-end
-end)
-
-
-createSliderWithInput(homePage, 0, 100, 50, function(newValue)
-    --print(tonumber(newValue))
-end)
-
-createSliderWithInput(settingsPage, 10, 200, 75, function(newValue)
-    --print(tonumber(newValue))
-end)
-
-createSliderWithInput(profilePage, 1, 10, 5, function(newValue)
-    --print(tonumber(newValue))
-end)
-
-
-createParagraph(settingsPage, "Settings Panel\nYou can toggle options here.")
-createButton(settingsPage, "Toggle Music")
-
-createParagraph(profilePage, "Profile Info:\nThis UI now supports multi-line text.")
-createButton(profilePage, "Edit Profile")
-
-
-switchTab(homePage)
-
-
-
-local function updateCanvasSize(scrollFrame, layout)
-    
-    scrollFrame.CanvasSize = UDim2.new(0, layout.AbsoluteContentSize.X, 0, layout.AbsoluteContentSize.Y)
-end
-
-local function setupAutoResize(scrollFrame, layout)
-    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        updateCanvasSize(scrollFrame, layout)
-    end)
-    
-    
-    updateCanvasSize(scrollFrame, layout)
-end
-
-
-setupAutoResize(tabHolder, uiListLayoutTabs)
-
-
-setupAutoResize(contentFrame, uiListLayoutContent)
-
-
-for _, page in pairs(pages) do
-    local layout = page:FindFirstChildOfClass("UIListLayout")
-    if layout then
-        setupAutoResize(page, layout)
-    end
-end
+GazeUI.switchTab("Main")
