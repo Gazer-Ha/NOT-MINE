@@ -305,9 +305,12 @@ local function setupAutoResize(scrollFrame, layout)
     layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         updateCanvasSize(scrollFrame, layout)
     end)
-    
-    
-    updateCanvasSize(scrollFrame, layout)
+
+    -- Force an update when UI first loads
+    task.spawn(function()
+        task.wait()
+        updateCanvasSize(scrollFrame, layout)
+    end)
 end
 
 setupAutoResize(tabHolder, tabHolder:FindFirstChildOfClass("UIListLayout") or tabHolder:WaitForChild("UIListLayout"))
@@ -318,9 +321,11 @@ setupAutoResize(contentFrame, contentFrame:FindFirstChildOfClass("UIListLayout")
 
 
 -- Congratulations, you made it to the end. You win nothing.
-for _, page in pairs(pages) do
-    local layout = page:FindFirstChildOfClass("UIListLayout")
-    if layout then setupAutoResize(page, layout) end
+for _, scrollFrame in pairs({tabHolder, contentFrame}) do
+    local layout = scrollFrame:FindFirstChildOfClass("UIListLayout") or scrollFrame:WaitForChild("UIListLayout")
+    setupAutoResize(scrollFrame, layout)
 end
+
+updateCanvasSize(contentFrame, contentFrame:FindFirstChildOfClass("UIListLayout"))
 
 return GazeUI 
