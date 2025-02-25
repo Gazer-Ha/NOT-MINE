@@ -46,27 +46,35 @@ local screenGui = Create("ScreenGui", {
     Parent = cloneref(game:GetService("CoreGui")),
 })
 
-local mainFrame = Create("Frame", {
-    Size = UDim2.new(0.5, 0, 0.6, 0),
-    Position = UDim2.new(0.5, -200, 0.5, -150),
-    BackgroundColor3 = Color3.fromRGB(30, 30, 30),
-    BackgroundTransparency = 0.1,
-    Draggable = true,
-    Active = true,
-    Parent = screenGui, 
-    Children = {
-        Create("UICorner", { CornerRadius = UDim.new(0, 10) }),
-        Create("UIStroke", { Thickness = 2, Color = Color3.fromRGB(255, 255, 255) }),
-        Create("TextLabel", {
-            Size = UDim2.new(1, 0, 0, 40),
-            BackgroundTransparency = 1,
-            Text = "Gaze UI",
-            Font = Enum.Font.GothamBold,
-            TextScaled = true,
-            TextColor3 = Color3.fromRGB(255, 255, 255)
-        })
-    }
-})
+
+
+function GazeUI.createMain(title, size, transparency)
+    local mainFrame = Create("Frame", {
+        Size = size,
+        Position = UDim2.new(0.5, -size.X.Offset / 2, 0.5, -size.Y.Offset / 2),
+        BackgroundColor3 = Color3.fromRGB(30, 30, 30),
+        BackgroundTransparency = transparency or 0.1, -- Default to 0.1 if not provided
+        Draggable = true,
+        Active = true,
+        Parent = screenGui, 
+        Children = {
+            Create("UICorner", { CornerRadius = UDim.new(0, 10) }),
+            Create("UIStroke", { Thickness = 2, Color = Color3.fromRGB(255, 255, 255) }),
+            Create("TextLabel", {
+                Size = UDim2.new(1, 0, 0, 40),
+                BackgroundTransparency = 1,
+                Text = title,
+                Font = Enum.Font.GothamBold,
+                TextScaled = true,
+                TextColor3 = Color3.fromRGB(255, 255, 255)
+            })
+        }
+    })
+
+    return mainFrame
+end
+
+repeat task.wait() until mainFrame
 
 -- I have no idea how planes stay in the air. I think, its actually magic
 local tabHolder = Create("ScrollingFrame", {
@@ -372,6 +380,6 @@ for _, scrollFrame in pairs({tabHolder, contentFrame}) do
     setupAutoResize(scrollFrame, layout)
 end 
 
-updateCanvasSize(contentFrame, contentFrame:FindFirstChildOfClass("UIListLayout"))
+
 
 return GazeUI 
