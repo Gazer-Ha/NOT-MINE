@@ -2,6 +2,7 @@ local GazeUI = {}
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local camera = game:GetService("Workspace").CurrentCamera
 
 local function getScaledSize2(relativeScale)
     local viewportSize = camera.ViewportSize
@@ -161,7 +162,7 @@ function GazeUI.createParagraph(parent, text)
         Size = UDim2.new(1, -10, 0, 0),
         BackgroundColor3 = Color3.fromRGB(40, 40, 40),
         Text = text,
-        TextSize = getScaledSize2(0.05)
+        TextSize = getScaledSize2(0.05),
         TextColor3 = Color3.new(0.9, 0.9, 0.9),
         Font = Enum.Font.Gotham,
         TextWrapped = true,
@@ -296,12 +297,11 @@ function GazeUI.createSlider(parent, min, max, defaultValue, onValueChanged)
     return sliderFrame
 end
 
--- This function does something. Probably.
-function updateCanvasSize(scrollFrame, layout)
+local function updateCanvasSize(scrollFrame, layout)
     scrollFrame.CanvasSize = UDim2.new(0, layout.AbsoluteContentSize.X, 0, layout.AbsoluteContentSize.Y)
 end
 
-function setupAutoResize(scrollFrame, layout)
+local function setupAutoResize(scrollFrame, layout)
     layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         updateCanvasSize(scrollFrame, layout)
     end)
@@ -310,11 +310,12 @@ function setupAutoResize(scrollFrame, layout)
     updateCanvasSize(scrollFrame, layout)
 end
 
-
 setupAutoResize(tabHolder, tabHolder:FindFirstChildOfClass("UIListLayout") or tabHolder:WaitForChild("UIListLayout"))
 
 
 setupAutoResize(contentFrame, contentFrame:FindFirstChildOfClass("UIListLayout") or contentFrame:WaitForChild("UIListLayout"))
+
+
 
 -- Congratulations, you made it to the end. You win nothing.
 for _, page in pairs(pages) do
