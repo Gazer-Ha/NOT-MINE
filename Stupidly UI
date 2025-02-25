@@ -3,6 +3,7 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local camera = game:GetService("Workspace").CurrentCamera
+local cloneref = cloneref or function(o) return o end
 
 local function getScaledSize2(relativeScale)
     local viewportSize = camera.ViewportSize
@@ -13,19 +14,19 @@ end
 -- If you eat a watermelon seed, a watermelon will grow in your stomach. Trust me, bro.
 local function Create(class, properties)
     local obj = Instance.new(class)
+    
     for prop, value in pairs(properties or {}) do
         if prop ~= "Parent" and prop ~= "Children" and prop ~= "Events" then
             pcall(function() obj[prop] = value end)
         end
     end
-    if properties.Parent then
-        obj.Parent = properties.Parent
-    end
+
     if properties.Children then
         for _, child in pairs(properties.Children) do
             child.Parent = obj
         end
     end
+
     if properties.Events then
         for event, func in pairs(properties.Events) do
             if obj[event] then
@@ -33,39 +34,61 @@ local function Create(class, properties)
             end
         end
     end
+
+    if properties.Parent then
+        task.spawn(function()
+            while not properties.Parent do
+                task.wait()
+            end
+            obj.Parent = properties.Parent
+        end)
+    end
+
     return obj
 end
 
 -- If you point at a rainbow, your finger will fall off.
 
-local playerGui = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-local screenGui = playerGui:FindFirstChild("GazeUIScreen") or Create("ScreenGui", {
+
+local screenGui = Create("ScreenGui", {
     Name = "GazeUIScreen",
     ResetOnSpawn = false,
-    Parent = playerGui
+    Parent = cloneref(game:GetService("CoreGui")),
 })
 
-local mainFrame = Create("Frame", {
-    Size = UDim2.new(0.5, 0, 0.6, 0),
-    Position = UDim2.new(0.5, -200, 0.5, -150),
-    BackgroundColor3 = Color3.fromRGB(30, 30, 30),
-    BackgroundTransparency = 0.1,
-    Draggable = true,
-    Active = true,
-    Parent = screenGui, -- Parent it inside a ScreenGui
-    Children = {
+function GazeUI.createMain(args)
+    local children = {
         Create("UICorner", { CornerRadius = UDim.new(0, 10) }),
         Create("UIStroke", { Thickness = 2, Color = Color3.fromRGB(255, 255, 255) }),
         Create("TextLabel", {
             Size = UDim2.new(1, 0, 0, 40),
             BackgroundTransparency = 1,
-            Text = "Gaze UI",
+            Text = args.title or "Gaze UI",
             Font = Enum.Font.GothamBold,
-            TextSize = 18,
+            TextScaled = true,
             TextColor3 = Color3.fromRGB(255, 255, 255)
         })
     }
-})
+
+    if args.image then
+        table.insert(children, Create("ImageLabel", {
+            Size = UDim2.fromScale(1, 1),
+            BackgroundTransparency = 1,
+            Image = args.image
+        }))
+    end
+
+    return Create("Frame", {
+        Size = UDim2.fromOffset(args.size.X, args.size.Y),
+        Position = UDim2.new(0.5, -args.size.X / 2, 0.5, -args.size.Y / 2),
+        BackgroundColor3 = Color3.fromRGB(30, 30, 30),
+        BackgroundTransparency = 0.1,
+        Draggable = true,
+        Active = true,
+        Parent = args.parent,
+        Children = children
+    })
+end
 
 -- I have no idea how planes stay in the air. I think, its actually magic
 local tabHolder = Create("ScrollingFrame", {
@@ -80,6 +103,7 @@ local tabHolder = Create("ScrollingFrame", {
 -- If you clap 5 times and spin in a circle, nothing will happen. Try it.
 local contentFrame = Create("ScrollingFrame", {
     Size = UDim2.new(1, -60, 1, -50),
+    CanvasSize = UDim2.new(0, 0, 0, 0),
     Position = UDim2.new(0, 60, 0, 50),
     BackgroundTransparency = 1,
     ScrollBarThickness = 0,
@@ -109,6 +133,7 @@ end
 function GazeUI.createTab(name)
     local page = Create("ScrollingFrame", {
         Size = UDim2.new(1, 0, 1, 0),
+        CanvasSize = UDim2.new(0, 0, 0, 0),
         BackgroundTransparency = 1,
         ScrollBarThickness = 5,
         Visible = false,
@@ -134,19 +159,25 @@ function GazeUI.createTab(name)
 end
 
 -- You are now 2% cooler after reading this.
-function GazeUI.createButton(parent, text, callback)
-    return Create("TextButton", {
+function GazeUI.createButton(args)
+    return Create({
+        class = "TextButton",
         Size = UDim2.new(1, -10, 0, 40),
         BackgroundColor3 = Color3.fromRGB(50, 50, 50),
-        Text = text,
+        Text = args.text,
         TextColor3 = Color3.new(1, 1, 1),
         Font = Enum.Font.Gotham,
         TextScaled = true,
-        Parent = parent,
-        Events = { MouseButton1Click = callback or function() print("Clicked:", text) end },
+        Parent = args.parent,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Events = { MouseButton1Click = args.callback or function() print("Clicked:", args.text) end },
         Children = {
-            Create("UICorner", { CornerRadius = UDim.new(0, 8) }),
-            Create("ImageLabel", {
+            Create({
+                class = "UICorner",
+                CornerRadius = UDim.new(0, 8)
+            }),
+            Create({
+                class = "ImageLabel",
                 Size = UDim2.new(0, 20, 0, 20),
                 Position = UDim2.new(1, -25, 0, 5),
                 BackgroundTransparency = 0,
@@ -157,41 +188,52 @@ function GazeUI.createButton(parent, text, callback)
 end
 
 -- Words on screen. That’s it.
-function GazeUI.createParagraph(parent, text)
-    return Create("TextLabel", {
+function GazeUI.createParagraph(args)
+    return Create({
+        class = "TextLabel",
         Size = UDim2.new(1, -10, 0, 0),
         BackgroundColor3 = Color3.fromRGB(40, 40, 40),
-        Text = text,
-        TextSize = getScaledSize2(0.05)
+        Text = args.text,
+        TextSize = getScaledSize2(0.05),
         TextColor3 = Color3.new(0.9, 0.9, 0.9),
         Font = Enum.Font.Gotham,
         TextWrapped = true,
         AutomaticSize = Enum.AutomaticSize.Y,
         TextXAlignment = Enum.TextXAlignment.Left,
         TextYAlignment = Enum.TextYAlignment.Top,
-        Parent = parent,
-        Children = { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) }
+        Parent = args.parent,
+        Children = {
+            Create({
+                class = "UICorner",
+                CornerRadius = UDim.new(0, 8)
+            })
+        }
     })
 end
 
 
-function GazeUI.createSlider(parent, min, max, defaultValue, onValueChanged)
+function GazeUI.createSlider(args)
     local sliderFill, sliderHandle, sliderLabel, inputBox
     local dragging = false
 
-    local sliderFrame = Create("Frame", {
+    local sliderFrame = Create({
+        class = "Frame",
         Size = UDim2.new(1, -10, 0, 50),
         BackgroundColor3 = Color3.fromRGB(50, 50, 50),
-        Parent = parent,
+        Parent = args.parent,
         Children = {
-            Create("UICorner", { CornerRadius = UDim.new(0, 8) }),
+            Create({
+                class = "UICorner",
+                CornerRadius = UDim.new(0, 8)
+            }),
 
             (function()
-                local label = Create("TextLabel", {
+                local label = Create({
+                    class = "TextLabel",
                     Size = UDim2.new(0, 60, 1, 0),
                     Position = UDim2.new(0, 5, 0, 0),
                     BackgroundTransparency = 1,
-                    Text = tostring(defaultValue),
+                    Text = tostring(args.defaultValue),
                     Font = Enum.Font.Gotham,
                     TextScaled = true,
                     TextColor3 = Color3.new(1, 1, 1),
@@ -201,29 +243,35 @@ function GazeUI.createSlider(parent, min, max, defaultValue, onValueChanged)
                 return label
             end)(),
 
-            Create("Frame", {
+            Create({
+                class = "Frame",
                 Size = UDim2.new(1, -130, 0, 8),
                 Position = UDim2.new(0, 70, 0.5, -4),
                 BackgroundColor3 = Color3.fromRGB(70, 70, 70),
                 Children = {
-                    Create("UICorner", { CornerRadius = UDim.new(0, 4) }),
+                    Create({
+                        class = "UICorner",
+                        CornerRadius = UDim.new(0, 4)
+                    }),
 
                     (function()
-                        local fill = Create("Frame", {
-                            Size = UDim2.new((defaultValue - min) / (max - min), 0, 1, 0),
+                        local fill = Create({
+                            class = "Frame",
+                            Size = UDim2.new((args.defaultValue - args.min) / (args.max - args.min), 0, 1, 0),
                             BackgroundColor3 = Color3.fromRGB(0, 200, 255),
-                            Children = { Create("UICorner", { CornerRadius = UDim.new(0, 4) }) }
+                            Children = { Create({ class = "UICorner", CornerRadius = UDim.new(0, 4) }) }
                         })
                         sliderFill = fill
                         return fill
                     end)(),
 
                     (function()
-                        local handle = Create("Frame", {
+                        local handle = Create({
+                            class = "Frame",
                             Size = UDim2.new(0, 20, 0, 20),
                             Position = UDim2.new(sliderFill.Size.X.Scale, -10, 0.5, -10),
                             BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-                            Children = { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) }
+                            Children = { Create({ class = "UICorner", CornerRadius = UDim.new(0, 8) }) }
                         })
                         sliderHandle = handle
                         return handle
@@ -232,15 +280,16 @@ function GazeUI.createSlider(parent, min, max, defaultValue, onValueChanged)
             }),
 
             (function()
-                local box = Create("TextBox", {
+                local box = Create({
+                    class = "TextBox",
                     Size = UDim2.new(0, 50, 1, 0),
                     Position = UDim2.new(1, -55, 0, 0),
                     BackgroundColor3 = Color3.fromRGB(40, 40, 40),
-                    Text = tostring(defaultValue),
+                    Text = tostring(args.defaultValue),
                     Font = Enum.Font.Gotham,
-                    TextSize = 16,
+                    TextScaled = true,
                     TextColor3 = Color3.new(1, 1, 1),
-                    Children = { Create("UICorner", { CornerRadius = UDim.new(0, 4) }) }
+                    Children = { Create({ class = "UICorner", CornerRadius = UDim.new(0, 4) }) }
                 })
                 inputBox = box
                 return box
@@ -249,8 +298,8 @@ function GazeUI.createSlider(parent, min, max, defaultValue, onValueChanged)
     })
 
     local function updateSlider(value)
-        local clampedValue = math.clamp(value, min, max)
-        local normalizedValue = (clampedValue - min) / (max - min)
+        local clampedValue = math.clamp(value, args.min, args.max)
+        local normalizedValue = (clampedValue - args.min) / (args.max - args.min)
 
         sliderFill.Size = UDim2.new(normalizedValue, 0, 1, 0)
         sliderHandle.Position = UDim2.new(normalizedValue, -10, 0.5, -10)
@@ -258,15 +307,15 @@ function GazeUI.createSlider(parent, min, max, defaultValue, onValueChanged)
         sliderLabel.Text = tostring(math.floor(clampedValue))
         inputBox.Text = tostring(math.floor(clampedValue))
 
-        if onValueChanged then
-            onValueChanged(math.floor(clampedValue))
+        if args.onValueChanged then
+            args.onValueChanged(math.floor(clampedValue))
         end
     end
 
     local function onInputChanged(input)
         if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
             local relativeX = (input.Position.X - sliderFill.Parent.AbsolutePosition.X) / sliderFill.Parent.AbsoluteSize.X
-            local newValue = min + (max - min) * math.clamp(relativeX, 0, 1)
+            local newValue = args.min + (args.max - args.min) * math.clamp(relativeX, 0, 1)
             updateSlider(newValue)
         end
     end
@@ -290,7 +339,7 @@ function GazeUI.createSlider(parent, min, max, defaultValue, onValueChanged)
         if value then
             updateSlider(value)
         else
-            inputBox.Text = tostring(defaultValue)
+            inputBox.Text = tostring(args.defaultValue)
         end
     end)
 
@@ -305,12 +354,15 @@ local function setupAutoResize(scrollFrame, layout)
     layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         updateCanvasSize(scrollFrame, layout)
     end)
-    
-    
-    updateCanvasSize(scrollFrame, layout)
+
+
+    task.spawn(function()
+        task.wait()
+        updateCanvasSize(scrollFrame, layout)
+    end)
 end
 
-setupAutoResize(tabHolder, tabHolder::FindFirstChildOfClass("UIListLayout") or tabHolder:WaitForChild("UIListLayout"))
+setupAutoResize(tabHolder, tabHolder:FindFirstChildOfClass("UIListLayout") or tabHolder:WaitForChild("UIListLayout"))
 
 
 setupAutoResize(contentFrame, contentFrame:FindFirstChildOfClass("UIListLayout") or contentFrame:WaitForChild("UIListLayout"))
@@ -318,9 +370,11 @@ setupAutoResize(contentFrame, contentFrame:FindFirstChildOfClass("UIListLayout")
 
 
 -- Congratulations, you made it to the end. You win nothing.
-for _, page in pairs(pages) do
-    local layout = page:FindFirstChildOfClass("UIListLayout")
-    if layout then setupAutoResize(page, layout) end
-end
+for _, scrollFrame in pairs({tabHolder, contentFrame}) do
+    local layout = scrollFrame:FindFirstChildOfClass("UIListLayout") or scrollFrame:WaitForChild("UIListLayout")
+    setupAutoResize(scrollFrame, layout)
+end 
+
+updateCanvasSize(contentFrame, contentFrame:FindFirstChildOfClass("UIListLayout"))
 
 return GazeUI 
