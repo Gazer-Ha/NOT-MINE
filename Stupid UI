@@ -4,14 +4,16 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local camera = game:GetService("Workspace").CurrentCamera
 local cloneref = cloneref or function(o) return o end
+local mainFrame
 
 local function getScaledSize2(relativeScale)
     local viewportSize = camera.ViewportSize
-    local screenSize = math.min(viewportSize.X, viewportSize.Y) -- Base scaling on the smallest screen dimension
+    local screenSize = math.min(viewportSize.X, viewportSize.Y) 
     return screenSize * relativeScale
 end
 
 -- If you eat a watermelon seed, a watermelon will grow in your stomach. Trust me, bro.
+
 local function Create(class, properties)
     local obj = Instance.new(class)
     for prop, value in pairs(properties or {}) do
@@ -38,7 +40,6 @@ local function Create(class, properties)
 end
 
 -- If you point at a rainbow, your finger will fall off.
-
 
 local screenGui = Create("ScreenGui", {
     Name = "GazeUIScreen",
@@ -74,7 +75,7 @@ function GazeUI.createMain(title, size, transparency)
     return mainFrame
 end
 
-repeat task.wait() until mainFrame
+
 
 -- I have no idea how planes stay in the air. I think, its actually magic
 local tabHolder = Create("ScrollingFrame", {
@@ -356,14 +357,15 @@ local function updateCanvasSize(scrollFrame, layout)
 end
 
 local function setupAutoResize(scrollFrame, layout)
+    if not scrollFrame or not layout then return end  -- Prevent errors
+
     layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        updateCanvasSize(scrollFrame, layout)
+        scrollFrame.CanvasSize = UDim2.new(0, layout.AbsoluteContentSize.X, 0, layout.AbsoluteContentSize.Y)
     end)
 
-    -- Force an update when UI first loads
     task.spawn(function()
         task.wait()
-        updateCanvasSize(scrollFrame, layout)
+        scrollFrame.CanvasSize = UDim2.new(0, layout.AbsoluteContentSize.X, 0, layout.AbsoluteContentSize.Y)
     end)
 end
 
