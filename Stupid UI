@@ -4,29 +4,7 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local camera = game:GetService("Workspace").CurrentCamera
 local cloneref = cloneref or function(o) return o end
-local elementIndex = 0
 
-local function updateLayoutOrder(parent)
-    local layout = parent:FindFirstChildOfClass("UIListLayout")
-    if not layout then return end
-
-    local elements = {}
-
-    for _, child in ipairs(parent:GetChildren()) do
-        if child:IsA("GuiObject") and child ~= layout then
-            local index = child:GetAttribute("CreationIndex") or math.huge
-            table.insert(elements, { object = child, index = index })
-        end
-    end
-
-    table.sort(elements, function(a, b)
-        return a.index < b.index
-    end)
-
-    for i, entry in ipairs(elements) do
-        entry.object.LayoutOrder = i
-    end
-end
 
 local function getScaledSize2(relativeScale)
     local viewportSize = camera.ViewportSize
@@ -172,7 +150,7 @@ function GazeUI.createTab(name)
         Parent = contentFrame,
         Children = { Create("UIListLayout", { Padding = UDim.new(0, 10) }) }
     })
-    
+
     local tabButton = Create("TextButton", {
         Size = UDim2.new(1, 0, 0, 40),
         BackgroundColor3 = Color3.fromRGB(50, 50, 50),
@@ -192,8 +170,8 @@ end
 
 -- You are now 2% cooler after reading this.
 function GazeUI.createButton(parent, text, callback)
-updateLayoutOrder(parent)
-elementIndex += 1
+local layout = parent:FindFirstChildOfClass("UIListLayout")
+    local order = layout and #parent:GetChildren() or 1
     return Create("TextButton", {
         Size = UDim2.new(1, -10, 0, 40),
         BackgroundColor3 = Color3.fromRGB(50, 50, 50),
@@ -219,8 +197,8 @@ end
 
 -- Words on screen. That’s it.
 function GazeUI.createParagraph(parent, text)
-updateLayoutOrder(parent)
-elementIndex += 1
+local layout = parent:FindFirstChildOfClass("UIListLayout")
+    local order = layout and #parent:GetChildren() or 1
     return Create("TextLabel", {
         Size = UDim2.new(1, -10, 0, 0),
         BackgroundColor3 = Color3.fromRGB(40, 40, 40),
@@ -240,8 +218,8 @@ end
 
 -- "Ur Mom is gay" me 2025
 function GazeUI.createInput(parent, placeholder, onlyNumber, onFocusLost, callback)
-updateLayoutOrder(parent)
-elementIndex += 1
+local layout = parent:FindFirstChildOfClass("UIListLayout")
+    local order = layout and #parent:GetChildren() or 1
     local lastValidText = ""
 
     local inputBox = Create("TextBox", {
@@ -285,8 +263,8 @@ elementIndex += 1
 end
 
 function GazeUI.createSlider(parent, min, max, defaultValue, onValueChanged)
-updateLayoutOrder(parent)
-elementIndex += 1
+local layout = parent:FindFirstChildOfClass("UIListLayout")
+    local order = layout and #parent:GetChildren() or 1
     local sliderFill, sliderHandle, sliderLabel, inputBox
     local dragging = false
 
