@@ -1461,8 +1461,20 @@ end)
 
 CreateAnimation("XD", 13909302840)
 DancesA:Button("XD", "XD", function()
-    PlayAnim(Character, Anims.XD, 0, 1)
+PlayAnim(Character, Anims.XD, 0, 1)
 end)
+
+CreateAnimation("Griddy", 13524047720)
+DancesA:Button("Griddy", "Griddy", function()
+PlayAnim(Character, Anims.Griddy, 0, 1)
+end)
+
+
+CreateAnimation("Chirumiru", 13703701856)
+DancesA:Button("Chirumiru", "Chirumiru", function()
+PlayAnim(Character, Anims.Chirumiru, 0, 1)
+end)
+
 
 CreateAnimation("Domino", 126683576461381)
 DancesA:Button("Domino", "Domino", function()
