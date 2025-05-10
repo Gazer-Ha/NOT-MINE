@@ -1469,6 +1469,16 @@ DancesA:Button("Griddy", "Griddy", function()
 PlayAnim(Character, Anims.Griddy, 0, 1)
 end)
 
+CreateAnimation("Chill", 14669487079)
+DancesA:Button("Chill", "Chill", function()
+    PlayAnim(Character, Anims.Chill, 0, 1)
+end)
+
+CreateAnimation("Hakari2", 107449707929013)
+DancesA:Button("Hakari2", "Hakari2", function()
+    PlayAnim(Character, Anims.Hakari2, 0, 1)
+end)
+
 
 CreateAnimation("Chirumiru", 13703701856)
 DancesA:Button("Chirumiru", "Chirumiru", function()
