@@ -467,6 +467,10 @@ local Other = {
 {Name = "Richard Watterson (the hero)", ID = 74012585744751},
 {Name = "Helicopter", ID = 17862998594},
 {Name = "THINK!", ID = 17097712387},
+{Name = "Spare Change", ID = 17861773600},
+{Name = "Sassy Walk", ID = 17861893094}, 
+{Name = "Shy", ID = 16524848169},
+{Name = "Throne", ID = 18450698238},
 }
 
 for i, v in pairs(Other) do
