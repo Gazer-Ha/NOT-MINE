@@ -485,7 +485,7 @@ local Other = {
     {Name = "Awake", ID = 124645358602106},
     {Name = "Pointing", ID = 18897713456},
     {Name = "Mad", ID = 17086333563},
-    {Name = "tearing hands", ID = 17086423985},
+    {Name = "Tearing hands", ID = 17086423985},
     {Name = "Look!", ID = 17086291067},
     {Name = "Fall", ID = 17107937300},
     {Name = "Sigh.", ID = 17266265770},
@@ -493,7 +493,7 @@ local Other = {
     {Name = "Apologize", ID = 118382652729061},
     {Name = "Chosen", ID = 18897538537},
     {Name = "Oblivion", ID = 139788512348674},
-    {Name = "Glitched", ID = 106463430421243}
+    {Name = "Glitched", ID = 106463430421243},
 }
 
 for i, v in pairs(Other) do
