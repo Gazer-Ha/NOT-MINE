@@ -489,6 +489,7 @@ local Other = {
     {Name = "Look!", ID = 17086291067},
     {Name = "Sigh.", ID = 17266265770},
     {Name = "Chosen", ID = 18897538537},
+    {Name = "Roll", ID = 129959128025296},
     {Name = "Oblivion", ID = 139788512348674},
     {Name = "Glitched", ID = 106463430421243},
 }
