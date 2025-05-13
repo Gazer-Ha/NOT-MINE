@@ -489,7 +489,7 @@ DancesB:Button(v.Name, v.Name, function()
 if not Anims:FindFirstChild(v.Name) then
 CreateAnimation(v.Name, v.ID)
 end
-PlayAnim(Character, Anims[v.Name], 0, (v.Speed or 1) * 1.5)
+PlayAnim(Character, Anims[v.Name], 0.2, (v.Speed or 1) * 1.5)
 end)
 end
 end
@@ -502,7 +502,7 @@ DancesA:Button(v.Name, v.Name, function()
 if not Anims:FindFirstChild(v.Name) then
 CreateAnimation(v.Name, v.ID)
 end
-PlayAnim(Character, Anims[v.Name], 0, (v.Speed or 1) * 1.5)
+PlayAnim(Character, Anims[v.Name], 0.2, (v.Speed or 1) * 1.5)
 end)
 end
 end
@@ -573,4 +573,4 @@ Tapping microphone "Hello?, helloooo?? Is this thing on?" —static crackles- �
 —awkward silence— "Oh? Nothing? No proof? Just vibes? Fascinating. Truly groundbreaking investigative work."
 So, people, here you go. Another ‘Baseless Accusations & Keyboard Rage!‘ episode. Stay tuned because we are heading straight into the mind-blowing world of ‘People Who Think Copy-Pasting a GitHub Repo Makes Them Elite Hackers!”
 —applause track plays – Until next time!
-]]
+]] 
