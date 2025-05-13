@@ -241,7 +241,7 @@ end
 local Lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/UI-Libs/main/fluxlib.txt"))()
 local GUI = Lib:Window("Disbelief Hub", "Irony at its finest.", Color3.fromRGB(0, 0, 0), Enum.KeyCode.LeftControl)
 local DancesA = GUI:Tab("Animations - R6 Dances", "http://www.roblox.com/asset/?id=6023426915")
-local DancesB = GUI:Tab("Animations - Forsaken", "http://www.roblox.com/asset/?id=6023426915")
+local DancesB = GUI:Tab("Animations - Other", "http://www.roblox.com/asset/?id=6023426915")
 
 local R6Dances = {
 {Name = "Boombox Dance", ID = 84471848998012, SoundID = 1839931160},
@@ -460,14 +460,16 @@ local R6Dances = {
 {Divider = true},  
 }
 
-local Forsaken = {
+local Other = {
 {Name = "Shucks", ID = 74238051754912},
 {Name = "Silly Billy", ID = 107464355830477},
 {Name = "Subterfuge", ID = 87482480949358},
 {Name = "Richard Watterson (the hero)", ID = 74012585744751},
+{Name = "Helicopter", ID = 17862998594},
+{Name = "THINK!", ID = 17097712387},
 }
 
-for i, v in pairs(Forsaken) do
+for i, v in pairs(Other) do
 if v.Divider then
 DancesB:Line()
 else
