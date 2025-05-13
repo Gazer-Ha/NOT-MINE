@@ -469,16 +469,31 @@ local Other = {
 {Name = "THINK!", ID = 17097712387},
 {Name = "Spare Change", ID = 17861773600},
 {Name = "Sassy Walk", ID = 17861893094}, 
-{Name = "Shy", ID = 16524848169},
 {Name = "Throne", ID = 18450698238},
     {Name = "I HATE", ID = 112380819900693},
     {Name = "What!?!", ID = 18450685221},
-    {Name = "Clearing My Head", ID = 18897628831},
     {Name = "Sleep", ID = 17108971736},
     {Name = "Why?!", ID = 15285521399},
     {Name = "Sleepy", ID = 14348083862},
     {Name = "Cute Sit", ID = 99277885325374},
     {Name = "You Hear That?", ID = 15018219692}
+    {Name = "Sit Up", ID = 15674164857},
+    {Name = "Day Dream", ID = 18897563773},
+    {Name = "Crawl", ID = 17106188784},
+    {Name = "Choosing.", ID = 18897610765},
+    {Name = "Think", ID = 13801090462},
+    {Name = "Awake", ID = 124645358602106},
+    {Name = "Pointing", ID = 18897713456},
+    {Name = "Mad", ID = 17086333563},
+    {Name = "tearing hands", ID = 17086423985},
+    {Name = "Look!", ID = 17086291067},
+    {Name = "Fall", ID = 17107937300},
+    {Name = "Sigh.", ID = 17266265770},
+    {Name = "Self Hate", ID = 98491634200850},
+    {Name = "Apologize", ID = 118382652729061},
+    {Name = "Chosen", ID = 18897538537},
+    {Name = "Oblivion", ID = 139788512348674},
+    {Name = "Glitched", ID = 106463430421243}
 }
 
 for i, v in pairs(Other) do
