@@ -47,7 +47,7 @@ Hats = {
 {Texture = "12344207341", Mesh = "12344207333", Name = "Extra Left hand (Blocky)_white", Offset = CFrame.new(-0.05, 0.05, -0.075) * CFrame.Angles(-1.95, 0, 0)},
 {Texture = "14255543546", Mesh = "14255522247", Name = "LARM", Offset = CFrame.Angles(0, 0, 1.57)},
 {Texture = "17374768001", Mesh = "17374767929", Name = "Accessory (LARM)", Offset = CFrame.Angles(0, 0, 1.57)},
-{Texture = "17268521807", Mesh = "17268315112", Name = "Accessory (LARMAccessory)", Offset = CFrame.Angles(0, 0, 1.57)},
+{Texture = "17268315112", Mesh = "17268521807", Name = "Accessory (LARMAccessory)", Offset = CFrame.Angles(0, 0, 1.57)},
 },
 ["Right Leg"] = {
 {Texture = "3033898741", Mesh = "3030546036", Name = "InternationalFedora", Offset = CFrame.Angles(-1.57, 0, -1.57)},
