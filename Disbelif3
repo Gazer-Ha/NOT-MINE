@@ -532,7 +532,7 @@ game:GetService("RunService").Heartbeat:Connect(function()
 	end
 
 	local moveThreshold = 0.1
-	local runThreshold = 10
+	local runThreshold = 17
 	local verticalThreshold = 0.1
 
 	local HitFloor, HitPosition = Raycast(
@@ -547,6 +547,7 @@ game:GetService("RunService").Heartbeat:Connect(function()
 	local TorsoVerticalVelocity = velocity.Y
 
 	if not HitFloor and math.abs(TorsoVerticalVelocity) > verticalThreshold then
+		-- Always stop ground animations when airborne
 		StopAnim(Character, Anims.Walk)
 		StopAnim(Character, Anims.Run)
 
