@@ -1757,7 +1757,8 @@ local oldh = workspace.FallenPartsDestroyHeight
 
 respawnloop = plr.CharacterAdded:Connect(function(re)
 	if re ~= char then
- 	replicatesignal(game.Players.LocalPlayer.Humanoid:FindFirstChild("ServerBreakJoints"))
+ 	
+replicatesignal(game.Players.LocalPlayer.Character.Humanoid.ServerBreakJoints)
 replicatesignal(game:GetService("Players").LocalPlayer.ConnectDiedSignalBackend)
 
  task.wait(game.Players.RespawnTime+.1)
@@ -1873,7 +1874,7 @@ replicatesignal(game:GetService("Players").LocalPlayer.ConnectDiedSignalBackend)
                 if c.Name ~= "non" then
 				if _G.HatCollide == true then
 					c:BreakJoints()
-					c:WaitForChild("Humanoid").Health = 0		
+					replicatesignal(game.Players.LocalPlayer.Character.Humanoid.ServerBreakJoints)	
 				repeat task.wait() until c:FindFirstChildOfClass("Accessory") or not c:IsDescendantOf(workspace)
                 end
 			end
@@ -1887,7 +1888,7 @@ replicatesignal(game:GetService("Players").LocalPlayer.ConnectDiedSignalBackend)
 				task.wait(game:GetService("Players").RespawnTime/3)
 				if lp.Character ~= workspace.non then 
 					moveloop:Disconnect()
-					lp.Character:BreakJoints()
+					replicatesignal(game.Players.LocalPlayer.Character.Humanoid.ServerBreakJoints)
 					task.wait(.15)
 					lp.Character = workspace.non
 				end
@@ -1992,7 +1993,7 @@ end)
 local uis = game:GetService("UserInputService")
 uis.InputBegan:Connect(function(k)
 if k.KeyCode == Enum.KeyCode.Minus then 
-		replicatesignal(game.Players.LocalPlayer.Humanoid:FindFirstChild("ServerBreakJoints"))
+replicatesignal(game.Players.LocalPlayer.Character.Humanoid.ServerBreakJoints)
 replicatesignal(game:GetService("Players").LocalPlayer.ConnectDiedSignalBackend)
 
 	task.wait(game.Players.RespawnTime)
