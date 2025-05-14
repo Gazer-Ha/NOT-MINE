@@ -520,8 +520,9 @@ end)
 end
 end
 
-CreateAnimation("Idle", 16949509838)
-CreateAnimation("Walk", 71350301550438)
+CreateAnimation("Idle", 136078657506707)
+CreateAnimation("Walk", 130213485744288)
+CreateAnimation("Run", 71350301550438)
 CreateAnimation("Jump", 84397577392351)
 CreateAnimation("Fall", 90270295182351)
 
@@ -531,6 +532,7 @@ game:GetService("RunService").Heartbeat:Connect(function()
 	end
 
 	local moveThreshold = 0.1
+	local runThreshold = 10
 	local verticalThreshold = 0.1
 
 	local HitFloor, HitPosition = Raycast(
@@ -545,47 +547,62 @@ game:GetService("RunService").Heartbeat:Connect(function()
 	local TorsoVerticalVelocity = velocity.Y
 
 	if not HitFloor and math.abs(TorsoVerticalVelocity) > verticalThreshold then
+		StopAnim(Character, Anims.Walk)
+		StopAnim(Character, Anims.Run)
+
 		if TorsoVerticalVelocity > 0 then
 			if not Jumped then
 				StopAnim(Character, Anims.Fall)
 				StopAnim(Character, Anims.Idle)
-				StopAnim(Character, Anims.Walk)
 
 				PlayAnim(Character, Anims.Jump, 0.05, 1)
 				Jumped = true
-				Falled, Idled, Walked = false, false, false
+				Falled, Idled, Walked, Ran = false, false, false, false
 			end
 		else
 			if not Falled then
 				StopAnim(Character, Anims.Jump)
 				StopAnim(Character, Anims.Idle)
-				StopAnim(Character, Anims.Walk)
 
 				PlayAnim(Character, Anims.Fall, 0.05, 1)
 				Falled = true
-				Jumped, Idled, Walked = false, false, false
+				Jumped, Idled, Walked, Ran = false, false, false, false
 			end
 		end
+
 	elseif HitFloor and math.abs(TorsoVerticalVelocity) <= verticalThreshold then
 		if TorsoVelocity < moveThreshold then
 			if not Idled then
 				StopAnim(Character, Anims.Jump)
 				StopAnim(Character, Anims.Fall)
 				StopAnim(Character, Anims.Walk)
+				StopAnim(Character, Anims.Run)
 
 				PlayAnim(Character, Anims.Idle, 0.05, 0.1)
 				Idled = true
-				Jumped, Falled, Walked = false, false, false
+				Jumped, Falled, Walked, Ran = false, false, false, false
+			end
+		elseif TorsoVelocity >= runThreshold then
+			if not Ran then
+				StopAnim(Character, Anims.Jump)
+				StopAnim(Character, Anims.Fall)
+				StopAnim(Character, Anims.Idle)
+				StopAnim(Character, Anims.Walk)
+
+				PlayAnim(Character, Anims.Run, 0.05, 1)
+				Ran = true
+				Jumped, Falled, Idled, Walked = false, false, false, false
 			end
 		else
 			if not Walked then
 				StopAnim(Character, Anims.Jump)
 				StopAnim(Character, Anims.Fall)
 				StopAnim(Character, Anims.Idle)
+				StopAnim(Character, Anims.Run)
 
 				PlayAnim(Character, Anims.Walk, 0.05, 1)
 				Walked = true
-				Jumped, Falled, Idled = false, false, false
+				Jumped, Falled, Idled, Ran = false, false, false, false
 			end
 		end
 	end
