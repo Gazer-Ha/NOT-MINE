@@ -526,73 +526,75 @@ CreateAnimation("Jump", 84397577392351)
 CreateAnimation("Fall", 90270295182351)
 
 game:GetService("RunService").Heartbeat:Connect(function()
-for i,v in pairs(Character:FindFirstChildOfClass("Humanoid"):GetPlayingAnimationTracks()) do
-v:Stop(0)
-end
--- Thresholds for responsiveness
-local moveThreshold = 0.1
-local verticalThreshold = 0.1
+	-- Stop all current animations
+	for _, track in pairs(Character:FindFirstChildOfClass("Humanoid"):GetPlayingAnimationTracks()) do
+		track:Stop(0)
+	end
 
--- Get ground hit
-local HitFloor, HitPosition = Raycast(
-	RootPart.Position,
-	(CFrame.new(RootPart.Position, RootPart.Position + Vector3.new(0, -1, 0))).LookVector,
-	4,
-	Character
-)
+	-- Thresholds for responsiveness
+	local moveThreshold = 0.1
+	local verticalThreshold = 0.1
 
-local velocity = RootPart.Velocity
-local TorsoVelocity = velocity.Magnitude
-local TorsoVerticalVelocity = velocity.Y
+	-- Get ground hit
+	local HitFloor, HitPosition = Raycast(
+		RootPart.Position,
+		(CFrame.new(RootPart.Position, RootPart.Position + Vector3.new(0, -1, 0))).LookVector,
+		4,
+		Character
+	)
 
-if math.abs(TorsoVerticalVelocity) > verticalThreshold and not HitFloor then
-	-- Jumping
-	if TorsoVerticalVelocity > 0 then
-		if not Jumped then
-			-- Stop other anims before playing new one
+	local velocity = RootPart.Velocity
+	local TorsoVelocity = velocity.Magnitude
+	local TorsoVerticalVelocity = velocity.Y
+
+	if math.abs(TorsoVerticalVelocity) > verticalThreshold and not HitFloor then
+		-- Jumping
+		if TorsoVerticalVelocity > 0 then
+			if not Jumped then
+				StopAnim(Character, Anims.Fall)
+				StopAnim(Character, Anims.Idle)
+				StopAnim(Character, Anims.Walk)
+
+				PlayAnim(Character, Anims.Jump, 0.05, 1)
+				Jumped = true
+				Falled, Idled, Walked = false, false, false
+			end
+		else
+			-- Falling
+			if not Falled then
+				StopAnim(Character, Anims.Jump)
+				StopAnim(Character, Anims.Idle)
+				StopAnim(Character, Anims.Walk)
+
+				PlayAnim(Character, Anims.Fall, 0.05, 1)
+				Falled = true
+				Jumped, Idled, Walked = false, false, false
+			end
+		end
+
+	elseif TorsoVelocity < moveThreshold and HitFloor then
+		-- Idle
+		if not Idled then
+			StopAnim(Character, Anims.Jump)
+			StopAnim(Character, Anims.Fall)
+			StopAnim(Character, Anims.Walk)
+
+			PlayAnim(Character, Anims.Idle, 0.05, 0.1)
+			Idled = true
+			Jumped, Falled, Walked = false, false, false
+		end
+
+	elseif TorsoVelocity >= moveThreshold and HitFloor then
+		-- Walking
+		if not Walked then
+			StopAnim(Character, Anims.Jump)
 			StopAnim(Character, Anims.Fall)
 			StopAnim(Character, Anims.Idle)
-			StopAnim(Character, Anims.Walk)
 
-			PlayAnim(Character, Anims.Jump, 0.05, 1)
-			Jumped = true
-			Falled, Idled, Walked = false, false, false
+			PlayAnim(Character, Anims.Walk, 0.05, 1)
+			Walked = true
+			Jumped, Falled, Idled = false, false, false
 		end
-	else
-		-- Falling
-		if not Falled then
-			StopAnim(Character, Anims.Jump)
-			StopAnim(Character, Anims.Idle)
-			StopAnim(Character, Anims.Walk)
-
-			PlayAnim(Character, Anims.Fall, 0.05, 1)
-			Falled = true
-			Jumped, Idled, Walked = false, false, false
-		end
-	end
-
-elseif TorsoVelocity < moveThreshold and HitFloor then
-	-- Idle
-	if not Idled then
-		StopAnim(Character, Anims.Jump)
-		StopAnim(Character, Anims.Fall)
-		StopAnim(Character, Anims.Walk)
-
-		PlayAnim(Character, Anims.Idle, 0.05, 0.1)
-		Idled = true
-		Jumped, Falled, Walked = false, false, false
-	end
-
-elseif TorsoVelocity >= moveThreshold and HitFloor then
-	-- Walking
-	if not Walked then
-		StopAnim(Character, Anims.Jump)
-		StopAnim(Character, Anims.Fall)
-		StopAnim(Character, Anims.Idle)
-
-		PlayAnim(Character, Anims.Walk, 0.05, 1)
-		Walked = true
-		Jumped, Falled, Idled = false, false, false
 	end
 end)
 
