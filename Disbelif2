@@ -492,6 +492,19 @@ local Other = {
     {Name = "Roll", ID = 129959128025296},
     {Name = "Oblivion", ID = 139788512348674},
     {Name = "Glitched", ID = 106463430421243},
+    {Name = "Club Ibuki", ID = 14125474952},
+{Name = "Mio Honda", ID = 97072681531610},
+{Name = "dance of nights", ID = 13456829762},
+{Name = "DreamLand", ID = 14125434919},
+{Name = "Griddy", ID = 13524047720},
+{Name = "Lemon Cookie", ID = 82852186670121},
+{Name = "Luxurious", ID = 14487794376},
+{Name = "PokeDance", ID = 18986687692},
+{Name = "Loli Requiem", ID = 14887006269},
+{Name = "Stock Dance", ID = 15039780593},
+{Name = "I Miss The Quiet", ID = 126880865139406},
+{Name = "Hypno Dance", ID = 97699704852712},
+{Name = "Float", ID = 101831164587635},
 }
 
 for i, v in pairs(Other) do
