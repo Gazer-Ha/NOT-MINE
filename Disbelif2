@@ -505,6 +505,10 @@ local Other = {
 {Name = "I Miss The Quiet", ID = 126880865139406},
 {Name = "Hypno Dance", ID = 97699704852712},
 {Name = "Float", ID = 101831164587635},
+{Name = "Arona Dance", ID = 16955760599},
+{Name = "XD", ID = 13989146571},
+{Name = "XD Meme", ID = 13909302840},
+{Name = "Rabbit Hole", ID = 16874182340},
 }
 
 for i, v in pairs(Other) do
