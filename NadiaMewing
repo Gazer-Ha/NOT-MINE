@@ -1,5 +1,3 @@
-_G.FinishTime = "01:20"
-_G.SitiSitiVeloSiti = Vector3.new(70,0,0)
 
 
 local nodesFolder = workspace:WaitForChild("Nodes")
