@@ -555,7 +555,7 @@ game:GetService("RunService").Heartbeat:Connect(function()
 	end
 
 	local moveThreshold = 0.01
-	local runThreshold = 20
+	local runThreshold = 15
 	local verticalThreshold = 0.5
 
 	local HitFloor, HitPosition = Raycast(
