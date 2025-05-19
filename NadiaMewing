@@ -1,0 +1,45 @@
+_G.FinishTime = "01:20"
+_G.SitiSitiVeloSiti = Vector3.new(70,0,0)
+
+
+local nodesFolder = workspace:WaitForChild("Nodes")
+
+local flParts = {}
+for _, descendant in ipairs(workspace:GetDescendants()) do
+    if descendant:IsA("BasePart") and descendant.Name == "#Weight" then
+        table.insert(flParts, descendant)
+    end
+end
+
+local finishTime = _G.FinishTime
+local minutes, seconds = finishTime:match("(%d+):(%d+)")
+local totalTime = tonumber(minutes) * 60 + tonumber(seconds)
+
+local maxIndex = 0
+for _, node in ipairs(nodesFolder:GetChildren()) do
+    local num = tonumber(node.Name)
+    if num and num > maxIndex then
+        maxIndex = num
+    end
+end
+
+local calculatedtime = totalTime / maxIndex
+
+local nodeIndex = 1
+while true do
+    local node = nodesFolder:FindFirstChild(tostring(nodeIndex))
+    if node and node:IsA("BasePart") then
+        for _, flPart in ipairs(flParts) do
+            flPart.CFrame = node.CFrame
+            flPart.Velocity = SitiSitiVeloSiti or Vector3.new(5,0,0)
+            flPart.RotVelocity = Vector3.zero
+        end
+    end
+
+    nodeIndex += 1
+    if nodeIndex > maxIndex then
+        nodeIndex = 1
+    end
+
+    task.wait(calculatedtime)
+end
