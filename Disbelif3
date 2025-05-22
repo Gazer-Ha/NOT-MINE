@@ -73,8 +73,8 @@ Reanimate.Start({
 Accessories = {
 -- SB Rig
 { MeshId = "125443585075666", Name = "Torso", Offset = CFrame.Angles(0, 3.15, 0), TextureId = "121023324229475" },
-{ MeshId = "121342985816617", Name = "Left Arm", Offset = CFrame.Angles(0, 0, 1.57), TextureId = "129264637819824" },
-{ MeshId = "121342985816617", Name = "Right Arm", Offset = CFrame.Angles(0, 3.15, 1.57), TextureId = "129264637819824" },
+{ MeshId = "17268521807", Name = "Left Arm", Offset = CFrame.Angles(0, 0, 1.57), TextureId = "17268315112" },
+{ MeshId = "17268521807", Name = "Right Arm", Offset = CFrame.Angles(0, 0, 1.57), TextureId = "17268315112" },
 { MeshId = "83395427313429", Names = { "Left Leg", "Right Leg" }, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "97148121718581" },--18641142410
 -- Free Rig
 { MeshId = "4819720316", Name = "Torso", Offset = CFrame.Angles(0, 0, -0.25), TextureId = "4819722776" },
@@ -98,7 +98,7 @@ Accessories = {
 { MeshId = "121304376791439", Names = { "Left Leg", "Right Leg" }, Offset = CFrame.Angles(0, 0, 0), TextureId = "131014325980101" },--18641142410
 -- offsale below
 -- Classical Products rig (white/black arms)
-{ MeshId = "14241018198", Names = {"Torso"}, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "14251599953" },
+{ MeshId = "104613079991268", Names = {"Torso"}, Offset = CFrame.Angles(0, 0, 90), TextureId = "83269599235494" },
 { MeshId = "17374767929", Names = { "Left Arm", "Right Arm"}, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "17374768001" },
 { MeshId = "17387586286", Names = { "Left Leg", "Right Leg" }, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "17387586304" },
 { MeshId = "14255522247", Names = { "Left Arm", "Right Arm"}, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "14255543546" },
@@ -461,6 +461,13 @@ local R6Dances = {
 }
 
 local Other = {
+{Name = "BrickBattler", ID = 126521708275742},
+{Name = "Jumpstyle", ID = 123000284742156},
+{Name = "Distraction dance", ID = 97748655274899},
+{Name = "Wait", ID = 95077017158546},
+{Name = "Konton", ID = 101639514860127},
+{Name = "California girls", ID = 72596694751578},
+{Name = "Locked", ID = 87462270861234},
 {Name = "Shucks", ID = 74238051754912},
 {Name = "Silly Billy", ID = 107464355830477},
 {Name = "Subterfuge", ID = 87482480949358},
@@ -492,6 +499,50 @@ local Other = {
     {Name = "Roll", ID = 129959128025296},
     {Name = "Oblivion", ID = 139788512348674},
     {Name = "Glitched", ID = 106463430421243},
+    {Name = "Club Ibuki", ID = 14125474952},
+{Name = "Mio Honda", ID = 97072681531610},
+{Name = "dance of nights", ID = 13456829762},
+{Name = "DreamLand", ID = 14125434919},
+{Name = "Griddy", ID = 13524047720},
+{Name = "Lemon Cookie", ID = 82852186670121},
+{Name = "Luxurious", ID = 14487794376},
+{Name = "PokeDance", ID = 18986687692},
+{Name = "Loli Requiem", ID = 14887006269},
+{Name = "Stock Dance", ID = 15039780593},
+{Name = "I Miss The Quiet", ID = 126880865139406},
+{Name = "Hypno Dance", ID = 97699704852712},
+{Name = "Float", ID = 101831164587635},
+{Name = "Arona Dance", ID = 16955760599},
+{Name = "XD", ID = 13989146571},
+{Name = "XD Meme", ID = 13909302840},
+{Name = "Rabbit Hole", ID = 16874182340},
+{Name = "Hakari2", ID = 107449707929013},
+{Name = "Oh My Little Baby Boy", ID = 101371991494446},
+{Name = "Cat Dance", ID = 89041209193266},
+{Name = "Take The L", ID = 94899226966771},
+{Name = "Waiting", ID = 94939518614263},
+{Name = "Car Shearer", ID = 123996625040129},
+{Name = "Bling Bang Bang Born", ID = 16361564081},
+{Name = "ChiruMiru", ID = 12698847826},
+{Name = "Goopie", ID = 7828640127},
+{Name = "Internet Angel", ID = 18986591475},
+{Name = "Jevil", ID = 8550316999},
+{Name = "Kemusan", ID = 124210157097622},
+{Name = "Liar Dancer", ID = 15605418190},
+{Name = "Livesey Walk", ID = 12581348761},
+{Name = "MailBox", ID = 12843537499},
+{Name = "Mesmerizer", ID = 107578737342278},
+{Name = "Peter Parker", ID = 18986200915},
+{Name = "Sherbert", ID = 15509944325},
+{Name = "Yippe", ID = 91260130273371},
+{Name = "Liar Dancer", ID = 129584064125006},
+{Name = "Hai Yorokonde", ID = 81542849315640},
+{Name = "Freeter Dance", ID = 114136127698808},
+{Name = "Bounce", ID = 18986228959},
+{Name = "Already Dead", ID = 12474374184},
+{Name = "Gwenchana", ID = 95986910060034},
+{Name = "Neco Arc", ID = 108594846549173},
+{Name = "Toxic", ID = 103599268167271},
 }
 
 for i, v in pairs(Other) do
@@ -520,9 +571,9 @@ end)
 end
 end
 
-CreateAnimation("Idle", 136078657506707)
-CreateAnimation("Walk", 130213485744288)
-CreateAnimation("Run", 71350301550438)
+CreateAnimation("Idle", 139560382291834)
+CreateAnimation("Walk", 92663427701874)
+CreateAnimation("Run", 135281552445815)
 CreateAnimation("Jump", 84397577392351)
 CreateAnimation("Fall", 90270295182351)
 
@@ -531,9 +582,9 @@ game:GetService("RunService").Heartbeat:Connect(function()
 		track:Stop(0)
 	end
 
-	local moveThreshold = 0.1
-	local runThreshold = 17
-	local verticalThreshold = 0.1
+	local moveThreshold = 0.01
+	local runThreshold = 15
+	local verticalThreshold = 0.5
 
 	local HitFloor, HitPosition = Raycast(
 		RootPart.Position,
