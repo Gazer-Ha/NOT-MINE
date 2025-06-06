@@ -648,7 +648,7 @@ game:GetService("RunService").Heartbeat:Connect(function()
 				StopAnim(Character, Anims.Idle)
 				StopAnim(Character, Anims.Walk)
 
-				PlayAnim(Character, Anims.Run, 0.05, 1.2)
+				PlayAnim(Character, Anims.Run, 0.05, 1.5)
 				Ran = true
 				Jumped, Falled, Idled, Walked = false, false, false, false
 			end
