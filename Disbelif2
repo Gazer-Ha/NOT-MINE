@@ -573,8 +573,8 @@ end
 end
 
 CreateAnimation("Idle", 139560382291834)
-CreateAnimation("Walk", 92663427701874)
-CreateAnimation("Run", 135281552445815)
+CreateAnimation("Walk", 85232789717460)
+CreateAnimation("Run", 138292275822759)
 CreateAnimation("Jump", 84397577392351)
 CreateAnimation("Fall", 90270295182351)
 
