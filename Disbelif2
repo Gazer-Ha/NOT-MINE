@@ -462,9 +462,15 @@ local R6Dances = {
 }
 
 local Other = {
+{Name = "Jersey Joe", ID = 88903690369919},
+{Name = "Assumptions2", ID = 112844131485001},
+{Name = "too much brain", ID = 86485871533985},
+{Name = "2Two2", ID = 89348834081653},
+{Name = "nya", ID = 83266223088944},
+{Name = "takino", ID = 16361576857},
+{Name = "sweet little bumblebee", ID = 10048786578},
 {Name = "BrickBattler", ID = 126521708275742},
 {Name = "Jumpstyle", ID = 123000284742156},
-{Name = "Jersey Joe", ID = 88903690369919},
 {Name = "Wait", ID = 95077017158546},
 {Name = "Konton", ID = 101639514860127},
 {Name = "California girls", ID = 72596694751578},
