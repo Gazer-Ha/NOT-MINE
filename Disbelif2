@@ -467,6 +467,11 @@ local Other = {
 {Name = "JerseyJoe 2", ID = 92325659012324},
 {Name = "Boy", ID = 109194223166922},
 {Name = "Girl", ID = 115014285125346},
+{Name = "Requiem 2", ID = 110359775570174},
+{Name = "Maniac", ID = 130010439460275},
+{Name = "UnaUna", ID = 138510905194499},
+{Name = "Wait2", ID = 106777482236590},
+{Name = "Tula", ID = 93106893408594},
 {Name = "Assumptions2", ID = 112844131485001},
 {Name = "too much brain", ID = 86485871533985},
 {Name = "2Two2", ID = 89348834081653},
@@ -652,7 +657,7 @@ game:GetService("RunService").Heartbeat:Connect(function()
 				StopAnim(Character, Anims.Idle)
 				StopAnim(Character, Anims.Walk)
 
-				PlayAnim(Character, Anims.Run, 0.05, 1.5)
+				PlayAnim(Character, Anims.Run, 0.05, 1.2)
 				Ran = true
 				Jumped, Falled, Idled, Walked = false, false, false, false
 			end
