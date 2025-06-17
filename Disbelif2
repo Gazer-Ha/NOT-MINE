@@ -569,7 +569,7 @@ DancesB:Button(v.Name, v.Name, function()
 if not Anims:FindFirstChild(v.Name) then
 CreateAnimation(v.Name, v.ID)
 end
-PlayAnim(Character, Anims[v.Name], 0.2, (v.Speed or 1) * 1.5)
+PlayAnim(Character, Anims[v.Name], 0.1, (v.Speed or 1) * 1)
 end)
 end
 end
@@ -582,7 +582,7 @@ DancesA:Button(v.Name, v.Name, function()
 if not Anims:FindFirstChild(v.Name) then
 CreateAnimation(v.Name, v.ID)
 end
-PlayAnim(Character, Anims[v.Name], 0.2, (v.Speed or 1) * 1.5)
+PlayAnim(Character, Anims[v.Name], 0.1, (v.Speed or 1) * 1)
 end)
 end
 end
