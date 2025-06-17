@@ -462,6 +462,11 @@ local R6Dances = {
 }
 
 local Other = {
+{Name = "Character1", ID = 18722163055},
+{Name = "Boy", ID = 78770110960928},
+{Name = "Girl", ID = 101830472212788},
+{Name = "Win1", ID = 95186251567996},
+{Name = "Win2", ID = 97425490390973},
 {Name = "Jersey Joe", ID = 88903690369919},
 {Name = "Domain Expansion Homeless", ID = 16131197243},
 {Name = "JerseyJoe 2", ID = 92325659012324},
