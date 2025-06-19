@@ -1,0 +1,185 @@
+-- wzpd was here
+local AnimatorModule = {}
+
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+local function Contains(Table, Check)
+	for Index, Value in next, Table do
+		if rawequal(Check, Index) or rawequal(Check, Value) then
+			return true
+		end
+	end
+	return false
+end
+
+local AnimDefaults = {
+	["Neck"] = CFrame.new(0, 1, 0, -1, 0, 0, 0, 0, 1, 0, 1, -0),
+	["RootJoint"] = CFrame.new(0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 1, -0),
+	["Right Shoulder"] = CFrame.new(1, 0.5, 0, 0, 0, 1, 0, 1, -0, -1, 0, 0),
+	["Left Shoulder"] = CFrame.new(-1, 0.5, 0, 0, 0, -1, 0, 1, 0, 1, 0, 0),
+	["Right Hip"] = CFrame.new(1, -1, 0, 0, 0, 1, 0, 1, -0, -1, 0, 0),
+	["Left Hip"] = CFrame.new(-1, -1, 0, 0, 0, -1, 0, 1, 0, 1, 0, 0),
+	["Head"] = CFrame.new(0, 1, 0, -1, 0, 0, 0, 0, 1, 0, 1, -0),
+	["Torso"] = CFrame.new(0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 1, -0),
+	["Right Arm"] = CFrame.new(1, 0.5, 0, 0, 0, 1, 0, 1, -0, -1, 0, 0),
+	["Left Arm"] = CFrame.new(-1, 0.5, 0, 0, 0, -1, 0, 1, 0, 1, 0, 0),
+	["Right Leg"] = CFrame.new(1, -1, 0, 0, 0, 1, 0, 1, -0, -1, 0, 0),
+	["Left Leg"] = CFrame.new(-1, -1, 0, 0, 0, -1, 0, 1, 0, 1, 0, 0)
+}
+
+local function Edit(Joint, Change, Duration, Style, Direction)
+	if not Style or not table.find(Enum.EasingStyle:GetEnumItems(), Style) then
+		Style = Enum.EasingStyle.Cubic
+	end
+	Direction = Enum.EasingDirection[string.split(tostring(Direction), ".")[3]]
+	local Anim = TweenService:Create(Joint, TweenInfo.new(Duration, Style, Direction), { C0 = Change })
+	Anim:Play()
+	return Anim
+end
+
+function AnimatorModule:ResetJoints(Rig)
+	local RigHumanoid = Rig:FindFirstChildOfClass("Humanoid")
+	assert(RigHumanoid and RigHumanoid:IsA("Humanoid"), "Rig Humanoid Missing!")
+	if RigHumanoid.RigType ~= Enum.HumanoidRigType.R6 then
+		return error("Rig Humanoid is not R6!")
+	end
+
+	local HRP = Rig:FindFirstChild("HumanoidRootPart")
+	local Torso = Rig:FindFirstChild("Torso")
+
+	local Joints = {
+		["Torso"] = HRP:FindFirstChild("RootJoint") or HRP:FindFirstChild("Root Joint"),
+		["Left Arm"] = Torso and Torso:FindFirstChild("Left Shoulder"),
+		["Right Arm"] = Torso and Torso:FindFirstChild("Right Shoulder"),
+		["Left Leg"] = Torso and Torso:FindFirstChild("Left Hip"),
+		["Right Leg"] = Torso and Torso:FindFirstChild("Right Hip"),
+		["Head"] = Torso and Torso:FindFirstChild("Neck"),
+	}
+
+	for Limb, Joint in next, Joints do
+		if Joint then
+			Edit(Joint, AnimDefaults[Limb], 0.01, Enum.EasingStyle.Linear, Enum.EasingDirection.In)
+		end
+	end
+end
+
+function AnimatorModule:LoadAnimation(Rig, Sequence)
+	local RigHumanoid = Rig:FindFirstChildOfClass("Humanoid")
+	if RigHumanoid.RigType ~= Enum.HumanoidRigType.R6 then
+		return error("Rig Humanoid is not R6!")
+	end
+
+	local HRP = Rig:FindFirstChild("HumanoidRootPart")
+	local Torso = Rig:FindFirstChild("Torso")
+
+	local Joints = {
+		["Torso"] = HRP:FindFirstChild("RootJoint") or HRP:FindFirstChild("Root Joint"),
+		["Left Arm"] = Torso and Torso:FindFirstChild("Left Shoulder"),
+		["Right Arm"] = Torso and Torso:FindFirstChild("Right Shoulder"),
+		["Left Leg"] = Torso and Torso:FindFirstChild("Left Hip"),
+		["Right Leg"] = Torso and Torso:FindFirstChild("Right Hip"),
+		["Head"] = Torso and Torso:FindFirstChild("Neck"),
+	}
+
+	local Class = {
+		Speed = 1,
+		KeepLast = 0,
+		Stopped = true,
+		IsPlaying = false,
+		TimePosition = 0,
+		Looped = Sequence.Loop,
+		Completed = Instance.new("BindableEvent").Event,
+		KeyframeReached = Instance.new("BindableEvent").Event
+	}
+
+	local Keyframes = Sequence:GetKeyframes()
+	table.sort(Keyframes, function(a, b) return a.Time < b.Time end)
+	Class.Length = Keyframes[#Keyframes].Time
+
+	for _, v in ipairs(Sequence:GetDescendants()) do
+		if v:IsA("IntValue") or v:IsA("StringValue") or v:IsA("Folder") or (v:IsA("Pose") and not Rig:FindFirstChild(v.Name, true)) then
+			v:Destroy()
+		end
+	end
+
+	local function Yield(seconds)
+		task.wait(seconds / Class.Speed)
+	end
+
+	function Class:Play(FadeIn, Speed)
+		if Speed and Speed < 0 then
+			Speed = math.abs(Speed)
+		end
+		Class.Speed = math.clamp(Speed or 180, 1, 180)
+		Class.Stopped = false
+		Class.IsPlaying = true
+
+		task.spawn(function()
+			if FadeIn then
+				Class.TimePosition -= FadeIn
+			end
+
+			Class.Completed:Connect(function()
+				if Class.Looped then
+					Class.TimePosition = 0
+				end
+			end)
+
+			local connection
+			connection = RunService.Stepped:Connect(function(_, dt)
+				if Class.IsPlaying and not Class.Stopped and RigHumanoid.Health > 0 then
+					Class.TimePosition += math.min(dt * Class.Speed, 1)
+				else
+					connection:Disconnect()
+				end
+			end)
+		end)
+
+		task.spawn(function()
+			if FadeIn then Yield(FadeIn) end
+			repeat
+				for K = 1, #Keyframes do
+					local K0, K1, K2 = Keyframes[K - 1], Keyframes[K], Keyframes[K + 1]
+					if not Class.Stopped and RigHumanoid.Health > 0 then
+						if K0 then
+							Yield(K1.Time - K0.Time)
+						end
+						task.spawn(function()
+							for _, Pose in ipairs(K1:GetDescendants()) do
+								local Joint = Joints[Pose.Name]
+								if Joint then
+									local Duration = K2 and (K2.Time - K1.Time) / Class.Speed or 0.5
+									Edit(Joint, AnimDefaults[Pose.Name] * Pose.CFrame, Duration, Pose.EasingStyle, Pose.EasingDirection)
+								end
+							end
+						end)
+						if K == #Keyframes and Class.KeepLast > 0 then
+							Yield(Class.KeepLast)
+						end
+						Class.KeyframeReached:Fire(K1.Name)
+					else
+						break
+					end
+				end
+				Class.Completed:Fire()
+			until not Class.Looped or Class.Stopped or RigHumanoid.Health == 0
+			Class.IsPlaying = false
+		end)
+	end
+
+	function Class:Stop()
+		Class.Stopped = true
+	end
+
+	function Class:AdjustSpeed(Speed)
+		if Speed < 0 then
+			Speed = math.abs(Speed)
+		end
+		Class.Speed = math.clamp(Speed or Class.Speed, 1, 180)
+	end
+
+	return Class
+end
+
+return AnimatorModule
