@@ -588,7 +588,7 @@ DancesA:Button(v.Name, v.Name, function()
 if not Anims:FindFirstChild(v.Name) then
 CreateAnimation(v.Name, v.ID)
 end
-PlayAnim(Character, Anims[v.Name], 0.1, (v.Speed or 1) * 1)
+PlayAnim(Character, Anims[v.Name], 0, (v.Speed or 1) * 1)
 end)
 end
 end
