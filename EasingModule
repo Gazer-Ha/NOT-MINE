@@ -1,0 +1,170 @@
+local EasingFunctions = {}
+
+-- Linear
+function EasingFunctions.Linear(t)
+	return t
+end
+
+-- Sine
+function EasingFunctions.SineIn(t)
+	return 1 - math.cos((t * math.pi) / 2)
+end
+
+function EasingFunctions.SineOut(t)
+	return math.sin((t * math.pi) / 2)
+end
+
+function EasingFunctions.SineInOut(t)
+	return -(math.cos(math.pi * t) - 1) / 2
+end
+
+-- Quad
+function EasingFunctions.QuadIn(t)
+	return t * t
+end
+
+function EasingFunctions.QuadOut(t)
+	return t * (2 - t)
+end
+
+function EasingFunctions.QuadInOut(t)
+	return t < 0.5 and 2 * t * t or -1 + (4 - 2 * t) * t
+end
+
+-- Cubic
+function EasingFunctions.CubicIn(t)
+	return t * t * t
+end
+
+function EasingFunctions.CubicOut(t)
+	t = t - 1
+	return t * t * t + 1
+end
+
+function EasingFunctions.CubicInOut(t)
+	return t < 0.5 and 4 * t * t * t or (t - 1) * (2 * t - 2)^2 + 1
+end
+
+-- Quart
+function EasingFunctions.QuartIn(t)
+	return t^4
+end
+
+function EasingFunctions.QuartOut(t)
+	return 1 - (1 - t)^4
+end
+
+function EasingFunctions.QuartInOut(t)
+	return t < 0.5 and 8 * t^4 or 1 - 8 * (1 - t)^4
+end
+
+-- Quint
+function EasingFunctions.QuintIn(t)
+	return t^5
+end
+
+function EasingFunctions.QuintOut(t)
+	return 1 - (1 - t)^5
+end
+
+function EasingFunctions.QuintInOut(t)
+	return t < 0.5 and 16 * t^5 or 1 - 16 * (1 - t)^5
+end
+
+-- Back
+function EasingFunctions.BackIn(t)
+	local s = 1.70158
+	return t * t * ((s + 1) * t - s)
+end
+
+function EasingFunctions.BackOut(t)
+	local s = 1.70158
+	t = t - 1
+	return t * t * ((s + 1) * t + s) + 1
+end
+
+function EasingFunctions.BackInOut(t)
+	local s = 1.70158 * 1.525
+	t *= 2
+	if t < 1 then
+		return 0.5 * (t * t * ((s + 1) * t - s))
+	else
+		t -= 2
+		return 0.5 * (t * t * ((s + 1) * t + s) + 2)
+	end
+end
+
+-- Exponential
+function EasingFunctions.ExponentialIn(t)
+	return t == 0 and 0 or math.pow(2, 10 * (t - 1))
+end
+
+function EasingFunctions.ExponentialOut(t)
+	return t == 1 and 1 or 1 - math.pow(2, -10 * t)
+end
+
+function EasingFunctions.ExponentialInOut(t)
+	if t == 0 then return 0 end
+	if t == 1 then return 1 end
+	t *= 2
+	if t < 1 then
+		return 0.5 * math.pow(2, 10 * (t - 1))
+	else
+		return 0.5 * (2 - math.pow(2, -10 * (t - 1)))
+	end
+end
+
+-- Easing dispatcher
+function EasingFunctions.Get(style: Enum.EasingStyle, direction: Enum.EasingDirection)
+	local map = {
+		[Enum.EasingStyle.Linear] = {
+			In = EasingFunctions.Linear,
+			Out = EasingFunctions.Linear,
+			InOut = EasingFunctions.Linear,
+		},
+		[Enum.EasingStyle.Sine] = {
+			In = EasingFunctions.SineIn,
+			Out = EasingFunctions.SineOut,
+			InOut = EasingFunctions.SineInOut,
+		},
+		[Enum.EasingStyle.Quad] = {
+			In = EasingFunctions.QuadIn,
+			Out = EasingFunctions.QuadOut,
+			InOut = EasingFunctions.QuadInOut,
+		},
+		[Enum.EasingStyle.Cubic] = {
+			In = EasingFunctions.CubicIn,
+			Out = EasingFunctions.CubicOut,
+			InOut = EasingFunctions.CubicInOut,
+		},
+		[Enum.EasingStyle.Quart] = {
+			In = EasingFunctions.QuartIn,
+			Out = EasingFunctions.QuartOut,
+			InOut = EasingFunctions.QuartInOut,
+		},
+		[Enum.EasingStyle.Quint] = {
+			In = EasingFunctions.QuintIn,
+			Out = EasingFunctions.QuintOut,
+			InOut = EasingFunctions.QuintInOut,
+		},
+		[Enum.EasingStyle.Back] = {
+			In = EasingFunctions.BackIn,
+			Out = EasingFunctions.BackOut,
+			InOut = EasingFunctions.BackInOut,
+		},
+		[Enum.EasingStyle.Exponential] = {
+			In = EasingFunctions.ExponentialIn,
+			Out = EasingFunctions.ExponentialOut,
+			InOut = EasingFunctions.ExponentialInOut,
+		},
+	}
+
+	local dir = direction == Enum.EasingDirection.In and "In"
+		or direction == Enum.EasingDirection.Out and "Out"
+		or "InOut"
+
+	local easingGroup = map[style]
+	return (easingGroup and easingGroup[dir]) or EasingFunctions.Linear
+end
+
+return EasingFunctions
