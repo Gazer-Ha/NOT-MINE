@@ -1,130 +1,187 @@
-local Hatless = {}
 
--- Settings
-local Transparency = 0.75
-local AntiSleepAmplitude = Vector3.new(0.0025, 0.005, 0.0025)
 
--- Services
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
+-- written by Emper
+-- anyone who has the method can receive this code
 
--- Player Setup
-local Player = Players.LocalPlayer
-local Character = Player.Character or Player.CharacterAdded:Wait()
-Character.Archivable = true
+-- whoever originally wrote it was trying to optimize it
+-- so ill be doing that here
+-- although you dont really need to optimize stuff thats
+-- not done in loops
+-- but ill be doing it anyway since thats what they were trying to do
 
--- Store RootPart CFrame before death
-local RootPart = Character:FindFirstChild("HumanoidRootPart")
-local RootPartCFrame = RootPart and RootPart.CFrame or nil
+do
+	-- Settings:
+	
+	local DefaultAnimations = true -- doesnt work in velocity because it doesnt allow u to run localscripts
+	local DisableCharacterCollisions = true
+	local InstantRespawn = true
+	local ParentCharacterToRig = true
+	local RigTransparency = 1
+	
+	--
+	
+	local CFrameidentity = CFrame.identity
+	local Inverse = CFrameidentity.Inverse
+	local ToAxisAngle = CFrameidentity.ToAxisAngle
+	local ToEulerAnglesXYZ = CFrameidentity.ToEulerAnglesXYZ
+	local ToObjectSpace = CFrameidentity.ToObjectSpace
+	
+	local Connections = {}
+	
+	local Disconnect = nil
+	
+	local game = game
+	local FindFirstChild = game.FindFirstChild
+	local FindFirstChildOfClass = game.FindFirstChildOfClass
+	local Players = FindFirstChildOfClass(game, "Players")
+	local LocalPlayer = Players.LocalPlayer
+	local Character = LocalPlayer.Character
+	local CharacterAdded = LocalPlayer.CharacterAdded
+	local Connect = CharacterAdded.Connect
+	local Wait = CharacterAdded.Wait
+	local Rig = Players:CreateHumanoidModelFromDescription(Players:GetHumanoidDescriptionFromUserId(LocalPlayer.UserId), Enum.HumanoidRigType.R6)
+	local RigAnimate = Rig.Animate
+	local RigHumanoid = Rig.Humanoid -- no need to do waitforchild here, its a safe index
+	local RigRootPart = RigHumanoid.RootPart
+	local RunService = FindFirstChildOfClass(game, "RunService")
+	local Workspace = FindFirstChildOfClass(game, "Workspace")
+	local GetDescendants = game.GetDescendants
+	local IsA = game.IsA
+	local WaitForChild = game.WaitForChild
+	
+	local BreakJoints = Instance.new("Model").BreakJoints
+	
+	local mathsin = math.sin
 
--- Instant Respawn using replicatesignal (if available)
-if typeof(replicatesignal) == "function" and typeof(Player.ConnectDiedSignalBackend) == "RBXScriptSignal" then
-	replicatesignal(Player.ConnectDiedSignalBackend)
-	task.wait(Players.RespawnTime - 0.1)
-	replicatesignal(Player.Kill)
-end
+  local next = next
+  
+	local osclock = os.clock
+	
+	local replicatesignal = replicatesignal
+	
+	local RootPartCFrame = nil
+	
+	local Motor6Ds = {}
+	
+	local select = select
+	
+	local sethiddenproperty = sethiddenproperty
+	
+	local tableinsert = table.insert
+	
+	local Vector3 = Vector3
+	local Vector3new = Vector3.new
+	local Vector3zero = Vector3.zero
+	
+	RigAnimate.Enabled = false	
+	
+	Rig.Name = LocalPlayer.Name
+	RigHumanoid.DisplayName = LocalPlayer.DisplayName -- if theres no display it will be just name so this is fine
+	
+	if Character then
+		if replicatesignal then
+			if InstantRespawn then
+				replicatesignal(LocalPlayer.ConnectDiedSignalBackend)
+				task.wait(Players.RespawnTime - 0.1)
+				
+				local RootPart = FindFirstChild(Character, "HumanoidRootPart")
 
--- Clone Fake Character
-local FakeCharacter = Character:Clone()
-Hatless.FakeCharacter = FakeCharacter
-
--- Disable Animate on new character
-local AnimateBlocker
-AnimateBlocker = Workspace.DescendantAdded:Connect(function(desc)
-	if desc:IsA("LocalScript") and desc.Name == "Animate" and desc.Parent == Player.Character then
-		desc.Enabled = false
-		AnimateBlocker:Disconnect()
-	end
-end)
-
--- Break original character (fallback if no replicatesignal)
-Character:BreakJoints()
-
--- Respawn & Transfer
-Player.Character = nil
-repeat task.wait() until Player.Character
-task.wait(0.1)
-local RealChar = Player.Character
-RealChar.Archivable = true
-FakeCharacter.Name = Player.Name .. "_Fake"
-FakeCharacter.Parent = Workspace
-RealChar:WaitForChild("Humanoid"):ChangeState(16)
-workspace.FallenPartsDestroyHeight = 0/0
-
--- Restore RootPart CFrame if stored
-if RootPartCFrame then
-	local RealRoot = RealChar:FindFirstChild("HumanoidRootPart")
-	if RealRoot then
-		RealRoot.CFrame = RootPartCFrame
-	end
-end
-
--- Disable LocalScripts
-task.spawn(function()
-	for _, child in ipairs(FakeCharacter:GetChildren()) do
-		if child:IsA("LocalScript") then
-			child.Enabled = false
-			task.wait(0.1)
+				if RootPart then
+					RootPartCFrame = RootPart.CFrame
+				end
+				
+				replicatesignal(LocalPlayer.Kill)
+			end
+		else
+			BreakJoints(Character)
 		end
 	end
-end)
+	
+	Character = Wait(CharacterAdded)
+	
+	local Animate = WaitForChild(Character, "Animate")
+	Animate.Enabled = false
 
--- Transparency
-for _, part in ipairs(FakeCharacter:GetDescendants()) do
-	if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-		part.Transparency = Transparency
-	elseif part:IsA("Decal") then
-		part.Transparency = Transparency
+	local RootPart = WaitForChild(Character, "HumanoidRootPart")
+	RigRootPart.CFrame = RootPartCFrame or RootPart.CFrame
+	
+	Disconnect = Connect(RigHumanoid.Died, function()
+		for Index, Connection in Connections do
+			Disconnect(Connection)
+		end
+		
+		if ParentCharacterToRig then
+			Character.Parent = Rig.Parent
+		end
+		
+		BreakJoints(Character)
+		Rig:Destroy()
+	end).Disconnect
+	
+	for Index, Descendant in next, GetDescendants(Character) do
+		if IsA(Descendant, "Motor6D") then
+			Motor6Ds[Descendant] = {
+				Part0 = Rig[Descendant.Part0.Name],
+				Part1 = Rig[Descendant.Part1.Name]
+			}
+		end
 	end
+	
+	for Index, Descendant in next, GetDescendants(Rig) do
+		if IsA(Descendant, "BasePart") then
+			Descendant.Transparency = RigTransparency
+		end
+	end
+	
+	Rig.Parent = Workspace
+	
+	if ParentCharacterToRig then
+		Character.Parent = Rig
+	end
+	
+	task.defer(function()
+		local CurrentCamera = Workspace.CurrentCamera
+		local CameraCFrame = CurrentCamera.CFrame
+		
+		LocalPlayer.Character = Rig
+		CurrentCamera.CameraSubject = RigHumanoid
+		
+		Wait(RunService.PreRender)
+		Workspace.CurrentCamera.CFrame = CameraCFrame
+	end)
+	
+	tableinsert(Connections, Connect(RunService.PostSimulation, function()
+		for Motor6D, Table in next, Motor6Ds do
+			local Part0 = Table.Part0
+			local Part1CFrame = Table.Part1.CFrame
+			
+			Motor6D.DesiredAngle = select(3, ToEulerAnglesXYZ(Part1CFrame, Part0.CFrame))
+			
+			local Delta = Inverse(Motor6D.C0) * ( Inverse(Part0.CFrame) *  Part1CFrame ) * Motor6D.C1
+			local Axis, Angle = ToAxisAngle(Delta)
+			
+			sethiddenproperty(Motor6D, "ReplicateCurrentAngle6D", Axis * Angle)
+			sethiddenproperty(Motor6D, "ReplicateCurrentOffset6D", Delta.Position)
+		end
+		
+		RootPart.AssemblyAngularVelocity = Vector3zero
+		RootPart.AssemblyLinearVelocity = Vector3zero
+		RootPart.CFrame = RigRootPart.CFrame + Vector3new(0, mathsin(osclock() * 15) * 0.004, 0)
+	end))
+	
+	tableinsert(Connections, Connect(RunService.PreSimulation, function()
+		for Index, BasePart in next, GetDescendants(Rig) do
+			if IsA(BasePart, "BasePart") then
+				BasePart.CanCollide = false
+			end
+		end
+		
+		if DisableCharacterCollisions and not ParentCharacterToRig then
+			for Index, BasePart in next, GetDescendants(Character) do
+				if IsA(BasePart, "BasePart") then
+					BasePart.CanCollide = false
+				end
+			end
+		end
+	end))
 end
-
--- Setup Camera & Swap
-workspace.CurrentCamera.CameraSubject = FakeCharacter:WaitForChild("Humanoid")
-Player.Character = FakeCharacter
-RealChar.Parent = FakeCharacter
-
--- Setup Motor6D syncing
-local Motor6Ds = {}
-for _, desc in ipairs(RealChar:GetDescendants()) do
-	if desc:IsA("Motor6D") and desc.Part0 and desc.Part1 then
-		local fakePart0 = FakeCharacter:FindFirstChild(desc.Part0.Name)
-		local fakePart1 = FakeCharacter:FindFirstChild(desc.Part1.Name)
-		if fakePart0 and fakePart1 then
-			Motor6Ds[desc] = { Part0 = fakePart0, Part1 = fakePart1 }
-		end
-	end
-end
-
--- Update Motor6Ds
-RunService.PostSimulation:Connect(function()
-	for motor, pair in next, Motor6Ds do
-		local Part0, Part1 = pair.Part0, pair.Part1
-		if Part0 and Part1 then
-			local delta = Part0.CFrame:ToObjectSpace(Part1.CFrame)
-			local axis, angle = delta:ToAxisAngle()
-			sethiddenproperty(motor, "ReplicateCurrentAngle6D", axis * angle)
-			sethiddenproperty(motor, "ReplicateCurrentOffset6D", delta.Position)
-		end
-	end
-
-	-- Antisleep movement
-	local root = RealChar:FindFirstChild("HumanoidRootPart")
-	local fakeTorso = FakeCharacter:FindFirstChild("Torso")
-	if root and fakeTorso then
-		local offset = math.sin(os.clock() * 100) * AntiSleepAmplitude
-		root.CFrame = fakeTorso.CFrame + offset
-	end
-end)
-
--- Disable collisions
-RunService.PreSimulation:Connect(function()
-	for _, part in ipairs(RealChar:GetDescendants()) do
-		if part:IsA("BasePart") then
-			part.CanCollide = false
-			part.AssemblyLinearVelocity = Vector3.zero
-		end
-	end
-end)
-
-return Hatless
