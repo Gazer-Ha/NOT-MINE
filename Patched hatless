@@ -14,6 +14,17 @@ local Player = Players.LocalPlayer
 local Character = Player.Character or Player.CharacterAdded:Wait()
 Character.Archivable = true
 
+-- Store RootPart CFrame before death
+local RootPart = Character:FindFirstChild("HumanoidRootPart")
+local RootPartCFrame = RootPart and RootPart.CFrame or nil
+
+-- Instant Respawn using replicatesignal (if available)
+if typeof(replicatesignal) == "function" and typeof(Player.ConnectDiedSignalBackend) == "RBXScriptSignal" then
+	replicatesignal(Player.ConnectDiedSignalBackend)
+	task.wait(Players.RespawnTime - 0.1)
+	replicatesignal(Player.Kill)
+end
+
 -- Clone Fake Character
 local FakeCharacter = Character:Clone()
 Hatless.FakeCharacter = FakeCharacter
@@ -27,7 +38,7 @@ AnimateBlocker = Workspace.DescendantAdded:Connect(function(desc)
 	end
 end)
 
--- Break original character
+-- Break original character (fallback if no replicatesignal)
 Character:BreakJoints()
 
 -- Respawn & Transfer
@@ -40,6 +51,14 @@ FakeCharacter.Name = Player.Name .. "_Fake"
 FakeCharacter.Parent = Workspace
 RealChar:WaitForChild("Humanoid"):ChangeState(16)
 workspace.FallenPartsDestroyHeight = 0/0
+
+-- Restore RootPart CFrame if stored
+if RootPartCFrame then
+	local RealRoot = RealChar:FindFirstChild("HumanoidRootPart")
+	if RealRoot then
+		RealRoot.CFrame = RootPartCFrame
+	end
+end
 
 -- Disable LocalScripts
 task.spawn(function()
