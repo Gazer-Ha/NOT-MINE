@@ -2,121 +2,138 @@
 local A = {}
 
 local D = {
-	Neck = CFrame.new(0, 1, 0),
-	RootJoint = CFrame.new(),
-	RightShoulder = CFrame.new(1, 0.5, 0),
-	LeftShoulder = CFrame.new(-1, 0.5, 0),
-	RightHip = CFrame.new(1, -1, 0),
-	LeftHip = CFrame.new(-1, -1, 0),
+	Neck = CFrame.new(0,1,0,-1,0,0,0,0,1,0,1,0),
+	RootJoint = CFrame.new(0,0,0,-1,0,0,0,0,1,0,1,0),
+	["Right Shoulder"] = CFrame.new(1,0.5,0,0,0,1,0,1,0,-1,0,0),
+	["Left Shoulder"] = CFrame.new(-1,0.5,0,0,0,-1,0,1,0,1,0,0),
+	["Right Hip"] = CFrame.new(1,-1,0,0,0,1,0,1,0,-1,0,0),
+	["Left Hip"] = CFrame.new(-1,-1,0,0,0,-1,0,1,0,1,0,0),
+	Head = CFrame.new(0,1,0,-1,0,0,0,0,1,0,1,0),
+	Torso = CFrame.new(0,0,0,-1,0,0,0,0,1,0,1,0),
+	["Right Arm"] = CFrame.new(1,0.5,0,0,0,1,0,1,0,-1,0,0),
+	["Left Arm"] = CFrame.new(-1,0.5,0,0,0,-1,0,1,0,1,0,0),
+	["Right Leg"] = CFrame.new(1,-1,0,0,0,1,0,1,0,-1,0,0),
+	["Left Leg"] = CFrame.new(-1,-1,0,0,0,-1,0,1,0,1,0,0)
 }
 
-local function E(j, c)
-	if j then j.C0 = c end
+local function SetC0(j, cf)
+	if j then j.C0 = cf end
 end
 
-function A:R(r)
+function A:Reset(r)
 	local h = r:FindFirstChildOfClass("Humanoid")
-	assert(h and h.RigType == Enum.HumanoidRigType.R6, "Rig must be R6")
+	assert(h and h.RigType == Enum.HumanoidRigType.R6, "Must be R6 rig")
+
 	local j = {
-		RootJoint = r.HumanoidRootPart:FindFirstChild("RootJoint") or r.HumanoidRootPart:FindFirstChild("Root Joint"),
-		Neck = r.Torso:FindFirstChild("Neck"),
-		RightShoulder = r.Torso:FindFirstChild("Right Shoulder"),
-		LeftShoulder = r.Torso:FindFirstChild("Left Shoulder"),
-		RightHip = r.Torso:FindFirstChild("Right Hip"),
-		LeftHip = r.Torso:FindFirstChild("Left Hip"),
+		Torso = r.HumanoidRootPart:FindFirstChild("RootJoint") or r.HumanoidRootPart:FindFirstChild("Root Joint"),
+		["Left Arm"] = r.Torso:FindFirstChild("Left Shoulder"),
+		["Right Arm"] = r.Torso:FindFirstChild("Right Shoulder"),
+		["Left Leg"] = r.Torso:FindFirstChild("Left Hip"),
+		["Right Leg"] = r.Torso:FindFirstChild("Right Hip"),
+		Head = r.Torso:FindFirstChild("Neck"),
 	}
-	for k, v in pairs(j) do
-		E(v, D[k])
+
+	for n,v in pairs(j) do SetC0(v, D[n]) end
+end
+
+function A:Load(r, seq)
+	local h = r:FindFirstChildOfClass("Humanoid")
+	assert(h and h.RigType == Enum.HumanoidRigType.R6, "Must be R6 rig")
+
+	local j = {
+		Torso = r.HumanoidRootPart:FindFirstChild("RootJoint") or r.HumanoidRootPart:FindFirstChild("Root Joint"),
+		["Left Arm"] = r.Torso:FindFirstChild("Left Shoulder"),
+		["Right Arm"] = r.Torso:FindFirstChild("Right Shoulder"),
+		["Left Leg"] = r.Torso:FindFirstChild("Left Hip"),
+		["Right Leg"] = r.Torso:FindFirstChild("Right Hip"),
+		Head = r.Torso:FindFirstChild("Neck"),
+	}
+
+	for _,v in ipairs(seq:GetDescendants()) do
+		if v:IsA("IntValue") or v:IsA("StringValue") or v:IsA("Folder") then
+			v:Destroy()
+		elseif v:IsA("Pose") and not r:FindFirstChild(v.Name, true) then
+			v:Destroy()
+		end
 	end
-end
 
-function A:L(r, s)
-	local h = r:FindFirstChildOfClass("Humanoid")
-	assert(h and h.RigType == Enum.HumanoidRigType.R6, "Rig must be R6")
+	local kfs = seq:GetKeyframes()
+	table.sort(kfs, function(a,b) return a.Time < b.Time end)
 
-	local j = {
-		RootJoint = r.HumanoidRootPart:FindFirstChild("RootJoint") or r.HumanoidRootPart:FindFirstChild("Root Joint"),
-		Neck = r.Torso:FindFirstChild("Neck"),
-		RightShoulder = r.Torso:FindFirstChild("Right Shoulder"),
-		LeftShoulder = r.Torso:FindFirstChild("Left Shoulder"),
-		RightHip = r.Torso:FindFirstChild("Right Hip"),
-		LeftHip = r.Torso:FindFirstChild("Left Hip"),
-	}
-
-	local kf = s:GetKeyframes()
-	table.sort(kf, function(a, b) return a.Time < b.Time end)
-
-	local pd = {}
-	for _, f in ipairs(kf) do
-		local p = {}
-		for _, d in ipairs(f:GetDescendants()) do
-			if d:IsA("Pose") and j[d.Name] then
-				p[d.Name] = d.CFrame
+	-- Cache pose data
+	local poseCache = {}
+	for _, kf in ipairs(kfs) do
+		local poses = {}
+		for _, p in ipairs(kf:GetDescendants()) do
+			if p:IsA("Pose") and j[p.Name] then
+				poses[p.Name] = p.CFrame
 			end
 		end
-		pd[#pd + 1] = {t = f.Time, d = p, n = f.Name}
+		table.insert(poseCache, {Time = kf.Time, Name = kf.Name, Data = poses})
 	end
 
-	local C = {
-		spd = 1,
-		tp = 0,
-		stp = true,
-		play = false,
-		lp = s.Loop,
-		keep = 0,
-		done = Instance.new("BindableEvent").Event,
-		kfEvt = Instance.new("BindableEvent").Event,
+	local c = {
+		Speed = 1,
+		KeepLast = 0,
+		Stopped = true,
+		IsPlaying = false,
+		TimePosition = 0,
+		Looped = seq.Loop,
+		Completed = Instance.new("BindableEvent").Event,
+		KeyframeReached = Instance.new("BindableEvent").Event,
 	}
 
-	local i = 1
-	local rs = game:GetService("RunService")
-	if C.conn then C.conn:Disconnect() end
+	function c:Play(fade, speed)
+		self.Speed = math.clamp(speed or 1, 0.1, 180)
+		self.Stopped, self.IsPlaying = false, true
+		self.TimePosition = fade and -fade or 0
 
-	function C:Play(fade, sp)
-		self.stp, self.play = false, true
-		self.spd = math.clamp(sp or 1, 0.1, 180)
-		self.tp = fade and -fade or 0
-		i = 1
-		if C.conn then C.conn:Disconnect() end
+		task.spawn(function()
+			if fade then task.wait(fade / self.Speed) end
 
-		C.conn = rs.Heartbeat:Connect(function(dt)
-			if self.stp or not self.play or h.Health <= 0 then
-				C.conn:Disconnect()
-				C.conn = nil
-				return
-			end
-			self.tp += dt * self.spd
-			while i <= #pd and self.tp >= pd[i].t do
-				for k, v in pairs(pd[i].d) do
-					E(j[k], D[k] * v)
+			repeat
+				for i = 1, #poseCache do
+					if self.Stopped or h.Health <= 0 then break end
+
+					local k0 = poseCache[i - 1]
+					local k1 = poseCache[i]
+					local k2 = poseCache[i + 1]
+
+					if k0 then
+						task.wait((k1.Time - k0.Time) / self.Speed)
+					end
+
+					for name, cf in pairs(k1.Data) do
+						local joint = j[name]
+						if joint then
+							SetC0(joint, D[name] * cf)
+						end
+					end
+
+					c.KeyframeReached:Fire(k1.Name)
+
+					if i == #poseCache and c.KeepLast > 0 then
+						task.wait(c.KeepLast / self.Speed)
+					end
 				end
-				self.kfEvt:Fire(pd[i].n)
-				i += 1
-			end
-			if i > #pd then
-				if self.lp then
-					self.tp = 0
-					i = 1
-				else
-					self.stp, self.play = true, false
-					self.done:Fire()
-					C.conn:Disconnect()
-					C.conn = nil
-				end
-			end
+
+				c.Completed:Fire()
+			until not c.Looped or c.Stopped or h.Health <= 0
+
+			c.IsPlaying = false
 		end)
 	end
 
-	function C:Stop()
-		self.stp, self.play = true, false
-		if C.conn then C.conn:Disconnect() C.conn = nil end
+	function c:Stop()
+		self.Stopped = true
+		self.IsPlaying = false
 	end
 
-	function C:Speed(s)
-		self.spd = math.clamp(math.abs(s or self.spd), 0.1, 180)
+	function c:AdjustSpeed(s)
+		self.Speed = math.clamp(math.abs(s or self.Speed), 0.1, 180)
 	end
 
-	return C
+	return c
 end
 
 return A
