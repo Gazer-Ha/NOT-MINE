@@ -17,8 +17,8 @@ do
 	local DefaultAnimations = true -- doesnt work in velocity because it doesnt allow u to run localscripts
 	local DisableCharacterCollisions = true
 	local InstantRespawn = true
-	local ParentCharacterToRig = true
-	local RigTransparency = 1
+	local ParentCharacterToFakeCharacter = true
+	local FakeCharacterTransparency = 1
 	
 	--
 	
@@ -37,14 +37,17 @@ do
 	local FindFirstChildOfClass = game.FindFirstChildOfClass
 	local Players = FindFirstChildOfClass(game, "Players")
 	local LocalPlayer = Players.LocalPlayer
-	local Character = LocalPlayer.Character
+	local Character = Players.LocalPlayer.Character
+if Character then
+    Character.Archivable = true
+end
 	local CharacterAdded = LocalPlayer.CharacterAdded
 	local Connect = CharacterAdded.Connect
 	local Wait = CharacterAdded.Wait
-	local Rig = Players:CreateHumanoidModelFromDescription(Players:GetHumanoidDescriptionFromUserId(LocalPlayer.UserId), Enum.HumanoidRigType.R6)
-	local RigAnimate = Rig.Animate
-	local RigHumanoid = Rig.Humanoid -- no need to do waitforchild here, its a safe index
-	local RigRootPart = RigHumanoid.RootPart
+    local FakeCharacter = Character:Clone()
+	local FakeCharacterAnimate = FakeCharacter.Animate
+	local FakeCharacterHumanoid = FakeCharacter.Humanoid -- no need to do waitforchild here, its a safe index
+	local FakeCharacterRootPart = FakeCharacterHumanoid.RootPart
 	local RunService = FindFirstChildOfClass(game, "RunService")
 	local Workspace = FindFirstChildOfClass(game, "Workspace")
 	local GetDescendants = game.GetDescendants
@@ -75,11 +78,14 @@ do
 	local Vector3new = Vector3.new
 	local Vector3zero = Vector3.zero
 	
-	RigAnimate.Enabled = false	
+	FakeCharacterAnimate.Enabled = false	
 	
-	Rig.Name = LocalPlayer.Name
-	RigHumanoid.DisplayName = LocalPlayer.DisplayName -- if theres no display it will be just name so this is fine
+	FakeCharacter.Name = LocalPlayer.Name
+	FakeCharacterHumanoid.DisplayName = LocalPlayer.DisplayName -- if theres no display it will be just name so this is fine
 	
+	
+	
+
 	if Character then
 		if replicatesignal then
 			if InstantRespawn then
@@ -105,48 +111,48 @@ do
 	Animate.Enabled = false
 
 	local RootPart = WaitForChild(Character, "HumanoidRootPart")
-	RigRootPart.CFrame = RootPartCFrame or RootPart.CFrame
+	FakeCharacterRootPart.CFrame = RootPartCFrame or RootPart.CFrame
 	
-	Disconnect = Connect(RigHumanoid.Died, function()
+	Disconnect = Connect(FakeCharacterHumanoid.Died, function()
 		for Index, Connection in Connections do
 			Disconnect(Connection)
 		end
 		
-		if ParentCharacterToRig then
-			Character.Parent = Rig.Parent
+		if ParentCharacterToFakeCharacter then
+			Character.Parent = FakeCharacter.Parent
 		end
 		
 		BreakJoints(Character)
-		Rig:Destroy()
+		FakeCharacter:Destroy()
 	end).Disconnect
 	
 	for Index, Descendant in next, GetDescendants(Character) do
 		if IsA(Descendant, "Motor6D") then
 			Motor6Ds[Descendant] = {
-				Part0 = Rig[Descendant.Part0.Name],
-				Part1 = Rig[Descendant.Part1.Name]
+				Part0 = FakeCharacter[Descendant.Part0.Name],
+				Part1 = FakeCharacter[Descendant.Part1.Name]
 			}
 		end
 	end
 	
-	for Index, Descendant in next, GetDescendants(Rig) do
+	for Index, Descendant in next, GetDescendants(FakeCharacter) do
 		if IsA(Descendant, "BasePart") then
-			Descendant.Transparency = RigTransparency
+			Descendant.Transparency = FakeCharacterTransparency
 		end
 	end
 	
-	Rig.Parent = Workspace
+	FakeCharacter.Parent = Workspace
 	
-	if ParentCharacterToRig then
-		Character.Parent = Rig
+	if ParentCharacterToFakeCharacter then
+		Character.Parent = FakeCharacter
 	end
 	
 	task.defer(function()
 		local CurrentCamera = Workspace.CurrentCamera
 		local CameraCFrame = CurrentCamera.CFrame
 		
-		LocalPlayer.Character = Rig
-		CurrentCamera.CameraSubject = RigHumanoid
+		LocalPlayer.Character = FakeCharacter
+		CurrentCamera.CameraSubject = FakeCharacterHumanoid
 		
 		Wait(RunService.PreRender)
 		Workspace.CurrentCamera.CFrame = CameraCFrame
@@ -168,17 +174,17 @@ do
 		
 		RootPart.AssemblyAngularVelocity = Vector3zero
 		RootPart.AssemblyLinearVelocity = Vector3zero
-		RootPart.CFrame = RigRootPart.CFrame + Vector3new(0, mathsin(osclock() * 15) * 0.004, 0)
+		RootPart.CFrame = FakeCharacterRootPart.CFrame + Vector3new(0, mathsin(osclock() * 15) * 0.004, 0)
 	end))
 	
 	tableinsert(Connections, Connect(RunService.PreSimulation, function()
-		for Index, BasePart in next, GetDescendants(Rig) do
+		for Index, BasePart in next, GetDescendants(FakeCharacter) do
 			if IsA(BasePart, "BasePart") then
 				BasePart.CanCollide = false
 			end
 		end
 		
-		if DisableCharacterCollisions and not ParentCharacterToRig then
+		if DisableCharacterCollisions and not ParentCharacterToFakeCharacter then
 			for Index, BasePart in next, GetDescendants(Character) do
 				if IsA(BasePart, "BasePart") then
 					BasePart.CanCollide = false
