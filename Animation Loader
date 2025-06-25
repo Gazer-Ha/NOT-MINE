@@ -45,11 +45,7 @@ local function Edit(Joint, TargetC0, Duration, Style, Direction)
 		end
 	end)
 end
-Direction = Enum.EasingDirection[string.split(tostring(Direction), ".")[3]]
-local Anim = game:GetService("TweenService"):Create(Joint, TweenInfo.new(Duration, Style, Direction), {C0 = Change})
-Anim:Play()
-return Anim
-end
+
 
 function AnimatorModule:ResetJoints(Rig)
 local RigHumanoid = Rig:FindFirstChildOfClass("Humanoid")
@@ -152,7 +148,6 @@ for K = 1, #Keyframes do
 local K0, K1, K2 = Keyframes[K-1], Keyframes[K], Keyframes[K+1]
 if not Class.Stopped and RigHumanoid.Health > 0 then
 if not K0 then
-    -- Apply first keyframe instantly (no delay)
     for _, Pose in ipairs(K1:GetDescendants()) do
         if Joints[Pose.Name] then
             Edit(Joints[Pose.Name], AnimDefaults[Pose.Name] * Pose.CFrame, 0.01, Pose.EasingStyle, Pose.EasingDirection)
