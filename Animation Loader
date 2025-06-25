@@ -36,14 +36,27 @@ local function Edit(Joint, TargetC0, Duration, Style, Direction)
 	local Elapsed = 0
 	local Easing = EasingFunctions.Get(Style or Enum.EasingStyle.Linear, Direction or Enum.EasingDirection.InOut)
 
-	Connection = game:GetService("RunService").Heartbeat:Connect(function(dt)
+	local handle = { Cancelled = false }
+
+	handle.Connection = game:GetService("RunService").Heartbeat:Connect(function(dt)
+		if handle.Cancelled then
+			handle.Connection:Disconnect()
+			return
+		end
+
 		Elapsed += dt
 		local Alpha = math.clamp(Elapsed / Duration, 0, 1)
 		Joint.C0 = LerpCF(StartC0, TargetC0, Easing(Alpha))
 		if Alpha >= 1 then
-			Connection:Disconnect()
+			handle.Connection:Disconnect()
 		end
 	end)
+
+	function handle:Cancel()
+		self.Cancelled = true
+	end
+
+	return handle
 end
 
 
