@@ -1,5 +1,5 @@
 
-
+local Hatless = {}
 -- written by Emper
 -- anyone who has the method can receive this code
 
@@ -185,3 +185,4 @@ do
 		end
 	end))
 end
+return Hatless
