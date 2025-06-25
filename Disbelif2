@@ -1,4 +1,4 @@
-getgenv().Framework = "Emperyean"
+
 Reanimate = getgenv().Framework
 local Character = nil
 
@@ -187,7 +187,7 @@ return end
 
 local RootPart = Character.HumanoidRootPart
 local Jumped,Falled,Idled,Walked = false,false,false,false
-local AnimatorModule = loadstring(game:HttpGet("https://raw.githubusercontent.com/Gazer-Ha/NOT-MINE/refs/heads/main/Animation%20Loader"))()
+local AnimatorModule = loadstring(game:HttpGet("https://raw.githubusercontent.com/Gazer-Ha/NOT-MINE/refs/heads/main/Animodule"))()
 local Anims = Instance.new("Folder", workspace)
 
 function Raycast(POSITION, DIRECTION, RANGE, IGNOREDECENDANTS)
