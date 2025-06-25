@@ -83,6 +83,7 @@ do
 		end
 		if ParentCharacterToRig then
 			Character.Parent = Rig.Parent
+Hatless.Rig = Rig
 		end
 		BreakJoints(Character)
 		Rig:Destroy()
