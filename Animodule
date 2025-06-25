@@ -71,13 +71,25 @@ function AnimatorModule:LoadAnimation(Rig, KeyframeSequence)
 	local function Yield(Seconds)
 		task.wait(Seconds / Class.Speed)
 	end
-	for _, v in ipairs(Sequence:GetDescendants()) do
-		if v:IsA("IntValue") or v:IsA("StringValue") or v:IsA("Folder") then
-			v:Destroy()
-		elseif v:IsA("Pose") and not Rig:FindFirstChild(v.Name, true) then
-			v:Destroy()
-		end
+	local validValueTypes = {
+	IntValue = true,
+	StringValue = true,
+	Folder = true
+}
+
+local rigNames = {}
+for _, obj in ipairs(Rig:GetDescendants()) do
+	rigNames[obj.Name] = true
+end
+
+for _, v in ipairs(Sequence:GetDescendants()) do
+	local className = v.ClassName
+	if validValueTypes[className] then
+		v:Destroy()
+	elseif className == "Pose" and not rigNames[v.Name] then
+		v:Destroy()
 	end
+end
 	Class.Stopped = true
 	Class.IsPlaying = false
 	Class.TimePosition = 0
