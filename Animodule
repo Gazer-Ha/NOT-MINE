@@ -1,5 +1,14 @@
 local AnimatorModule = {}
 
+local function Contains(Table, Check)
+	for Index, Value in next, Table do
+		if rawequal(Check, Index) or rawequal(Check, Value) then
+			return true
+		end
+	end
+	return false
+end
+
 local AnimDefaults = {
 	["Neck"] = CFrame.new(0, 1, 0, -1, 0, 0, 0, 0, 1, 0, 1, -0),
 	["RootJoint"] = CFrame.new(0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 1, -0),
@@ -17,132 +26,146 @@ local AnimDefaults = {
 
 local function Edit(Joint, Change, Duration, Style, Direction)
 	Joint.C0 = Change
+	return nil
 end
 
 function AnimatorModule:ResetJoints(Rig)
 	local RigHumanoid = Rig:FindFirstChildOfClass("Humanoid")
-	assert(RigHumanoid and RigHumanoid:IsA("Humanoid"), "Rig must have a Humanoid")
-	if RigHumanoid.RigType ~= Enum.HumanoidRigType.R6 then
-		error("Only R6 rigs supported")
+	assert(RigHumanoid:IsA("Humanoid"), "Rig Humanoid Missing!")
+	if not RigHumanoid.RigType == Enum.HumanoidRigType.R6 then
+		return error("Rig Humanoid is not R6!")
 	end
-
 	local Joints = {
-		["Torso"] = Rig.HumanoidRootPart:FindFirstChild("RootJoint"),
-		["Left Arm"] = Rig.Torso:FindFirstChild("Left Shoulder"),
-		["Right Arm"] = Rig.Torso:FindFirstChild("Right Shoulder"),
-		["Left Leg"] = Rig.Torso:FindFirstChild("Left Hip"),
-		["Right Leg"] = Rig.Torso:FindFirstChild("Right Hip"),
-		["Head"] = Rig.Torso:FindFirstChild("Neck"),
+		["Torso"] = Rig.HumanoidRootPart:FindFirstChild("RootJoint") or Rig.HumanoidRootPart:FindFirstChild("Root Joint"),
+		["Left Arm"] = Rig.Torso["Left Shoulder"],
+		["Right Arm"] = Rig.Torso["Right Shoulder"],
+		["Left Leg"] = Rig.Torso["Left Hip"],
+		["Right Leg"] = Rig.Torso["Right Hip"],
+		["Head"] = Rig.Torso["Neck"],
 	}
-
-	for limb, joint in pairs(Joints) do
-		if joint then
-			Edit(joint, AnimDefaults[limb], 0.01, Enum.EasingStyle.Linear, Enum.EasingDirection.In)
-		end
+	for Limb, Joint in next, Joints do
+		Edit(Joint, AnimDefaults[Limb], 0.01, Enum.EasingStyle.Linear, Enum.EasingDirection.In)
 	end
 end
 
 function AnimatorModule:LoadAnimation(Rig, KeyframeSequence)
+	local Sequence = KeyframeSequence
 	local RigHumanoid = Rig:FindFirstChildOfClass("Humanoid")
-	assert(RigHumanoid and RigHumanoid.RigType == Enum.HumanoidRigType.R6, "Only R6 rigs supported")
-
+	if RigHumanoid.RigType ~= Enum.HumanoidRigType.R6 then
+		return error("Rig Humanoid is not R6!")
+	end
 	local Joints = {
-		["Torso"] = Rig.HumanoidRootPart:FindFirstChild("RootJoint"),
-		["Left Arm"] = Rig.Torso:FindFirstChild("Left Shoulder"),
-		["Right Arm"] = Rig.Torso:FindFirstChild("Right Shoulder"),
-		["Left Leg"] = Rig.Torso:FindFirstChild("Left Hip"),
-		["Right Leg"] = Rig.Torso:FindFirstChild("Right Hip"),
-		["Head"] = Rig.Torso:FindFirstChild("Neck"),
+		["Torso"] = Rig.HumanoidRootPart:FindFirstChild("RootJoint") or Rig.HumanoidRootPart:FindFirstChild("Root Joint"),
+		["Left Arm"] = Rig.Torso["Left Shoulder"],
+		["Right Arm"] = Rig.Torso["Right Shoulder"],
+		["Left Leg"] = Rig.Torso["Left Hip"],
+		["Right Leg"] = Rig.Torso["Right Hip"],
+		["Head"] = Rig.Torso["Neck"],
 	}
-
 	local Class = {}
 	Class.Speed = 1
 	Class.KeepLast = 0
+	local Keyframes = Sequence:GetKeyframes()
+	table.sort(Keyframes, function(a, b) return a.Time < b.Time end)
+	Class.Length = Keyframes[#Keyframes].Time
+	local function Yield(Seconds)
+		task.wait(Seconds / Class.Speed)
+	end
+	for _, v in ipairs(Sequence:GetDescendants()) do
+		if v:IsA("IntValue") or v:IsA("StringValue") or v:IsA("Folder") then
+			v:Destroy()
+		elseif v:IsA("Pose") and not Rig:FindFirstChild(v.Name, true) then
+			v:Destroy()
+		end
+	end
 	Class.Stopped = true
 	Class.IsPlaying = false
 	Class.TimePosition = 0
-	Class.Looped = KeyframeSequence.Loop
-	Class.Completed = Instance.new("BindableEvent").Event
-	Class.KeyframeReached = Instance.new("BindableEvent").Event
-
-	local RawKeyframes = KeyframeSequence:GetKeyframes()
-	table.sort(RawKeyframes, function(a, b) return a.Time < b.Time end)
-	Class.Length = RawKeyframes[#RawKeyframes].Time
-
-	local CompiledKeyframes = {}
-
-	for _, Keyframe in ipairs(RawKeyframes) do
-		local Entry = {
-			Time = Keyframe.Time,
-			Name = Keyframe.Name,
-			Poses = {}
-		}
-		for _, Pose in ipairs(Keyframe:GetChildren()) do
-			if Pose:IsA("Pose") and AnimDefaults[Pose.Name] then
-				Entry.Poses[Pose.Name] = {
-					CFrame = Pose.CFrame,
-					EasingStyle = Pose.EasingStyle,
-					EasingDirection = Pose.EasingDirection
-				}
-			end
-		end
-		table.insert(CompiledKeyframes, Entry)
-	end
-
+	Class.Looped = Sequence.Loop
+	local Completion = Instance.new("BindableEvent")
+	local Reached = Instance.new("BindableEvent")
+	Class.Completed = Completion.Event
+	Class.KeyframeReached = Reached.Event
 	function Class:Play(FadeIn, Speed)
-		Class.Speed = math.clamp(Speed or 1, 0.1, 60)
+		if Speed and Speed < 0 then
+			Speed = math.abs(Speed)
+		end
+		Class.Speed = math.clamp(Speed or 180, 1, 180)
 		Class.Stopped = false
 		Class.IsPlaying = true
-		Class.TimePosition = 0
-
 		task.spawn(function()
 			if FadeIn then
-				task.wait(FadeIn / Class.Speed)
+				Class.TimePosition -= FadeIn
 			end
-
+			Class.Completed:Connect(function()
+				if Class.Looped then
+					Class.TimePosition = 0
+				end
+			end)
+			local connection
+			connection = game:GetService("RunService").Stepped:Connect(function(_, dt)
+				if Class.IsPlaying and not Class.Stopped and RigHumanoid.Health > 0 then
+					Class.TimePosition += math.min(dt * Class.Speed, 1)
+				else
+					connection:Disconnect()
+				end
+			end)
+		end)
+		task.spawn(function()
+			if FadeIn then
+				Yield(FadeIn)
+			end
 			repeat
-				for i = 1, #CompiledKeyframes do
-					local Current = CompiledKeyframes[i]
-					local Next = CompiledKeyframes[i + 1]
-					local WaitTime = (Next and (Next.Time - Current.Time) or 0) / Class.Speed
-
-					for limb, pose in pairs(Current.Poses) do
-						local joint = Joints[limb]
-						if joint then
-							local finalC0 = AnimDefaults[limb] * pose.CFrame
-							Edit(joint, finalC0, WaitTime, pose.EasingStyle, pose.EasingDirection)
+				for K = 1, #Keyframes do
+					local K0, K1, K2 = Keyframes[K-1], Keyframes[K], Keyframes[K+1]
+					if not Class.Stopped and RigHumanoid.Health > 0 then
+						if not K0 then
+							for _, Pose in ipairs(K1:GetDescendants()) do
+								if Joints[Pose.Name] then
+									Edit(Joints[Pose.Name], AnimDefaults[Pose.Name] * Pose.CFrame, 0.01, Pose.EasingStyle, Pose.EasingDirection)
+								end
+							end
+						else
+							Yield(K1.Time - K0.Time)
+							task.spawn(function()
+								for _, Pose in ipairs(K1:GetDescendants()) do
+									if Joints[Pose.Name] then
+										local Duration = K2 and (K2.Time - K1.Time) / Class.Speed or 0.5
+										Edit(Joints[Pose.Name], AnimDefaults[Pose.Name] * Pose.CFrame, Duration, Pose.EasingStyle, Pose.EasingDirection)
+									end
+								end
+							end)
 						end
-					end
-
-					Class.KeyframeReached:Fire(Current.Name)
-
-					local t = 0
-					while t < WaitTime and not Class.Stopped and RigHumanoid.Health > 0 do
-						t += task.wait()
-					end
-					if Class.Stopped or RigHumanoid.Health <= 0 then
+						task.spawn(function()
+							for _, Pose in ipairs(K1:GetDescendants()) do
+								if Joints[Pose.Name] then
+									local Duration = K2 and (K2.Time - K1.Time) / Class.Speed or 0.5
+									Edit(Joints[Pose.Name], AnimDefaults[Pose.Name] * Pose.CFrame, Duration, Pose.EasingStyle, Pose.EasingDirection)
+								end
+							end
+						end)
+						if K == #Keyframes and Class.KeepLast > 0 then
+							Yield(Class.KeepLast)
+						end
+						Reached:Fire(K1.Name)
+					else
 						break
 					end
 				end
-
-				if Class.Looped and not Class.Stopped and RigHumanoid.Health > 0 then
-					Class.TimePosition = 0
-				end
-			until not Class.Looped or Class.Stopped or RigHumanoid.Health <= 0
-
+				Completion:Fire()
+			until not Class.Looped or Class.Stopped or RigHumanoid.Health == 0
 			Class.IsPlaying = false
 		end)
 	end
-
 	function Class:Stop()
 		Class.Stopped = true
-		Class.IsPlaying = false
 	end
-
 	function Class:AdjustSpeed(Speed)
-		Class.Speed = math.clamp(math.abs(Speed or 1), 0.1, 60)
+		if Speed < 0 then
+			Speed = math.abs(Speed)
+		end
+		Class.Speed = math.clamp(Speed or Class.Speed, 1, 180)
 	end
-
 	return Class
 end
 
