@@ -1,4 +1,4 @@
-
+getgenv().Framework = "Emperyean"
 Reanimate = getgenv().Framework
 local Character = nil
 
@@ -238,7 +238,7 @@ if game.CoreGui:FindFirstChild("FluxLib") then
 game.CoreGui:FindFirstChild("FluxLib"):Destroy()
 end
 
-local Lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/UI-Libs/main/fluxlib.txt"))()
+local Lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Gazer-Ha/NOT-MINE/refs/heads/main/fluxleb"))()
 local GUI = Lib:Window("Disbelief Hub", "Irony at its finest.", Color3.fromRGB(0, 0, 0), Enum.KeyCode.LeftControl)
 local DancesA = GUI:Tab("Animations - R6 Dances", "http://www.roblox.com/asset/?id=6023426915")
 local DancesB = GUI:Tab("Animations - Other", "http://www.roblox.com/asset/?id=6023426915")
@@ -462,12 +462,12 @@ local R6Dances = {
 }
 
 local Other = {
+{Name = "Runaway", ID = 131562546189485},
+{Name = "Rat Dance2", ID = 104525136565640},
+{Name = "Number", ID = 131539514978219},
+{Name = "Proxima Creature", ID = 7241684161},
+{Name = "Static", ID = 128749693180577},
 {Name = "HoneyPie", ID = 18408532746},
-{Name = "Character1", ID = 18722163055},
-{Name = "Boy", ID = 78770110960928},
-{Name = "Girl", ID = 101830472212788},
-{Name = "Win1", ID = 95186251567996},
-{Name = "Win2", ID = 97425490390973},
 {Name = "Jersey Joe", ID = 88903690369919},
 {Name = "Domain Expansion Homeless", ID = 16131197243},
 {Name = "JerseyJoe 2", ID = 92325659012324},
@@ -575,7 +575,7 @@ DancesB:Button(v.Name, v.Name, function()
 if not Anims:FindFirstChild(v.Name) then
 CreateAnimation(v.Name, v.ID)
 end
-PlayAnim(Character, Anims[v.Name], 0.1, (v.Speed or 1) * 1)
+PlayAnim(Character, Anims[v.Name], 0.1, (v.Speed or 1))
 end)
 end
 end
@@ -588,7 +588,7 @@ DancesA:Button(v.Name, v.Name, function()
 if not Anims:FindFirstChild(v.Name) then
 CreateAnimation(v.Name, v.ID)
 end
-PlayAnim(Character, Anims[v.Name], 0, (v.Speed or 1) * 1.5)
+PlayAnim(Character, Anims[v.Name], 0, (v.Speed or 1))
 end)
 end
 end
@@ -684,9 +684,5 @@ end)
 
 
 warn[[
-Tapping microphone "Hello?, helloooo?? Is this thing on?" —static crackles- “Ah, there we go. Ladies and gentlemen! Welcome to the hit show 'No One Can Prove Melon Is A Skid!' Fasten your seat belts; what you’re about to hear could turn the world upside down.
-“For our first guest today, we have…uh –wait, what was the name again?” —shuffling papers— "Ah, yes! The respected keyboard warrior who genuinely thinks they have discovered the biggest scandal in the world of scripting! Tell us sir, what revolutionary evidence that you have today?
-—awkward silence— "Oh? Nothing? No proof? Just vibes? Fascinating. Truly groundbreaking investigative work."
-So, people, here you go. Another ‘Baseless Accusations & Keyboard Rage!‘ episode. Stay tuned because we are heading straight into the mind-blowing world of ‘People Who Think Copy-Pasting a GitHub Repo Makes Them Elite Hackers!”
-—applause track plays – Until next time!
+wee weee im skid skid wee wee T*T
 ]] 
