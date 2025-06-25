@@ -25,9 +25,25 @@ local AnimDefaults = {
 ["Left Leg"] = CFrame.new(-1, -1, 0, 0, 0, -1, 0, 1, 0, 1, 0, 0)
 }
 
-local function Edit(Joint, Change, Duration, Style, Direction)
-if not Style or not table.find(Enum.EasingStyle:GetEnumItems(), Style) then
-Style = Enum.EasingStyle.Cubic
+local EasingFunctions = loadstring(game:HttpGet("https://raw.githubusercontent.com/Gazer-Ha/NOT-MINE/refs/heads/main/EasingModule"))()
+
+local function LerpCF(a, b, t)
+	return a:Lerp(b, t)
+end
+
+local function Edit(Joint, TargetC0, Duration, Style, Direction)
+	local StartC0 = Joint.C0
+	local Elapsed = 0
+	local Easing = EasingFunctions.Get(Style or Enum.EasingStyle.Linear, Direction or Enum.EasingDirection.InOut)
+
+	Connection = game:GetService("RunService").Heartbeat:Connect(function(dt)
+		Elapsed += dt
+		local Alpha = math.clamp(Elapsed / Duration, 0, 1)
+		Joint.C0 = LerpCF(StartC0, TargetC0, Easing(Alpha))
+		if Alpha >= 1 then
+			Connection:Disconnect()
+		end
+	end)
 end
 Direction = Enum.EasingDirection[string.split(tostring(Direction), ".")[3]]
 local Anim = game:GetService("TweenService"):Create(Joint, TweenInfo.new(Duration, Style, Direction), {C0 = Change})
