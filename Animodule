@@ -21,10 +21,11 @@ end
 
 function AnimatorModule:ResetJoints(Rig)
 	local RigHumanoid = Rig:FindFirstChildOfClass("Humanoid")
-	assert(RigHumanoid and RigHumanoid:IsA("Humanoid"))
+	assert(RigHumanoid and RigHumanoid:IsA("Humanoid"), "Rig must have a Humanoid")
 	if RigHumanoid.RigType ~= Enum.HumanoidRigType.R6 then
-		error("Rig is not R6")
+		error("Only R6 rigs supported")
 	end
+
 	local Joints = {
 		["Torso"] = Rig.HumanoidRootPart:FindFirstChild("RootJoint"),
 		["Left Arm"] = Rig.Torso:FindFirstChild("Left Shoulder"),
@@ -33,16 +34,17 @@ function AnimatorModule:ResetJoints(Rig)
 		["Right Leg"] = Rig.Torso:FindFirstChild("Right Hip"),
 		["Head"] = Rig.Torso:FindFirstChild("Neck"),
 	}
-	for Limb, Joint in pairs(Joints) do
-		Edit(Joint, AnimDefaults[Limb], 0.01)
+
+	for limb, joint in pairs(Joints) do
+		if joint then
+			Edit(joint, AnimDefaults[limb], 0.01, Enum.EasingStyle.Linear, Enum.EasingDirection.In)
+		end
 	end
 end
 
 function AnimatorModule:LoadAnimation(Rig, KeyframeSequence)
 	local RigHumanoid = Rig:FindFirstChildOfClass("Humanoid")
-	if not RigHumanoid or RigHumanoid.RigType ~= Enum.HumanoidRigType.R6 then
-		error("Invalid rig or non-R6")
-	end
+	assert(RigHumanoid and RigHumanoid.RigType == Enum.HumanoidRigType.R6, "Only R6 rigs supported")
 
 	local Joints = {
 		["Torso"] = Rig.HumanoidRootPart:FindFirstChild("RootJoint"),
@@ -55,6 +57,7 @@ function AnimatorModule:LoadAnimation(Rig, KeyframeSequence)
 
 	local Class = {}
 	Class.Speed = 1
+	Class.KeepLast = 0
 	Class.Stopped = true
 	Class.IsPlaying = false
 	Class.TimePosition = 0
@@ -62,10 +65,29 @@ function AnimatorModule:LoadAnimation(Rig, KeyframeSequence)
 	Class.Completed = Instance.new("BindableEvent").Event
 	Class.KeyframeReached = Instance.new("BindableEvent").Event
 
-	local Keyframes = KeyframeSequence:GetKeyframes()
-	table.sort(Keyframes, function(a, b) return a.Time < b.Time end)
+	local RawKeyframes = KeyframeSequence:GetKeyframes()
+	table.sort(RawKeyframes, function(a, b) return a.Time < b.Time end)
+	Class.Length = RawKeyframes[#RawKeyframes].Time
 
-	local RunService = game:GetService("RunService")
+	local CompiledKeyframes = {}
+
+	for _, Keyframe in ipairs(RawKeyframes) do
+		local Entry = {
+			Time = Keyframe.Time,
+			Name = Keyframe.Name,
+			Poses = {}
+		}
+		for _, Pose in ipairs(Keyframe:GetChildren()) do
+			if Pose:IsA("Pose") and AnimDefaults[Pose.Name] then
+				Entry.Poses[Pose.Name] = {
+					CFrame = Pose.CFrame,
+					EasingStyle = Pose.EasingStyle,
+					EasingDirection = Pose.EasingDirection
+				}
+			end
+		end
+		table.insert(CompiledKeyframes, Entry)
+	end
 
 	function Class:Play(FadeIn, Speed)
 		Class.Speed = math.clamp(Speed or 1, 0.1, 60)
@@ -73,55 +95,48 @@ function AnimatorModule:LoadAnimation(Rig, KeyframeSequence)
 		Class.IsPlaying = true
 		Class.TimePosition = 0
 
-		local currentIndex = 1
-		local lastTime = os.clock()
-
-		RunService:UnbindFromRenderStep("AnimatorUpdate")
-		RunService:BindToRenderStep("AnimatorUpdate", Enum.RenderPriority.Character.Value + 1, function()
-			if not Class.IsPlaying or Class.Stopped then
-				RunService:UnbindFromRenderStep("AnimatorUpdate")
-				return
+		task.spawn(function()
+			if FadeIn then
+				task.wait(FadeIn / Class.Speed)
 			end
 
-			local now = os.clock()
-			local dt = now - lastTime
-			lastTime = now
+			repeat
+				for i = 1, #CompiledKeyframes do
+					local Current = CompiledKeyframes[i]
+					local Next = CompiledKeyframes[i + 1]
+					local WaitTime = (Next and (Next.Time - Current.Time) or 0) / Class.Speed
 
-			Class.TimePosition += dt * Class.Speed
-
-			while currentIndex <= #Keyframes and Keyframes[currentIndex].Time <= Class.TimePosition do
-				local Keyframe = Keyframes[currentIndex]
-				for _, pose in ipairs(Keyframe:GetDescendants()) do
-					if pose:IsA("Pose") then
-						local joint = Joints[pose.Name]
+					for limb, pose in pairs(Current.Poses) do
+						local joint = Joints[limb]
 						if joint then
-							local final = AnimDefaults[pose.Name] * pose.CFrame
-							Edit(joint, final, 0)
+							local finalC0 = AnimDefaults[limb] * pose.CFrame
+							Edit(joint, finalC0, WaitTime, pose.EasingStyle, pose.EasingDirection)
 						end
 					end
-				end
-				Class.KeyframeReached:Fire(Keyframes[currentIndex].Name)
-				currentIndex += 1
-			end
 
-			if currentIndex > #Keyframes then
-				if Class.Looped then
-					Class.TimePosition = 0
-					currentIndex = 1
-				else
-					Class.IsPlaying = false
-					Class.Stopped = true
-					RunService:UnbindFromRenderStep("AnimatorUpdate")
-					Class.Completed:Fire()
+					Class.KeyframeReached:Fire(Current.Name)
+
+					local t = 0
+					while t < WaitTime and not Class.Stopped and RigHumanoid.Health > 0 do
+						t += task.wait()
+					end
+					if Class.Stopped or RigHumanoid.Health <= 0 then
+						break
+					end
 				end
-			end
+
+				if Class.Looped and not Class.Stopped and RigHumanoid.Health > 0 then
+					Class.TimePosition = 0
+				end
+			until not Class.Looped or Class.Stopped or RigHumanoid.Health <= 0
+
+			Class.IsPlaying = false
 		end)
 	end
 
 	function Class:Stop()
 		Class.Stopped = true
 		Class.IsPlaying = false
-		game:GetService("RunService"):UnbindFromRenderStep("AnimatorUpdate")
 	end
 
 	function Class:AdjustSpeed(Speed)
