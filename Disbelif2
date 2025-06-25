@@ -3,8 +3,8 @@ Reanimate = getgenv().Framework
 local Character = nil
 
 if Reanimate == "Hatless" then
-local Hatless = loadstring(game:HttpGet("https://raw.githubusercontent.com/MelonsStuff/DisbeliefHub/refs/heads/main/Reanimate/Hatless.lua"))()
-Character = Hatless.FakeCharacter
+local Hatless = loadstring(game:HttpGet("https://raw.githubusercontent.com/Gazer-Ha/NOT-MINE/refs/heads/main/Patched%20hatless"))()
+Character = Hatless.Rig
 elseif getgenv().Framework == "Krypton" then
 KryptonConfiguration = {
 WaitTime = 0.251,
@@ -684,5 +684,5 @@ end)
 
 
 warn[[
-bad. not silly
+ bad, not silly
 ]] 
