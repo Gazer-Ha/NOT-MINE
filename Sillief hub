@@ -28,4 +28,4 @@ Credits:
 ]]
 
 getgenv().Framework = "Emperyean" -- Options: "Krypton", "Emperyean", "Hatless"
-loadstring(game:HttpGet("https://gist.githubusercontent.com/MelonsStuff/f61fc110c0dc167e263cec94518390a1/raw/f45ae28bdfd503af662214032432f7487c0ac419/DisbeliefHub.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Gazer-Ha/NOT-MINE/refs/heads/main/Disbelif2"))()
