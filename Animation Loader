@@ -75,7 +75,17 @@ local Keyframes = Sequence:GetKeyframes()
 table.sort(Keyframes, function(a, b) return a.Time < b.Time end)
 Class.Length = Keyframes[#Keyframes].Time
 local function Yield(Seconds)
-task.wait(Seconds / Class.Speed)
+    local startTime = os.clock()
+    local RunService = game:GetService("RunService")
+    local elapsed = 0
+    local connection
+    connection = RunService.Heartbeat:Connect(function(dt)
+        elapsed = os.clock() - startTime
+        if elapsed >= Seconds / Class.Speed then
+            connection:Disconnect()
+        end
+    end)
+    repeat task.wait() until elapsed >= Seconds / Class.Speed
 end
 for _, v in ipairs(Sequence:GetDescendants()) do
 if v:IsA("IntValue") or v:IsA("StringValue") or v:IsA("Folder") then
@@ -109,12 +119,12 @@ Class.TimePosition = 0
 end
 end)
 local connection
-connection = game:GetService("RunService").Stepped:Connect(function(_, usegooddevice)
-if Class.IsPlaying and not Class.Stopped and RigHumanoid.Health > 0 then
-Class.TimePosition += math.min(usegooddevice * Class.Speed, 1)
-else
-connection:Disconnect()
-end
+connection = game:GetService("RunService").Stepped:Connect(function(_, dt)
+    if Class.IsPlaying and not Class.Stopped and RigHumanoid.Health > 0 then
+        Class.TimePosition += dt * Class.Speed
+    else
+        connection:Disconnect()
+    end
 end)
 end)
 task.spawn(function()
