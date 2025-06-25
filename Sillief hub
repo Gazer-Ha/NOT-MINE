@@ -1,0 +1,31 @@
+-- silly disbelief you got what i mean? huh. no? ..
+--[[ 
+==============================
+        Disbelief Hub (but bad)
+==============================
+
+Framework Options:
+- Krypton: Hat Reanimate (by Gelatek)
+  > No flinging currently, but optimized and smooth.
+
+- Emperyean: Hat Reanimate (by Emper)
+
+- Hatless: SDA Reanimate (by PresidentAnvil)
+  > R6 only
+  > Does *not* work in games with Voice Chat
+
+------------------------------
+All hats located at:
+https://www.roblox.com/games/15541318313/Melons-Testing-Melons-Baseplate
+------------------------------
+
+Credits:
+- Gelatek: Krypton
+- Emper: Emperyean
+- PresidentAnvil: Hatless
+- Melon: Disbelief Hub
+- ZerX: Movement animation scripting 
+]]
+
+getgenv().Framework = "Emperyean" -- Options: "Krypton", "Emperyean", "Hatless"
+loadstring(game:HttpGet("https://gist.githubusercontent.com/MelonsStuff/f61fc110c0dc167e263cec94518390a1/raw/f45ae28bdfd503af662214032432f7487c0ac419/DisbeliefHub.lua"))()
