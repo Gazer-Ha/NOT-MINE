@@ -1,78 +1,59 @@
 -- wzpd was here
-local A = {}
+local AnimatorModule = {}
 
-local D = {
-	Neck = CFrame.new(0,1,0,-1,0,0,0,0,1,0,1,0),
-	RootJoint = CFrame.new(0,0,0,-1,0,0,0,0,1,0,1,0),
-	["Right Shoulder"] = CFrame.new(1,0.5,0,0,0,1,0,1,0,-1,0,0),
-	["Left Shoulder"] = CFrame.new(-1,0.5,0,0,0,-1,0,1,0,1,0,0),
-	["Right Hip"] = CFrame.new(1,-1,0,0,0,1,0,1,0,-1,0,0),
-	["Left Hip"] = CFrame.new(-1,-1,0,0,0,-1,0,1,0,1,0,0),
-	Head = CFrame.new(0,1,0,-1,0,0,0,0,1,0,1,0),
-	Torso = CFrame.new(0,0,0,-1,0,0,0,0,1,0,1,0),
-	["Right Arm"] = CFrame.new(1,0.5,0,0,0,1,0,1,0,-1,0,0),
-	["Left Arm"] = CFrame.new(-1,0.5,0,0,0,-1,0,1,0,1,0,0),
-	["Right Leg"] = CFrame.new(1,-1,0,0,0,1,0,1,0,-1,0,0),
-	["Left Leg"] = CFrame.new(-1,-1,0,0,0,-1,0,1,0,1,0,0)
+local AnimDefaults = {
+	["Neck"] = CFrame.new(0, 1, 0, -1, 0, 0, 0, 0, 1, 0, 1, -0),
+	["RootJoint"] = CFrame.new(0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 1, -0),
+	["Right Shoulder"] = CFrame.new(1, 0.5, 0, 0, 0, 1, 0, 1, -0, -1, 0, 0),
+	["Left Shoulder"] = CFrame.new(-1, 0.5, 0, 0, 0, -1, 0, 1, 0, 1, 0, 0),
+	["Right Hip"] = CFrame.new(1, -1, 0, 0, 0, 1, 0, 1, -0, -1, 0, 0),
+	["Left Hip"] = CFrame.new(-1, -1, 0, 0, 0, -1, 0, 1, 0, 1, 0, 0),
+	["Head"] = CFrame.new(0, 1, 0, -1, 0, 0, 0, 0, 1, 0, 1, -0),
+	["Torso"] = CFrame.new(0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 1, -0),
+	["Right Arm"] = CFrame.new(1, 0.5, 0, 0, 0, 1, 0, 1, -0, -1, 0, 0),
+	["Left Arm"] = CFrame.new(-1, 0.5, 0, 0, 0, -1, 0, 1, 0, 1, 0, 0),
+	["Right Leg"] = CFrame.new(1, -1, 0, 0, 0, 1, 0, 1, -0, -1, 0, 0),
+	["Left Leg"] = CFrame.new(-1, -1, 0, 0, 0, -1, 0, 1, 0, 1, 0, 0)
 }
 
-local function SetC0(j, cf)
-	if j then j.C0 = cf end
+local function Edit(j, cf, dur, style, dir)
+	if j then
+		j.C0 = cf
+	end
 end
 
-function A:Reset(r)
-	local h = r:FindFirstChildOfClass("Humanoid")
-	assert(h and h.RigType == Enum.HumanoidRigType.R6, "Must be R6 rig")
+function AnimatorModule:ResetJoints(rig)
+	local h = rig:FindFirstChildOfClass("Humanoid")
+	assert(h and h.RigType == Enum.HumanoidRigType.R6, "Invalid or missing R6 humanoid.")
 
 	local j = {
-		Torso = r.HumanoidRootPart:FindFirstChild("RootJoint") or r.HumanoidRootPart:FindFirstChild("Root Joint"),
-		["Left Arm"] = r.Torso:FindFirstChild("Left Shoulder"),
-		["Right Arm"] = r.Torso:FindFirstChild("Right Shoulder"),
-		["Left Leg"] = r.Torso:FindFirstChild("Left Hip"),
-		["Right Leg"] = r.Torso:FindFirstChild("Right Hip"),
-		Head = r.Torso:FindFirstChild("Neck"),
+		["Torso"] = rig.HumanoidRootPart:FindFirstChild("RootJoint") or rig.HumanoidRootPart:FindFirstChild("Root Joint"),
+		["Left Arm"] = rig.Torso:FindFirstChild("Left Shoulder"),
+		["Right Arm"] = rig.Torso:FindFirstChild("Right Shoulder"),
+		["Left Leg"] = rig.Torso:FindFirstChild("Left Hip"),
+		["Right Leg"] = rig.Torso:FindFirstChild("Right Hip"),
+		["Head"] = rig.Torso:FindFirstChild("Neck"),
 	}
 
-	for n,v in pairs(j) do SetC0(v, D[n]) end
+	for limb, joint in next, j do
+		Edit(joint, AnimDefaults[limb])
+	end
 end
 
-function A:Load(r, seq)
-	local h = r:FindFirstChildOfClass("Humanoid")
-	assert(h and h.RigType == Enum.HumanoidRigType.R6, "Must be R6 rig")
+function AnimatorModule:LoadAnimation(rig, seq)
+	local h = rig:FindFirstChildOfClass("Humanoid")
+	assert(h and h.RigType == Enum.HumanoidRigType.R6, "Invalid or missing R6 humanoid.")
 
 	local j = {
-		Torso = r.HumanoidRootPart:FindFirstChild("RootJoint") or r.HumanoidRootPart:FindFirstChild("Root Joint"),
-		["Left Arm"] = r.Torso:FindFirstChild("Left Shoulder"),
-		["Right Arm"] = r.Torso:FindFirstChild("Right Shoulder"),
-		["Left Leg"] = r.Torso:FindFirstChild("Left Hip"),
-		["Right Leg"] = r.Torso:FindFirstChild("Right Hip"),
-		Head = r.Torso:FindFirstChild("Neck"),
+		["Torso"] = rig.HumanoidRootPart:FindFirstChild("RootJoint") or rig.HumanoidRootPart:FindFirstChild("Root Joint"),
+		["Left Arm"] = rig.Torso:FindFirstChild("Left Shoulder"),
+		["Right Arm"] = rig.Torso:FindFirstChild("Right Shoulder"),
+		["Left Leg"] = rig.Torso:FindFirstChild("Left Hip"),
+		["Right Leg"] = rig.Torso:FindFirstChild("Right Hip"),
+		["Head"] = rig.Torso:FindFirstChild("Neck"),
 	}
 
-	for _,v in ipairs(seq:GetDescendants()) do
-		if v:IsA("IntValue") or v:IsA("StringValue") or v:IsA("Folder") then
-			v:Destroy()
-		elseif v:IsA("Pose") and not r:FindFirstChild(v.Name, true) then
-			v:Destroy()
-		end
-	end
-
-	local kfs = seq:GetKeyframes()
-	table.sort(kfs, function(a,b) return a.Time < b.Time end)
-
-	-- Cache pose data
-	local poseCache = {}
-	for _, kf in ipairs(kfs) do
-		local poses = {}
-		for _, p in ipairs(kf:GetDescendants()) do
-			if p:IsA("Pose") and j[p.Name] then
-				poses[p.Name] = p.CFrame
-			end
-		end
-		table.insert(poseCache, {Time = kf.Time, Name = kf.Name, Data = poses})
-	end
-
-	local c = {
+	local class = {
 		Speed = 1,
 		KeepLast = 0,
 		Stopped = true,
@@ -83,57 +64,65 @@ function A:Load(r, seq)
 		KeyframeReached = Instance.new("BindableEvent").Event,
 	}
 
-	function c:Play(fade, speed)
-		self.Speed = math.clamp(speed or 1, 0.1, 180)
-		self.Stopped, self.IsPlaying = false, true
-		self.TimePosition = fade and -fade or 0
+	local kf = seq:GetKeyframes()
+	table.sort(kf, function(a, b) return a.Time < b.Time end)
+	class.Length = kf[#kf].Time
+
+	for _, v in ipairs(seq:GetDescendants()) do
+		if v:IsA("IntValue") or v:IsA("StringValue") or v:IsA("Folder") then
+			v:Destroy()
+		elseif v:IsA("Pose") and not rig:FindFirstChild(v.Name, true) then
+			v:Destroy()
+		end
+	end
+
+	local function Yield(sec)
+		task.wait(sec / class.Speed)
+	end
+
+	function class:Play(fade, spd)
+		if spd and spd < 0 then spd = -spd end
+		class.Speed = math.clamp(spd or 1, 1, 180)
+		class.Stopped = false
+		class.IsPlaying = true
+		if fade then class.TimePosition = -fade end
 
 		task.spawn(function()
-			if fade then task.wait(fade / self.Speed) end
-
+			if fade then Yield(fade) end
 			repeat
-				for i = 1, #poseCache do
-					if self.Stopped or h.Health <= 0 then break end
-
-					local k0 = poseCache[i - 1]
-					local k1 = poseCache[i]
-					local k2 = poseCache[i + 1]
-
-					if k0 then
-						task.wait((k1.Time - k0.Time) / self.Speed)
-					end
-
-					for name, cf in pairs(k1.Data) do
-						local joint = j[name]
-						if joint then
-							SetC0(joint, D[name] * cf)
+				for k = 1, #kf do
+					local k0, k1, k2 = kf[k - 1], kf[k], kf[k + 1]
+					if not class.Stopped and h.Health > 0 then
+						if k0 then
+							Yield(k1.Time - k0.Time)
 						end
-					end
-
-					c.KeyframeReached:Fire(k1.Name)
-
-					if i == #poseCache and c.KeepLast > 0 then
-						task.wait(c.KeepLast / self.Speed)
+						for _, pose in ipairs(k1:GetDescendants()) do
+							if j[pose.Name] then
+								Edit(j[pose.Name], AnimDefaults[pose.Name] * pose.CFrame)
+							end
+						end
+						class.KeyframeReached:Fire(k1.Name)
+						if k == #kf and class.KeepLast > 0 then Yield(class.KeepLast) end
+					else
+						break
 					end
 				end
-
-				c.Completed:Fire()
-			until not c.Looped or c.Stopped or h.Health <= 0
-
-			c.IsPlaying = false
+				class.Completed:Fire()
+			until not class.Looped or class.Stopped or h.Health <= 0
+			class.IsPlaying = false
 		end)
 	end
 
-	function c:Stop()
-		self.Stopped = true
-		self.IsPlaying = false
+	function class:Stop()
+		class.Stopped = true
 	end
 
-	function c:AdjustSpeed(s)
-		self.Speed = math.clamp(math.abs(s or self.Speed), 0.1, 180)
+	function class:AdjustSpeed(s)
+		if s < 0 then s = -s end
+		class.Speed = math.clamp(s or class.Speed, 1, 180)
 	end
 
-	return c
+	return class
 end
 
-return A
+return AnimatorModule
