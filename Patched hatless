@@ -1,6 +1,18 @@
 local Hatless = {}
 
+
+
 do
+local ShowMessage = function(t, txt, dur)
+    pcall(function()
+        game.StarterGui:SetCore("SendNotification", {
+            Title = t;
+            Text = txt;
+            Icon = "";
+            Duration = dur;
+        })
+    end)
+end
 	local DefaultAnimations = true
 	local DisableCharacterCollisions = true
 	local InstantRespawn = true
@@ -54,6 +66,7 @@ do
 	if Character then
 		if rawget(getgenv(), "replicatesignal") then
 			if InstantRespawn then
+			ShowMessage("Wait!","please wait for at least " .. Players.RespawnTime - 0.1 .. " second.", 10)
 				replicatesignal(LocalPlayer.ConnectDiedSignalBackend)
 				task.wait(Players.RespawnTime - 0.1)
 
