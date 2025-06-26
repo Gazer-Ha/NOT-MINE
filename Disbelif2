@@ -240,10 +240,11 @@ end
 
 local Lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Gazer-Ha/NOT-MINE/refs/heads/main/fluxleb"))()
 local GUI = Lib:Window("Disbelief Hub", "Irony at its finest.", Color3.fromRGB(0, 0, 0), Enum.KeyCode.LeftControl)
-local DancesA = GUI:Tab("Animations - R6 Dances", "http://www.roblox.com/asset/?id=6023426915")
-local DancesB = GUI:Tab("Animations - Other", "http://www.roblox.com/asset/?id=6023426915")
+local DancesA = GUI:Tab("R6 Dances", "http://www.roblox.com/asset/?id=6023426915")
+local DancesB = GUI:Tab("Others2s", "http://www.roblox.com/asset/?id=6023426915")
+local DancesC = GUI:Tab("Forsaken", "http://www.roblox.com/asset/?id=6023426915")
 
-local R6Dances = {
+local Dance1 = {
 {Name = "Assumptions", ID = 75148929064618, SoundID = 98127104572848},
 {Name = "Boombox Dance", ID = 84471848998012, SoundID = 1839931160},
 {Divider = true},  
@@ -461,7 +462,7 @@ local R6Dances = {
 {Divider = true},  
 }
 
-local Other = {
+local Others2 = {
 {Name = "Runaway", ID = 131562546189485},
 {Name = "Rat Dance2", ID = 104525136565640},
 {Name = "Number", ID = 131539514978219},
@@ -471,8 +472,6 @@ local Other = {
 {Name = "Jersey Joe", ID = 88903690369919},
 {Name = "Domain Expansion Homeless", ID = 16131197243},
 {Name = "JerseyJoe 2", ID = 92325659012324},
-{Name = "Boy", ID = 109194223166922},
-{Name = "Girl", ID = 115014285125346},
 {Name = "Requiem 2", ID = 110359775570174},
 {Name = "Maniac", ID = 130010439460275},
 {Name = "UnaUna", ID = 138510905194499},
@@ -484,16 +483,6 @@ local Other = {
 {Name = "nya", ID = 83266223088944},
 {Name = "takino", ID = 16361576857},
 {Name = "sweet little bumblebee", ID = 10048786578},
-{Name = "BrickBattler", ID = 126521708275742},
-{Name = "Jumpstyle", ID = 123000284742156},
-{Name = "Wait", ID = 95077017158546},
-{Name = "Konton", ID = 101639514860127},
-{Name = "California girls", ID = 72596694751578},
-{Name = "Locked", ID = 87462270861234},
-{Name = "Shucks", ID = 74238051754912},
-{Name = "Silly Billy", ID = 107464355830477},
-{Name = "Subterfuge", ID = 87482480949358},
-{Name = "Richard Watterson (the hero)", ID = 74012585744751},
 {Name = "Helicopter", ID = 17862998594},
 {Name = "THINK!", ID = 17097712387},
 {Name = "Spare Change", ID = 17861773600},
@@ -567,7 +556,62 @@ local Other = {
 {Name = "Toxic", ID = 103599268167271},
 }
 
-for i, v in pairs(Other) do
+local Forsaken3 = {
+{Name = "2Two2", ID = 89348834081653},
+{Name = "BrickBattler", ID = 126521708275742},
+{Name = "Jumpstyle", ID = 123000284742156},
+{Name = "Wait", ID = 95077017158546},
+{Name = "Konton", ID = 101639514860127},
+{Name = "California girls", ID = 72596694751578},
+{Name = "Locked", ID = 87462270861234},
+{Name = "Shucks", ID = 74238051754912},
+{Name = "Silly Billy", ID = 107464355830477},
+{Name = "Subterfuge", ID = 87482480949358},
+{Name = "Richard Watterson (the hero)", ID = 74012585744751},
+{Name = "Stock Dance", ID = 15039780593},
+{Name = "Aint No Lovin My Man", ID = 113329473982836},
+{Name = "Hakari Dance", ID = 138019937280193},
+{Name = "Miss The Quiet", ID = 100986631322204},
+{Name = "Silly", ID = 93910549909381},
+{Name = "So Retro", ID = 125239534389442},
+{Name = "Stock Dance", ID = 124594452357793},
+{Name = "Shimmy", ID = 95651508586157},
+{Name = "Khaled", ID = 140121050292827},
+{Name = "Hotdog", ID = 114334757249200},
+{Name = "Insanity", ID = 92338027221493},
+{Name = "Griddy", ID = 113735098897882},
+{Name = "CatDance", ID = 125557487740419},
+{Name = "Caramelldansen", ID = 79218070143890},
+{Name = "Fortnite", ID = 101586156580951},
+{Name = "Lethal", ID = 106893226238111},
+{Name = "Macarena", ID = 72382654269537},
+{Name = "Pop Dance", ID = 73596971652685},
+{Name = "Gangnam", ID = 91829195096258},
+{Name = "Tenna", ID = 137804920220816},
+{Name = "Squingle", ID = 81917439045554},
+{Name = "Bag Up", ID = 70974671275509},
+{Name = "Skeleton", ID = 103054119684229},
+{Name = "Friday Night", ID = 86236107890946},
+{Name = "So Much More", ID = 90600572265074},
+{Name = "Specialist", ID = 115343913595605},
+{Name = "Cinderella", ID = 77327486287268},
+}
+
+for i, v in pairs(Others2) do
+if v.Divider then
+DancesC:Line()
+else
+DancesC:Button(v.Name, v.Name, function()
+if not Anims:FindFirstChild(v.Name) then
+CreateAnimation(v.Name, v.ID)
+end
+PlayAnim(Character, Anims[v.Name], 0.1, (v.Speed or 1))
+end)
+end
+end
+
+
+for i, v in pairs(Others2) do
 if v.Divider then
 DancesB:Line()
 else
@@ -580,7 +624,7 @@ end)
 end
 end
 
-for i, v in pairs(R6Dances) do
+for i, v in pairs(Dance1) do
 if v.Divider then
 DancesA:Line()
 else
