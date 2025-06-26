@@ -678,7 +678,7 @@ end)
 end
 end
 
-CreateAnimation("Idle", 78234295119267)
+CreateAnimation("Idle", 139560382291834)
 CreateAnimation("Walk", 85232789717460)
 CreateAnimation("Run", 138292275822759)
 CreateAnimation("Jump", 84397577392351)
@@ -748,7 +748,7 @@ game:GetService("RunService").Heartbeat:Connect(function()
 				StopAnim(Character, Anims.Idle)
 				StopAnim(Character, Anims.Walk)
 
-				PlayAnim(Character, Anims.Run, 0.05, 1.2)
+				PlayAnim(Character, Anims.Run, 0.05, 1)
 				Ran = true
 				Jumped, Falled, Idled, Walked = false, false, false, false
 			end
