@@ -464,6 +464,8 @@ local Dance1 = {
 }
 
 local Others2 = {
+{Name = "Tank", ID = 74232826199162},
+{Name = "Gun", ID = 110451669771990},
 {Name = "Runaway", ID = 131562546189485},
 {Name = "Rat Dance2", ID = 104525136565640},
 {Name = "Number", ID = 131539514978219},
