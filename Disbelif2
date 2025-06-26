@@ -243,6 +243,7 @@ local GUI = Lib:Window("Disbelief Hub", "Irony at its finest.", Color3.fromRGB(0
 local DancesA = GUI:Tab("R6 Dances", "http://www.roblox.com/asset/?id=6023426915")
 local DancesB = GUI:Tab("Others", "http://www.roblox.com/asset/?id=6023426915")
 local DancesC = GUI:Tab("Forsaken", "http://www.roblox.com/asset/?id=6023426915")
+local DancesD = GUI:Tab("Forsaken", "http://www.roblox.com/asset/?id=6023426915")
 
 local Dance1 = {
 {Name = "Assumptions", ID = 75148929064618, SoundID = 98127104572848},
@@ -596,6 +597,46 @@ local Forsaken3 = {
 {Name = "Specialist", ID = 115343913595605},
 {Name = "Cinderella", ID = 77327486287268},
 }
+
+
+local Sewh4 = {
+{Name = "Cat Bath", ID = 120462575354432},
+{Name = "Static", ID = 128829212523368},
+{Name = "SuperJumpy", ID = 102190461470663},
+{Name = "Rin/Locked", ID = 128578082668471},
+{Name = "Griddy", ID = 87917438451306},
+{Name = "ENA", ID = 91409673362356},
+{Name = "Wildside Intro", ID = 73293900701693},
+{Name = "Wildside 1", ID = 85839209042437},
+{Name = "Wildside 2", ID = 77965663257483},
+{Name = "Yorokonde", ID = 122039718692651},
+{Name = "Territory", ID = 98396609763082},
+{Name = "Chill Sit", ID = 123466997748392},
+{Name = "Chill Sit Intro", ID = 96875859093283},
+{Name = "RatDance", ID = 128853270774115},
+{Name = "Class C14", ID = 116839655264226},
+{Name = "Cosmic", ID = 86495347207053},
+{Name = "Shika", ID = 86401766905625},
+{Name = "OneTwoThree 1", ID = 105057898952311},
+{Name = "OneTwoThree 2", ID = 89750753318595},
+{Name = "Die Lit", ID = 119812661938965},
+{Name = "Konton Boogie", ID = 124417797980484},
+}
+
+
+for i, v in pairs(Sewh4) do
+if v.Divider then
+DancesD:Line()
+else
+DancesD:Button(v.Name, v.Name, function()
+if not Anims:FindFirstChild(v.Name) then
+CreateAnimation(v.Name, v.ID)
+end
+PlayAnim(Character, Anims[v.Name], 0.1, (v.Speed or 1))
+end)
+end
+end
+
 
 for i, v in pairs(Forsaken3) do
 if v.Divider then
