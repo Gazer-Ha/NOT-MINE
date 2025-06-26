@@ -14,7 +14,7 @@ local widthScale = 0.7
 local heightScale = 0.7
 
 local newWidth = targetSize.X * widthScale
-local newHeight = targetSize.Y * heightScale
+local newHeight = 484
 
 
 
