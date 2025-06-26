@@ -241,7 +241,7 @@ end
 local Lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Gazer-Ha/NOT-MINE/refs/heads/main/fluxleb"))()
 local GUI = Lib:Window("Disbelief Hub", "Irony at its finest.", Color3.fromRGB(0, 0, 0), Enum.KeyCode.LeftControl)
 local DancesA = GUI:Tab("R6 Dances", "http://www.roblox.com/asset/?id=6023426915")
-local DancesB = GUI:Tab("Others2s", "http://www.roblox.com/asset/?id=6023426915")
+local DancesB = GUI:Tab("Others", "http://www.roblox.com/asset/?id=6023426915")
 local DancesC = GUI:Tab("Forsaken", "http://www.roblox.com/asset/?id=6023426915")
 
 local Dance1 = {
@@ -597,7 +597,7 @@ local Forsaken3 = {
 {Name = "Cinderella", ID = 77327486287268},
 }
 
-for i, v in pairs(Others2) do
+for i, v in pairs(Forsaken3) do
 if v.Divider then
 DancesC:Line()
 else
