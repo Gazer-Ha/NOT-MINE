@@ -14,7 +14,7 @@ local ShowMessage = function(t, txt, dur)
     end)
 end
 	local DefaultAnimations = true
-	local DisableCharacterCollisions = false
+	local DisableCharacterCollisions = true
 	local InstantRespawn = true
 	local ParentCharacterToRig = true
 	local RigTransparency = 1
@@ -157,14 +157,14 @@ end
 	tableinsert(Connections, RunService.PreSimulation:Connect(function()
 		for _, BasePart in next, GetDescendants(Rig) do
 			if IsA(BasePart, "BasePart") then
-				BasePart.CanCollide = false
+				BasePart.CanCollide = true 
 			end
 		end
 
 		if DisableCharacterCollisions and not ParentCharacterToRig then
 			for _, BasePart in next, GetDescendants(Character) do
 				if IsA(BasePart, "BasePart") then
-					BasePart.CanCollide = false
+					BasePart.CanCollide = true
 				end
 			end
 		end
