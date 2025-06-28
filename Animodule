@@ -1,5 +1,7 @@
 local AnimatorModule = {}
 
+local TweenService = game:GetService("TweenService")
+
 local AnimDefaults = {
 	["Neck"] = CFrame.new(0, 1, 0, -1, 0, 0, 0, 0, 1, 0, 1, -0),
 	["RootJoint"] = CFrame.new(0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 1, -0),
@@ -15,8 +17,15 @@ local AnimDefaults = {
 	["Left Leg"] = CFrame.new(-1, -1, 0, 0, 0, -1, 0, 1, 0, 1, 0, 0)
 }
 
-local function Edit(joint, change)
-	if joint then joint.C0 = change end
+local function Edit(Joint, Change, Duration, Style, Direction)
+	if not Joint then return end
+	if not Style or not table.find(Enum.EasingStyle:GetEnumItems(), Style) then
+		Style = Enum.EasingStyle.Cubic
+	end
+	Direction = Enum.EasingDirection[tostring(Direction):match("%.(%w+)$")] or Enum.EasingDirection.Out
+	local tween = TweenService:Create(Joint, TweenInfo.new(Duration or 0.1, Style, Direction), { C0 = Change })
+	tween:Play()
+	return tween
 end
 
 function AnimatorModule:ResetJoints(Rig)
@@ -37,7 +46,7 @@ function AnimatorModule:ResetJoints(Rig)
 	}
 
 	for part, joint in pairs(joints) do
-		Edit(joint, AnimDefaults[part])
+		Edit(joint, AnimDefaults[part], 0.25)
 	end
 end
 
@@ -88,14 +97,12 @@ function AnimatorModule:LoadAnimation(Rig, Sequence)
 
 	function Class:Play(FadeIn, Speed)
 		self:Stop()
-
-		Class.Speed = math.clamp(math.abs(Speed or 180), 1, 180)
+		Class.Speed = math.clamp(math.abs(Speed or 1), 0.01, 180)
 		Class.Stopped = false
 		Class.IsPlaying = true
 		Class.TimePosition = -(FadeIn or 0)
-		local index = 1
-		local keyframeData = {}
 
+		local keyframeData = {}
 		for _, kf in ipairs(Keyframes) do
 			local poses = {}
 			for _, pose in ipairs(kf:GetDescendants()) do
@@ -107,15 +114,13 @@ function AnimatorModule:LoadAnimation(Rig, Sequence)
 			table.insert(keyframeData, { Time = kf.Time, Name = kf.Name, Poses = poses })
 		end
 
+		local index = 1
 		local lastTime = os.clock()
 		local RunService = game:GetService("RunService")
 
 		connection = RunService.RenderStepped:Connect(function()
 			if Class.Stopped or not Class.IsPlaying or Humanoid.Health <= 0 then
-				if connection then
-					connection:Disconnect()
-					connection = nil
-				end
+				if connection then connection:Disconnect() connection = nil end
 				return
 			end
 
@@ -126,13 +131,11 @@ function AnimatorModule:LoadAnimation(Rig, Sequence)
 
 			while keyframeData[index] and Class.TimePosition >= keyframeData[index].Time do
 				for _, p in ipairs(keyframeData[index].Poses) do
-					Edit(p.Joint, p.CFrame)
+					Edit(p.Joint, p.CFrame, 0.1) -- 0.1s tween duration
 				end
 				Reached:Fire(keyframeData[index].Name)
 				index += 1
-				if index > #keyframeData then
-					break
-				end
+				if index > #keyframeData then break end
 			end
 
 			if index > #keyframeData then
@@ -143,10 +146,7 @@ function AnimatorModule:LoadAnimation(Rig, Sequence)
 					Class.IsPlaying = false
 					Class.Stopped = true
 					Completion:Fire()
-					if connection then
-						connection:Disconnect()
-						connection = nil
-					end
+					if connection then connection:Disconnect() connection = nil end
 				end
 			end
 		end)
@@ -156,14 +156,11 @@ function AnimatorModule:LoadAnimation(Rig, Sequence)
 		Class.Stopped = true
 		Class.IsPlaying = false
 		Class.TimePosition = 0
-		if connection then
-			connection:Disconnect()
-			connection = nil
-		end
+		if connection then connection:Disconnect() connection = nil end
 	end
 
 	function Class:AdjustSpeed(Speed)
-		Class.Speed = math.clamp(math.abs(Speed or Class.Speed), 1, 180)
+		Class.Speed = math.clamp(math.abs(Speed or Class.Speed), 0.01, 180)
 	end
 
 	return Class
