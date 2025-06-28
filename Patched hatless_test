@@ -14,7 +14,7 @@ local ShowMessage = function(t, txt, dur)
     end)
 end
 	local DefaultAnimations = true
-	local DisableCharacterCollisions = true
+	local DisableCharacterCollisions = false
 	local InstantRespawn = true
 	local ParentCharacterToRig = true
 	local RigTransparency = 1
@@ -164,7 +164,7 @@ end
 		if DisableCharacterCollisions and not ParentCharacterToRig then
 			for _, BasePart in next, GetDescendants(Character) do
 				if IsA(BasePart, "BasePart") then
-					BasePart.CanCollide = true
+					BasePart.CanCollide = false
 				end
 			end
 		end
