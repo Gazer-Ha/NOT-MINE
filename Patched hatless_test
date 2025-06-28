@@ -154,14 +154,24 @@ end
 		RootPart.CFrame = RigRootPart.CFrame + Vector3new(0, mathsin(osclock() * 15) * 0.004, 0)
 	end))
 
-	tableinsert(Connections, RunService.PreSimulation:Connect(function()
-	for _, p in next, GetDescendants(Rig) do
-		setGroup(p)
-	end
+	local PhysicsService = game:GetService("PhysicsService")
 
-	for _, p in next, GetDescendants(Character) do
-		setGroup(p)
+pcall(function()
+	PhysicsService:CreateCollisionGroup("NoSelfCollide")
+	PhysicsService:CollisionGroupSetCollidable("NoSelfCollide", "NoSelfCollide", false)
+end)
+
+local function assignGroup(model)
+	for _, p in ipairs(model:GetDescendants()) do
+		if p:IsA("BasePart") then
+			PhysicsService:SetPartCollisionGroup(p, "NoSelfCollide")
+		end
 	end
+end
+
+table.insert(Connections, RunService.PreSimulation:Connect(function()
+	assignGroup(Rig)
+	assignGroup(Character)
 end))
 end
 
