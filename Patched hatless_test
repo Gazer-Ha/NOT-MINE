@@ -14,7 +14,7 @@ local ShowMessage = function(t, txt, dur)
     end)
 end
 	local DefaultAnimations = true
-	local DisableCharacterCollisions = false
+	local DisableCharacterCollisions = true
 	local InstantRespawn = true
 	local ParentCharacterToRig = true
 	local RigTransparency = 1
@@ -155,10 +155,22 @@ end
 	end))
 
 	tableinsert(Connections, RunService.PreSimulation:Connect(function()
-	if DisableCharacterCollisions then
-		for _, BasePart in next, GetDescendants(Character) do
-			if IsA(BasePart, "BasePart") then
-				BasePart.CanCollide = false
+	for _, bp in next, GetDescendants(Rig) do
+		if IsA(bp, "BasePart") then
+			if bp.Name ~= "HumanoidRootPart" then
+				bp.CanCollide = false
+			end
+		end
+	end
+
+	if DisableCharacterCollisions and not ParentCharacterToRig then
+		for _, bp in next, GetDescendants(Character) do
+			if IsA(bp, "BasePart") then
+				if bp.Name == "HumanoidRootPart" then
+					bp.CanCollide = true
+				else
+					bp.CanCollide = false
+				end
 			end
 		end
 	end
