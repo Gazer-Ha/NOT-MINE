@@ -155,20 +155,14 @@ end
 	end))
 
 	tableinsert(Connections, RunService.PreSimulation:Connect(function()
-		for _, BasePart in next, GetDescendants(Rig) do
-			if IsA(BasePart, "BasePart") then
-				BasePart.CanCollide = true 
-			end
-		end
+	for _, p in next, GetDescendants(Rig) do
+		setGroup(p)
+	end
 
-		if DisableCharacterCollisions and not ParentCharacterToRig then
-			for _, BasePart in next, GetDescendants(Character) do
-				if IsA(BasePart, "BasePart") then
-					BasePart.CanCollide = false
-				end
-			end
-		end
-	end))
+	for _, p in next, GetDescendants(Character) do
+		setGroup(p)
+	end
+end))
 end
 
 return Hatless
