@@ -244,6 +244,7 @@ local DancesA = GUI:Tab("R6 Dances", "http://www.roblox.com/asset/?id=6023426915
 local DancesB = GUI:Tab("Others", "http://www.roblox.com/asset/?id=6023426915")
 local DancesC = GUI:Tab("Forsaken", "http://www.roblox.com/asset/?id=6023426915")
 local DancesD = GUI:Tab("SEWH", "http://www.roblox.com/asset/?id=6023426915")
+local DancesE = GUI:Tab("Anims", "http://www.roblox.com/asset/?id=6023426915")
 
 local Dance1 = {
 {Name = "Assumptions", ID = 75148929064618, SoundID = 98127104572848},
@@ -585,6 +586,7 @@ local Forsaken3 = {
 {Name = "Griddy", ID = 113735098897882},
 {Name = "CatDance", ID = 125557487740419},
 {Name = "Caramelldansen", ID = 79218070143890},
+{Name = "Chronoshift", ID = 95008278201478},
 {Name = "Fortnite", ID = 101586156580951},
 {Name = "Lethal", ID = 106893226238111},
 {Name = "Macarena", ID = 72382654269537},
@@ -624,6 +626,77 @@ local Sewh4 = {
 {Name = "Die Lit", ID = 119812661938965},
 {Name = "Konton Boogie", ID = 124417797980484},
 }
+
+local Anims5 = {
+    {Name = "Default R6 Idle", ID = 180435571},
+    {Name = "Default R6 Walk", ID = 80979216},
+    {Name = "Default R6 Run", ID = 180426354},
+
+    {Name = "Retro Idle", ID = 124622205682529},
+    {Name = "Retro Walk", ID = 99127941563341},
+    {Name = "Retro Run", ID = 99159420513149},
+
+    {Name = "Retro Injured Idle", ID = 126523253248611},
+    {Name = "Retro Injured Walk", ID = 75842556102864},
+    {Name = "Retro Injured Run", ID = 133312964070618},
+
+    {Name = "Survivor Idle", ID = 131082534135875},
+    {Name = "Survivor Walk", ID = 108018357044094},
+    {Name = "Survivor Run", ID = 136252471123500},
+
+    {Name = "Survivor Injured Idle 1", ID = 134624270247120},
+    {Name = "Survivor Injured Idle 2", ID = 132377038617766},
+    {Name = "Survivor Injured Idle 3", ID = 115946474977409},
+
+    {Name = "Dusekkar Idle", ID = 107756518054855},
+    {Name = "Dusekkar Walk", ID = 102812745115149},
+    {Name = "Dusekkar Run", ID = 125869734469543},
+
+    {Name = "Dusekkar Injured Idle", ID = 138915609882599},
+    {Name = "Dusekkar Injured Walk", ID = 138695523464886},
+    {Name = "Dusekkar Injured Run", ID = 71505511479171},
+
+    {Name = "Sukuna Idle", ID = 115268929362938},
+    {Name = "Sukuna Walk", ID = 123678890237669},
+    {Name = "Sukuna Run", ID = 132086389849889},
+
+    {Name = "Unbounded Idle", ID = 92356799463654},
+    {Name = "Flying Walk/Run", ID = 99085725668302},
+
+    {Name = "Baller Idle", ID = 126655199378857},
+    {Name = "Baller Walk/Run", ID = 75211315527511},
+
+    {Name = "Hanging Idle", ID = 18897662229},
+
+    {Name = "Rampage Idle", ID = 18862652910},
+    {Name = "Plural Idle", ID = 18891118734},
+    {Name = "Normal Idle", ID = 73191156889141},
+    {Name = "NightBringer Idle", ID = 85968303676846},
+
+    {Name = "Glitch Idle", ID = 18781246008},
+    {Name = "Glitch Walk/Run", ID = 18781252031},
+}
+
+
+
+
+for i, v in pairs(Anims5) do
+    if v.Divider then
+        DancesE:Line()
+    else
+        DancesE:Button(v.Name, v.Name, function()
+            if not Anims:FindFirstChild(v.Name) then
+                if v.Name:lower():find("idle") then
+                    IdleId = v.ID
+                elseif v.Name:lower():find("walk") then
+                    WalkId = v.ID
+                elseif v.Name:lower():find("run") then
+                    RunId = v.ID
+                end
+            end
+        end)
+    end
+end
 
 
 for i, v in pairs(Sewh4) do
@@ -680,11 +753,18 @@ end)
 end
 end
 
-CreateAnimation("Idle", 139560382291834)
-CreateAnimation("Walk", 85232789717460)
-CreateAnimation("Run", 138292275822759)
+
+
+
 CreateAnimation("Jump", 84397577392351)
 CreateAnimation("Fall", 90270295182351)
+
+repeat task.wait() until IdleId and WalkId and RunId and IdleId ~= "" and WalkId ~= "" and RunId ~= ""
+
+CreateAnimation("Idle", IdleId)
+CreateAnimation("Walk", WalkId)
+CreateAnimation("Run", RunId)
+
 
 game:GetService("RunService").Heartbeat:Connect(function()
 	for _, track in pairs(Character:FindFirstChildOfClass("Humanoid"):GetPlayingAnimationTracks()) do
