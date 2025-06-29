@@ -244,7 +244,7 @@ local DancesA = GUI:Tab("R6 Dances", "http://www.roblox.com/asset/?id=6023426915
 local DancesB = GUI:Tab("Others", "http://www.roblox.com/asset/?id=6023426915")
 local DancesC = GUI:Tab("Forsaken", "http://www.roblox.com/asset/?id=6023426915")
 local DancesD = GUI:Tab("SEWH", "http://www.roblox.com/asset/?id=6023426915")
-local DancesE = GUI:Tab("Anims", "http://www.roblox.com/asset/?id=6023426915")
+
 
 local Dance1 = {
 {Name = "Assumptions", ID = 75148929064618, SoundID = 98127104572848},
