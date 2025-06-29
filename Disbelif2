@@ -245,7 +245,6 @@ local DancesB = GUI:Tab("Others", "http://www.roblox.com/asset/?id=6023426915")
 local DancesC = GUI:Tab("Forsaken", "http://www.roblox.com/asset/?id=6023426915")
 local DancesD = GUI:Tab("SEWH", "http://www.roblox.com/asset/?id=6023426915")
 
-
 local Dance1 = {
 {Name = "Assumptions", ID = 75148929064618, SoundID = 98127104572848},
 {Name = "Boombox Dance", ID = 84471848998012, SoundID = 1839931160},
@@ -649,9 +648,24 @@ local Anims5 = {
     {Name = "Dusekkar Injured Idle", ID = 138915609882599},
     {Name = "Dusekkar Injured Walk", ID = 138695523464886},
     {Name = "Dusekkar Injured Run", ID = 71505511479171},
+    {Name = "Jason Idle", ID = 79847722809411},
+    {Name = "Jason Walk", ID = 100715036105609},
+    {Name = "Jason Run", ID = 130266370655318},
     {Name = "Sukuna Idle", ID = 115268929362938},
     {Name = "Sukuna Walk", ID = 123678890237669},
     {Name = "Sukuna Run", ID = 132086389849889},
+    {Name = "Coolkid Idle", ID = 97086986086474},
+    {Name = "Coolkid Walk", ID = 81402633950862},
+    {Name = "Coolkid Run", ID = 77684753344012},
+    {Name = "John Doe Idle", ID = 90286804566558},
+    {Name = "John Doe Walk", ID = 106992556035804},
+    {Name = "John Doe Run", ID = 138421545751238},
+    {Name = "1x1x1 Idle", ID = 133739857114827},
+    {Name = "1x1x1 Walk", ID = 117831271457685},
+    {Name = "1x1x1 Run", ID = 71250499967998},
+    {Name = "NOLI Idle", ID = 125267777551076},
+    {Name = "NOLI Walk", ID = 130561924399885},
+    {Name = "NOLI Run", ID = 93225954618783},
     {Name = "Unbounded Idle", ID = 92356799463654},
     {Name = "Unbounded Walk", ID = 99085725668302},
     {Name = "Unbounded Run", ID = 99085725668302},
