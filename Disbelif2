@@ -631,71 +631,117 @@ local Anims5 = {
     {Name = "Default R6 Idle", ID = 180435571},
     {Name = "Default R6 Walk", ID = 80979216},
     {Name = "Default R6 Run", ID = 180426354},
-
     {Name = "Retro Idle", ID = 124622205682529},
     {Name = "Retro Walk", ID = 99127941563341},
     {Name = "Retro Run", ID = 99159420513149},
-
     {Name = "Retro Injured Idle", ID = 126523253248611},
     {Name = "Retro Injured Walk", ID = 75842556102864},
     {Name = "Retro Injured Run", ID = 133312964070618},
-
     {Name = "Survivor Idle", ID = 131082534135875},
     {Name = "Survivor Walk", ID = 108018357044094},
     {Name = "Survivor Run", ID = 136252471123500},
-
-    {Name = "Survivor Injured Idle 1", ID = 134624270247120},
-    {Name = "Survivor Injured Idle 2", ID = 132377038617766},
-    {Name = "Survivor Injured Idle 3", ID = 115946474977409},
-
+    {Name = "Survivor Injured Idle", ID = 134624270247120},
+    {Name = "Survivor Injured Walk", ID = 132377038617766},
+    {Name = "Survivor Injured Run", ID = 115946474977409},
     {Name = "Dusekkar Idle", ID = 107756518054855},
     {Name = "Dusekkar Walk", ID = 102812745115149},
     {Name = "Dusekkar Run", ID = 125869734469543},
-
     {Name = "Dusekkar Injured Idle", ID = 138915609882599},
     {Name = "Dusekkar Injured Walk", ID = 138695523464886},
     {Name = "Dusekkar Injured Run", ID = 71505511479171},
-
     {Name = "Sukuna Idle", ID = 115268929362938},
     {Name = "Sukuna Walk", ID = 123678890237669},
     {Name = "Sukuna Run", ID = 132086389849889},
-
     {Name = "Unbounded Idle", ID = 92356799463654},
-    {Name = "Flying Walk/Run", ID = 99085725668302},
-
+    {Name = "Unbounded Walk", ID = 99085725668302},
+    {Name = "Unbounded Run", ID = 99085725668302},
     {Name = "Baller Idle", ID = 126655199378857},
-    {Name = "Baller Walk/Run", ID = 75211315527511},
-
+    {Name = "Baller Walk", ID = 75211315527511},
+    {Name = "Baller Run", ID = 75211315527511},
     {Name = "Hanging Idle", ID = 18897662229},
-
     {Name = "Rampage Idle", ID = 18862652910},
     {Name = "Plural Idle", ID = 18891118734},
     {Name = "Normal Idle", ID = 73191156889141},
     {Name = "NightBringer Idle", ID = 85968303676846},
-
     {Name = "Glitch Idle", ID = 18781246008},
-    {Name = "Glitch Walk/Run", ID = 18781252031},
+    {Name = "Glitch Walk", ID = 18781252031},
 }
 
+local idle, walk, run = nil, nil, nil
 
+-- UI
+local gui = Instance.new("ScreenGui", cloneref(game:GetService("CoreGui")))
+gui.Name = "AnimUI"
+gui.ResetOnSpawn = false
 
+local f = Instance.new("Frame", gui)
+f.Size = UDim2.new(0, 240, 0, 200)
+f.Position = UDim2.new(0.5, -120, 0.5, -100)
+f.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+f.Active = true
+f.Draggable = true
+Instance.new("UICorner", f).CornerRadius = UDim.new(0, 6)
 
-for i, v in pairs(Anims5) do
-    if v.Divider then
-        DancesE:Line()
-    else
-        DancesE:Button(v.Name, v.Name, function()
-            if not Anims:FindFirstChild(v.Name) then
-                if v.Name:lower():find("idle") then
-                    IdleId = v.ID
-                elseif v.Name:lower():find("walk") then
-                    WalkId = v.ID
-                elseif v.Name:lower():find("run") then
-                    RunId = v.ID
-                end
-            end
-        end)
-    end
+local sf = Instance.new("ScrollingFrame", f)
+sf.Size = UDim2.new(1, 0, 1, 0)
+sf.CanvasSize = UDim2.new(0, 0, 0, 0)
+sf.ScrollBarThickness = 4
+sf.BackgroundTransparency = 1
+sf.AutomaticCanvasSize = Enum.AutomaticSize.Y
+sf.BorderSizePixel = 0
+
+local layout = Instance.new("UIListLayout", sf)
+layout.Padding = UDim.new(0, 2)
+
+local btns = {}
+
+local function updateIndicators()
+	for _, data in ipairs(btns) do
+		local btn, typ = data.Button, data.Type
+		local sel = (typ == "Idle" and idle == data.ID) or
+		            (typ == "Walk" and walk == data.ID) or
+		            (typ == "Run" and run == data.ID)
+		btn.BackgroundColor3 = sel and Color3.fromRGB(60, 130, 60) or Color3.fromRGB(40, 40, 40)
+	end
+	if idle and walk and run then
+		gui:Destroy()
+		print("Idle:", idle, "Walk:", walk, "Run:", run)
+		IdleId = idle
+		WalkId = walk
+		RunId = run
+	end
+end
+
+for _, v in ipairs(Anims5) do
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(1, -8, 0, 24)
+	btn.Position = UDim2.new(0, 4, 0, 0)
+	btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	btn.TextColor3 = Color3.new(1, 1, 1)
+	btn.Font = Enum.Font.SourceSans
+	btn.TextSize = 15
+	btn.Text = v.Name
+	btn.BorderSizePixel = 0
+	btn.Parent = sf
+
+	local btnType
+	local nameLower = v.Name:lower()
+	if nameLower:find("idle") then
+		btnType = "Idle"
+	elseif nameLower:find("walk") then
+		btnType = "Walk"
+	elseif nameLower:find("run") then
+		btnType = "Run"
+	end
+
+	btn.MouseButton1Click:Connect(function()
+		if btnType == "Idle" then idle = v.ID
+		elseif btnType == "Walk" then walk = v.ID
+		elseif btnType == "Run" then run = v.ID end
+		updateIndicators()
+	end)
+
+	table.insert(btns, {Button = btn, Type = btnType, ID = v.ID})
 end
 
 
@@ -758,9 +804,10 @@ end
 
 CreateAnimation("Jump", 84397577392351)
 CreateAnimation("Fall", 90270295182351)
-
+game:GetService("CoreGui").FluxLib.MainFrame.Visible = false
 repeat task.wait() until IdleId and WalkId and RunId and IdleId ~= "" and WalkId ~= "" and RunId ~= ""
-
+game:GetService("CoreGui").FluxLib.MainFrame.Visible = true
+print("Succes")
 CreateAnimation("Idle", IdleId)
 CreateAnimation("Walk", WalkId)
 CreateAnimation("Run", RunId)
