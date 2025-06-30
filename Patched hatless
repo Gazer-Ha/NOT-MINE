@@ -154,21 +154,7 @@ end
 		RootPart.CFrame = RigRootPart.CFrame + Vector3new(0, mathsin(osclock() * 15) * 0.004, 0)
 	end))
 
-	tableinsert(Connections, RunService.PreSimulation:Connect(function()
-		for _, BasePart in next, GetDescendants(Rig) do
-			if IsA(BasePart, "BasePart") then
-				BasePart.CanCollide = false
-			end
-		end
-
-		if DisableCharacterCollisions and not ParentCharacterToRig then
-			for _, BasePart in next, GetDescendants(Character) do
-				if IsA(BasePart, "BasePart") then
-					BasePart.CanCollide = false
-				end
-			end
-		end
-	end))
+	
 end
 
 return Hatless
