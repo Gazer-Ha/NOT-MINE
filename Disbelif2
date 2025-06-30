@@ -229,9 +229,11 @@ AnimatorModule[Rig][Anim.Name]:Stop()
 end
 
 function CreateAnimation(Name, ID)
-local New = game:GetObjects("rbxassetid://"..ID)[1]
-New.Parent = Anims
-New.Name = Name
+	task.spawn(function()
+		local New = game:GetObjects("rbxassetid://"..ID)[1]
+		New.Name = Name
+		New.Parent = Anims
+	end)
 end
 
 if game.CoreGui:FindFirstChild("FluxLib") then
@@ -575,7 +577,9 @@ local Forsaken3 = {
 {Name = "Aint No Lovin My Man", ID = 113329473982836},
 {Name = "Hakari Dance", ID = 138019937280193},
 {Name = "Miss The Quiet", ID = 100986631322204},
-{Name = "Silly", ID = 93910549909381},
+{Name = "Eggrolled", ID = 93910549909381},
+{Name = "Silly (i got wrong one before)", ID = 107716765704359},
+{Name = "Lost In Paradise", ID =  137980666622050},
 {Name = "So Retro", ID = 125239534389442},
 {Name = "Stock Dance", ID = 124594452357793},
 {Name = "Shimmy", ID = 95651508586157},
