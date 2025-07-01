@@ -158,7 +158,7 @@ end
 	for _, bp in next, GetDescendants(Rig) do
 		if IsA(bp, "BasePart") then
 			if bp.Name ~= "HumanoidRootPart" then
-				bp.CanCollide = false
+				bp.CanCollide = true 
 			end
 		end
 	end
