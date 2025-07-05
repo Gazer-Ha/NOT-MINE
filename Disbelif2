@@ -3,6 +3,7 @@ local d, h, x, y = false, {}, nil, nil
 setthreadidentity(2)
 
 for i, v in getgc(true) do
+task.wait(0.1)
 	if typeof(v) == "table" then
 		local a, b = rawget(v, "Detected"), rawget(v, "Kill")
 		if typeof(a) == "function" and not x then
@@ -283,6 +284,9 @@ local DancesC = GUI:Tab("Forsaken", "http://www.roblox.com/asset/?id=6023426915"
 local DancesD = GUI:Tab("SEWH", "http://www.roblox.com/asset/?id=6023426915")
 
 local Dance1 = {
+{Name = "Static", ID = 139065991651723},
+{Name = "Liar Dance", ID = 83070385097572},
+{Name = "Run Away", ID = 119147810948063},
 {Name = "Assumptions", ID = 75148929064618, SoundID = 98127104572848},
 {Name = "Boombox Dance", ID = 84471848998012, SoundID = 1839931160},
 {Divider = true},  
