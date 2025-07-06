@@ -1,9 +1,10 @@
+
+
 local g = getinfo or debug.getinfo
 local d, h, x, y = false, {}, nil, nil
 setthreadidentity(2)
 
 for i, v in getgc(true) do
-task.wait(0.1)
 	if typeof(v) == "table" then
 		local a, b = rawget(v, "Detected"), rawget(v, "Kill")
 		if typeof(a) == "function" and not x then
@@ -34,7 +35,7 @@ local z; z = hookfunction(getrenv().debug.info, newcclosure(function(...)
 end))
 
 setthreadidentity(7)
-
+task.wait(0.1)
 Reanimate = getgenv().Framework
 local Character = nil
 
@@ -285,8 +286,8 @@ local DancesD = GUI:Tab("SEWH", "http://www.roblox.com/asset/?id=6023426915")
 
 local Dance1 = {
 {Name = "Static", ID = 139065991651723},
+{Name = "I wanna run away", ID = 119147810948063},
 {Name = "Liar Dance", ID = 83070385097572},
-{Name = "Run Away", ID = 119147810948063},
 {Name = "Assumptions", ID = 75148929064618, SoundID = 98127104572848},
 {Name = "Boombox Dance", ID = 84471848998012, SoundID = 1839931160},
 {Divider = true},  
@@ -505,6 +506,12 @@ local Dance1 = {
 }
 
 local Others2 = {
+{Name = "MoonGazer", ID = 118766274919427},
+{Name = "Window", ID = 106836244406405},
+{Name = "Sturdy", ID = 14721291184},
+{Name = "Spooky Dance", ID = 15231364673},
+{Name = "Peanut Butter Jelly Time", ID = 10049457548},
+{Name = "PeaShooter", ID = 15039779727},
 {Name = "Tank", ID = 74232826199162},
 {Name = "Gun", ID = 110451669771990},
 {Name = "Runaway", ID = 131562546189485},
