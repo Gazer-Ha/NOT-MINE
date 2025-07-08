@@ -75,10 +75,10 @@ end
 					RootPartCFrame = RootPart.CFrame
 				end
 
-				replicatesignal(LocalPlayer.Kill)
+				replicatesignal(game.Players.LocalPlayer.Character.Humanoid.ServerBreakJoints)
 			end
 		else
-			BreakJoints(Character)
+			replicatesignal(game.Players.LocalPlayer.Character.Humanoid.ServerBreakJoints)
 		end
 	end
 
@@ -98,7 +98,7 @@ end
 			Character.Parent = Rig.Parent
 
 		end
-		BreakJoints(Character)
+		replicatesignal(game.Players.LocalPlayer.Character.Humanoid.ServerBreakJoints)
 		Rig:Destroy()
 	end)
 
