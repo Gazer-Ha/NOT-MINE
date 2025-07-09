@@ -1,7 +1,5 @@
 local Hatless = {}
 
-
-
 do
 local ShowMessage = function(t, txt, dur)
     pcall(function()
@@ -66,7 +64,7 @@ end
 	if Character then
 		if rawget(getgenv(), "replicatesignal") then
 			if InstantRespawn then
-			ShowMessage("Wait!","please wait for at least " .. Players.RespawnTime - 0.1 .. " second.", 10)
+				ShowMessage("Wait!","please wait for at least " .. Players.RespawnTime - 0.1 .. " second.", 10)
 				replicatesignal(LocalPlayer.ConnectDiedSignalBackend)
 				task.wait(Players.RespawnTime - 0.1)
 
@@ -75,10 +73,10 @@ end
 					RootPartCFrame = RootPart.CFrame
 				end
 
-				replicatesignal(LocalPlayer.Kill)
+				replicatesignal(game.Players.LocalPlayer.Character.Humanoid.ServerBreakJoints)
 			end
 		else
-			BreakJoints(Character)
+			replicatesignal(game.Players.LocalPlayer.Character.Humanoid.ServerBreakJoints)
 		end
 	end
 
@@ -96,9 +94,8 @@ end
 		end
 		if ParentCharacterToRig then
 			Character.Parent = Rig.Parent
-
 		end
-		BreakJoints(Character)
+		replicatesignal(game.Players.LocalPlayer.Character.Humanoid.ServerBreakJoints)
 		Rig:Destroy()
 	end)
 
@@ -118,7 +115,7 @@ end
 	end
 
 	Rig.Parent = Workspace
-        Hatless.Rig = Rig
+	Hatless.Rig = Rig
 
 	if ParentCharacterToRig then
 		Character.Parent = Rig
@@ -128,8 +125,8 @@ end
 		local CurrentCamera = Workspace.CurrentCamera
 		local CameraCFrame = CurrentCamera.CFrame
 
-		LocalPlayer.Character = Rig
-		CurrentCamera.CameraSubject = RigHumanoid
+		-- LocalPlayer.Character = Rig -- ⚠️ removed as requested
+		CurrentCamera.CameraSubject = RigHumanoid -- ✅ moved here
 
 		Wait(RunService.PreRender)
 		Workspace.CurrentCamera.CFrame = CameraCFrame
@@ -155,26 +152,20 @@ end
 	end))
 
 	tableinsert(Connections, RunService.PreSimulation:Connect(function()
-	for _, bp in next, GetDescendants(Rig) do
-		if IsA(bp, "BasePart") then
-			if bp.Name ~= "HumanoidRootPart" then
-				bp.CanCollide = true 
+		for _, BasePart in next, GetDescendants(Rig) do
+			if IsA(BasePart, "BasePart") then
+				BasePart.CanCollide = false
 			end
 		end
-	end
 
-	if DisableCharacterCollisions and not ParentCharacterToRig then
-		for _, bp in next, GetDescendants(Character) do
-			if IsA(bp, "BasePart") then
-				if bp.Name == "HumanoidRootPart" then
-					bp.CanCollide = true
-				else
-					bp.CanCollide = false
+		if DisableCharacterCollisions and not ParentCharacterToRig then
+			for _, BasePart in next, GetDescendants(Character) do
+				if IsA(BasePart, "BasePart") then
+					BasePart.CanCollide = false
 				end
 			end
 		end
-	end
-end))
+	end))
 end
 
 return Hatless
