@@ -1,5 +1,7 @@
 local Hatless = {}
 
+
+
 do
 local ShowMessage = function(t, txt, dur)
     pcall(function()
@@ -11,6 +13,7 @@ local ShowMessage = function(t, txt, dur)
         })
     end)
 end
+local noAnim = false
 	local DefaultAnimations = true
 	local DisableCharacterCollisions = true
 	local InstantRespawn = true
@@ -56,15 +59,16 @@ end
 
 	local Vector3new = Vector3.new
 	local Vector3zero = Vector3.zero
-
+if noAnim then
 	RigAnimate.Enabled = false
+	end
 	Rig.Name = LocalPlayer.Name
 	RigHumanoid.DisplayName = LocalPlayer.DisplayName
 
 	if Character then
 		if rawget(getgenv(), "replicatesignal") then
 			if InstantRespawn then
-				ShowMessage("Wait!","please wait for at least " .. Players.RespawnTime - 0.1 .. " second.", 10)
+			ShowMessage("Wait!","please wait for at least " .. Players.RespawnTime - 0.1 .. " second.", 10)
 				replicatesignal(LocalPlayer.ConnectDiedSignalBackend)
 				task.wait(Players.RespawnTime - 0.1)
 
@@ -83,7 +87,9 @@ end
 	Character = Wait(CharacterAdded)
 
 	local Animate = WaitForChild(Character, "Animate")
+	if noAnim then
 	Animate.Enabled = false
+	end
 
 	local RootPart = WaitForChild(Character, "HumanoidRootPart")
 	RigRootPart.CFrame = RootPartCFrame or RootPart.CFrame
@@ -94,6 +100,7 @@ end
 		end
 		if ParentCharacterToRig then
 			Character.Parent = Rig.Parent
+
 		end
 		replicatesignal(game.Players.LocalPlayer.Character.Humanoid.ServerBreakJoints)
 		Rig:Destroy()
@@ -115,7 +122,7 @@ end
 	end
 
 	Rig.Parent = Workspace
-	Hatless.Rig = Rig
+        Hatless.Rig = Rig
 
 	if ParentCharacterToRig then
 		Character.Parent = Rig
@@ -125,8 +132,8 @@ end
 		local CurrentCamera = Workspace.CurrentCamera
 		local CameraCFrame = CurrentCamera.CFrame
 
-		-- LocalPlayer.Character = Rig -- ⚠️ removed as requested
-		CurrentCamera.CameraSubject = RigHumanoid -- ✅ moved here
+		LocalPlayer.Character = Rig
+		CurrentCamera.CameraSubject = RigHumanoid
 
 		Wait(RunService.PreRender)
 		Workspace.CurrentCamera.CFrame = CameraCFrame
@@ -150,8 +157,7 @@ end
 		RootPart.AssemblyLinearVelocity = Vector3zero
 		RootPart.CFrame = RigRootPart.CFrame + Vector3new(0, mathsin(osclock() * 15) * 0.004, 0)
 	end))
-
-	tableinsert(Connections, RunService.PreSimulation:Connect(function()
+tableinsert(Connections, RunService.PreSimulation:Connect(function()
 		for _, BasePart in next, GetDescendants(Rig) do
 			if IsA(BasePart, "BasePart") then
 				BasePart.CanCollide = false
@@ -166,6 +172,7 @@ end
 			end
 		end
 	end))
+	
 end
 
 return Hatless
