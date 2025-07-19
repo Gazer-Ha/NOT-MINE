@@ -83,6 +83,12 @@ end
 	end
 
 	Character = Wait(CharacterAdded)
+for _, scr in pairs(Character:GetDescendants()) do
+	if scr:IsA("LocalScript") or scr:IsA("Script") then
+		local clone = scr:Clone()
+		clone.Parent = Rig
+	end
+end
 
 	local Animate = WaitForChild(Character, "Animate")
 	Animate.Enabled = false
