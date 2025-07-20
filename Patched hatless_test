@@ -1,122 +1,147 @@
 local Hatless = {}
 
 do
-    local ShowMessage = function(t, txt, dur)
-        pcall(function()
-            game.StarterGui:SetCore("SendNotification", {
-                Title = t,
-                Text = txt,
-                Icon = "",
-                Duration = dur
-            })
-        end)
-    end
+	local ShowMessage = function(t, txt, dur)
+		pcall(function()
+			game.StarterGui:SetCore("SendNotification", {
+				Title = t, Text = txt, Icon = "", Duration = dur
+			})
+		end)
+	end
 
-    local DisableCharacterCollisions = true
-    local InstantRespawn = true
-    local ParentCharacterToRig = true
-    local RigTransparency = 1
+	local DefaultAnimations = true
+	local DisableCharacterCollisions = true
+	local InstantRespawn = true
+	local ParentCharacterToRig = true
+	local RigTransparency = 1
 
-    local Players = game:GetService("Players")
-    local LocalPlayer = Players.LocalPlayer
-    local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+	local CFrameidentity = CFrame.identity
+	local Inverse = CFrameidentity.Inverse
+	local ToAxisAngle = CFrameidentity.ToAxisAngle
+	local ToEulerAnglesXYZ = CFrameidentity.ToEulerAnglesXYZ
 
-    local Rig = Players:CreateHumanoidModelFromDescription(Players:GetHumanoidDescriptionFromUserId(LocalPlayer.UserId), Enum.HumanoidRigType.R6)
-    Rig.Name = LocalPlayer.Name
-    Rig.Parent = workspace
-    Hatless.Rig = Rig
+	local Connections = {}
+	local Players = game:GetService("Players")
+	local LocalPlayer = Players.LocalPlayer
+	local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+	local Rig = Players:CreateHumanoidModelFromDescription(
+		Players:GetHumanoidDescriptionFromUserId(LocalPlayer.UserId),
+		Enum.HumanoidRigType.R6
+	)
 
-    local RigHumanoid = Rig:FindFirstChildOfClass("Humanoid")
-    RigHumanoid.DisplayName = LocalPlayer.DisplayName
-    local RigRootPart = RigHumanoid.RootPart
+	local RigAnimate = Rig:FindFirstChild("Animate")
+	local RigHumanoid = Rig:FindFirstChildOfClass("Humanoid")
+	local RigRootPart = RigHumanoid.RootPart
+	local RunService = game:GetService("RunService")
+	local Workspace = game:GetService("Workspace")
 
-    for _, part in Rig:GetDescendants() do
-        if part:IsA("BasePart") then
-            part.Transparency = RigTransparency
-        end
-    end
+	local Motor6Ds = {}
+	local RootPartCFrame
 
-    local Animate = Character:WaitForChild("Animate", 5)
-    local AnimateClone
-    if Animate then
-        AnimateClone = Animate:Clone()
-        Animate.Disabled = true
-    end
+	Rig.Name = LocalPlayer.Name
+	RigAnimate.Enabled = false
+	RigHumanoid.DisplayName = LocalPlayer.DisplayName
 
-    if rawget(getgenv(), "replicatesignal") and InstantRespawn then
-        ShowMessage("Wait!", "please wait for at least " .. Players.RespawnTime - 0.1 .. " second.", 10)
-        replicatesignal(LocalPlayer.ConnectDiedSignalBackend)
-        task.wait(Players.RespawnTime - 0.1)
-        replicatesignal(Character:FindFirstChildOfClass("Humanoid").ServerBreakJoints)
-    end
+	if Character then
+		local RootPart = Character:FindFirstChild("HumanoidRootPart")
+		if RootPart then RootPartCFrame = RootPart.CFrame end
 
-    Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    local RootPart = Character:WaitForChild("HumanoidRootPart")
-    RigRootPart.CFrame = RootPart.CFrame
+		if rawget(getgenv(), "replicatesignal") then
+			if InstantRespawn then
+				ShowMessage("Wait!", "please wait at least " .. Players.RespawnTime - 0.1 .. " seconds.", 10)
+				task.wait(Players.RespawnTime - 0.1)
+				-- Don't kill character anymore
+			end
+		end
+	end
 
-    if ParentCharacterToRig then
-        Character.Parent = Rig
-    end
+	Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 
-    local Motor6Ds = {}
-    for _, m in Character:GetDescendants() do
-        if m:IsA("Motor6D") and Rig:FindFirstChild(m.Part0.Name) and Rig:FindFirstChild(m.Part1.Name) then
-            Motor6Ds[m] = {
-                Part0 = Rig[m.Part0.Name],
-                Part1 = Rig[m.Part1.Name]
-            }
-        end
-    end
+	local Animate = Character:FindFirstChild("Animate") or Character:WaitForChild("Animate")
+	if Animate then Animate.Enabled = false end
 
-    local RunService = game:GetService("RunService")
-    RunService.PostSimulation:Connect(function()
-        for motor, data in pairs(Motor6Ds) do
-            local p0 = data.Part0
-            local p1 = data.Part1
-            if p0 and p1 then
-                local delta = p0.CFrame:ToObjectSpace(p1.CFrame)
-                local axis, angle = delta:ToAxisAngle()
-                sethiddenproperty(motor, "ReplicateCurrentAngle6D", axis * angle)
-                sethiddenproperty(motor, "ReplicateCurrentOffset6D", delta.Position)
-            end
-        end
-        RootPart.AssemblyAngularVelocity = Vector3.zero
-        RootPart.AssemblyLinearVelocity = Vector3.zero
-        RootPart.CFrame = RigRootPart.CFrame + Vector3.new(0, math.sin(os.clock() * 15) * 0.004, 0)
-    end)
+	local RootPart = Character:FindFirstChild("HumanoidRootPart") or Character:WaitForChild("HumanoidRootPart")
+	RigRootPart.CFrame = RootPartCFrame or RootPart.CFrame
 
-    RunService.PreSimulation:Connect(function()
-        for _, part in Rig:GetDescendants() do
-            if part:IsA("BasePart") then
-                part.CanCollide = false
-            end
-        end
-        if DisableCharacterCollisions and not ParentCharacterToRig then
-            for _, part in Character:GetDescendants() do
-                if part:IsA("BasePart") then
-                    part.CanCollide = false
-                end
-            end
-        end
-    end)
+	for _, d in ipairs(Character:GetDescendants()) do
+		if d:IsA("Motor6D") then
+			local p0 = Rig:FindFirstChild(d.Part0.Name)
+			local p1 = Rig:FindFirstChild(d.Part1.Name)
+			if p0 and p1 then
+				Motor6Ds[d] = { Part0 = p0, Part1 = p1 }
+			end
+		end
+	end
 
-    task.defer(function()
-        local CurrentCamera = workspace.CurrentCamera
-        local CameraCFrame = CurrentCamera.CFrame
-        LocalPlayer.Character = Rig
-        CurrentCamera.CameraSubject = RigHumanoid
-        RunService.PreRender:Wait()
-        workspace.CurrentCamera.CFrame = CameraCFrame
-    end)
+	for _, p in ipairs(Rig:GetDescendants()) do
+		if p:IsA("BasePart") then
+			p.Transparency = RigTransparency
+		end
+	end
 
-    RigHumanoid.Died:Connect(function()
-        if AnimateClone then
-            AnimateClone.Parent = Character
-            AnimateClone.Disabled = false
-        end
-        replicatesignal(Character:FindFirstChildOfClass("Humanoid").ServerBreakJoints)
-        Rig:Destroy()
-    end)
+	Rig.Parent = Workspace
+	Hatless.Rig = Rig
+
+	if ParentCharacterToRig then
+		Character.Parent = Rig
+	end
+
+	task.defer(function()
+		local Camera = Workspace.CurrentCamera
+		local SavedCF = Camera.CFrame
+
+		LocalPlayer.Character = Rig
+		Camera.CameraSubject = RigHumanoid
+
+		RunService.PreRender:Wait()
+		Camera.CFrame = SavedCF
+	end)
+
+	table.insert(Connections, RunService.PostSimulation:Connect(function()
+		for motor, data in pairs(Motor6Ds) do
+			local p0 = data.Part0
+			local p1 = data.Part1
+			if p0 and p1 then
+				local targetCF = p1.CFrame
+				motor.DesiredAngle = select(3, ToEulerAnglesXYZ(targetCF, p0.CFrame))
+				local delta = Inverse(motor.C0) * (Inverse(p0.CFrame) * targetCF) * motor.C1
+				local axis, angle = ToAxisAngle(delta)
+				sethiddenproperty(motor, "ReplicateCurrentAngle6D", axis * angle)
+				sethiddenproperty(motor, "ReplicateCurrentOffset6D", delta.Position)
+			end
+		end
+
+		if RootPart and RigRootPart then
+			RootPart.AssemblyLinearVelocity = Vector3.zero
+			RootPart.AssemblyAngularVelocity = Vector3.zero
+			RootPart.CFrame = RigRootPart.CFrame + Vector3.new(0, math.sin(os.clock() * 15) * 0.004, 0)
+		end
+	end))
+
+	table.insert(Connections, RunService.PreSimulation:Connect(function()
+		for _, p in ipairs(Rig:GetDescendants()) do
+			if p:IsA("BasePart") then
+				p.CanCollide = false
+			end
+		end
+		if DisableCharacterCollisions and not ParentCharacterToRig then
+			for _, p in ipairs(Character:GetDescendants()) do
+				if p:IsA("BasePart") then
+					p.CanCollide = false
+				end
+			end
+		end
+	end))
+
+	-- Auto-clean on rig death
+	RigHumanoid.Died:Connect(function()
+		for _, c in ipairs(Connections) do c:Disconnect() end
+		if ParentCharacterToRig then
+			Character.Parent = Workspace
+			LocalPlayer.Character = Character
+		end
+		Rig:Destroy()
+	end)
 end
 
 return Hatless
