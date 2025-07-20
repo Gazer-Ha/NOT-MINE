@@ -283,6 +283,7 @@ local DancesA = GUI:Tab("R6 Dances", "http://www.roblox.com/asset/?id=6023426915
 local DancesB = GUI:Tab("Others", "http://www.roblox.com/asset/?id=6023426915")
 local DancesC = GUI:Tab("Forsaken", "http://www.roblox.com/asset/?id=6023426915")
 local DancesD = GUI:Tab("SEWH", "http://www.roblox.com/asset/?id=6023426915")
+local DancesE = GUI:Tab("Ink Game", "http://www.roblox.com/asset/?id=6023426915")
 
 local Dance1 = {
 {Name = "Static", ID = 139065991651723},
@@ -694,6 +695,8 @@ local Sewh4 = {
 {Name = "Konton Boogie", ID = 124417797980484},
 }
 
+
+
 local Anims5 = {
     {Name = "Default R6 Idle", ID = 180435571},
     {Name = "Default R6 Walk", ID = 80979216},
@@ -747,6 +750,28 @@ local Anims5 = {
     {Name = "NightBringer Idle", ID = 85968303676846},
     {Name = "Glitch Idle", ID = 18781246008},
     {Name = "Glitch Walk", ID = 18781252031},
+}
+
+local InkGame6 = {
+{Name = "hhelicopter", ID = 109361066545736},
+{Name = "become car", ID = 88288423303273},
+{Name = "Californiagril", ID = 105820705767301},
+{Name = "Crying", ID = 96313533433486},
+{Name = "Exorcists", ID = 76534069877452},
+{Name = "Gear5Laugh", ID = 73153501398103},
+{Name = "HOW IT FEELS", ID = 117953507564587},
+{Name = "I'VE PLAYED THESE GAMES BEFORE", ID = 81188815294213},
+{Name = "SUIII", ID = 105662368810176},
+{Name = "HONORED ONE", ID = 105636117191959},
+{Name = "SRank", ID = 103630853038666},
+{Name = "Strongest", ID = 93430517935808},
+{Name = "Strongest Walk", ID = 73311448614702},
+{Name = "Weirdo Walk", ID = 129958625216192},
+{Name = "Beast", ID = 86930422409322},
+{Name = "Akuma", ID = 107145741788916},
+{Name = "Frolic", ID = 119460860418071},
+{Name = "Funeral For The Living", ID = 123297701965318},
+{Name = "Flexing", ID = 80121910804727},
 }
 
 local idle, walk, run = nil, nil, nil
@@ -826,6 +851,19 @@ for _, v in ipairs(Anims5) do
 	table.insert(btns, {Button = btn, Type = btnType, ID = v.ID})
 end
 
+
+for i, v in pairs(InkGame6) do
+if v.Divider then
+DancesE:Line()
+else
+DancesE:Button(v.Name, v.Name, function()
+if not Anims:FindFirstChild(v.Name) then
+CreateAnimation(v.Name, v.ID)
+end
+PlayAnim(Character, Anims[v.Name], 0.1, (v.Speed or 1))
+end)
+end
+end
 
 for i, v in pairs(Sewh4) do
 if v.Divider then
