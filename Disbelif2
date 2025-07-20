@@ -221,7 +221,7 @@ print('choose an api next time :(')
 return end
 
 -- YES I KNOW ABOVE IS TERRIBLE PLS STOP REMINDING ME 😭 
-for _,p in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do if p:IsA("BasePart") then p.Massless = true end end
+for _,p in pairs(Character:GetDescendants()) do if p:IsA("BasePart") then p.Massless = true end end
 local RootPart = Character.HumanoidRootPart
 local Jumped,Falled,Idled,Walked = false,false,false,false
 local AnimatorModule = loadstring(game:HttpGet("https://raw.githubusercontent.com/Gazer-Ha/NOT-MINE/refs/heads/main/Animodule"))()
