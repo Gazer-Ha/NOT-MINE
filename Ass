@@ -4,69 +4,60 @@ local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local MarketplaceService = game:GetService("MarketplaceService")
 local PlaceId = game.PlaceId
+
 local fileName = "RobloxAssets.txt"
-local scriptFile = "RobloxAssetFinder.lua"
-
--- Save the current script if not already saved
-if not isfile(scriptFile) then
-    writefile(scriptFile, [[
-        ]] .. game:HttpGet("https://pastebin.com/raw/M6rVmWxR") .. [[ -- Placeholder if you're copying manually
-    ]])
-end
-
+local idFile = "lastId.txt"
 local checked = 0
 local maxBeforeRejoin = 100
 local matches = {}
-local lastCheckedId = 1
+local startId = 1
 
--- Restore previous progress
+-- Restore progress
 pcall(function()
 	if isfile(fileName) then
 		for id in readfile(fileName):gmatch("%d+") do
 			matches[tonumber(id)] = true
 		end
 	end
-	if isfile("lastId.txt") then
-		lastCheckedId = tonumber(readfile("lastId.txt")) or 1
+	if isfile(idFile) then
+		startId = tonumber(readfile(idFile)) or 1
 	end
 end)
 
--- Save data
+-- Save matching IDs and current progress
 local function save()
-	local list = {}
+	local lines = {}
 	for id in pairs(matches) do
-		table.insert(list, tostring(id))
+		table.insert(lines, tostring(id))
 	end
-	writefile(fileName, table.concat(list, "\n"))
-	writefile("lastId.txt", tostring(lastCheckedId))
+	writefile(fileName, table.concat(lines, "\n"))
+	writefile(idFile, tostring(startId))
 end
 
--- Loop search
-spawn(function()
-	while true do
-		local id = lastCheckedId
-		local success, info = pcall(function()
-			return MarketplaceService:GetProductInfo(id)
-		end)
+-- Search loop
+while true do
+	local id = startId
+	local success, info = pcall(function()
+		return MarketplaceService:GetProductInfo(id)
+	end)
 
-		if success and info and info.Creator and info.Creator.Name == "Roblox" then
-			print("Found Roblox Asset:", id)
-			matches[id] = true
-			save()
-		end
-
-		lastCheckedId += 1
-		checked += 1
-
-		if checked % maxBeforeRejoin == 0 then
-			save()
-			queueonteleport('loadstring(readfile("' .. scriptFile .. '"))()')
-			task.wait(1)
-			Players.LocalPlayer:Kick("Rejoining to avoid rate limit...")
-			TeleportService:Teleport(PlaceId)
-			break
-		end
-
-		task.wait(0.2)
+	if success and info and info.Creator and info.Creator.Name == "Roblox" then
+		print("Roblox made:", id)
+		matches[id] = true
+		save()
 	end
-end)
+
+	startId += 1
+	checked += 1
+
+	if checked % maxBeforeRejoin == 0 then
+		save()
+		queueonteleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/Gazer-Ha/NOT-MINE/refs/heads/main/Ass"))()')
+		task.wait(1)
+		Players.LocalPlayer:Kick("Rejoining...")
+		TeleportService:Teleport(PlaceId)
+		break
+	end
+
+	task.wait(0.2)
+end
