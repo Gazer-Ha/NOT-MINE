@@ -1,5 +1,5 @@
-
-
+sethiddenproperty(game:GetService("VoiceChatService"), "VoiceChatEnabledForPlaceOnRcc", false)
+sethiddenproperty(game:GetService("VoiceChatService"), "VoiceChatEnabledForUniverseOnRcc", false)
 local g = getinfo or debug.getinfo
 local d, h, x, y = false, {}, nil, nil
 setthreadidentity(2)
