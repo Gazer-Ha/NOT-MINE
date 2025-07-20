@@ -616,6 +616,16 @@ local Others2 = {
 }
 
 local Forsaken3 = {
+{Name = "Wally West", ID = 109569860731042},
+{Name = "Eating Chicken", ID = 95127225490093},
+{Name = "Snap", ID = 132946177664650},
+{Name = "headbanger", ID = 103719006556178},
+{Name = "monster mash", ID = 111309618966926},
+{Name = "oppagangnam", ID = 108308837970067},
+{Name = "housefly", ID = 121751474249467},
+{Name = "PYT", ID = 91362496118165},
+{Name = "StaticMiku", ID = 94425494947119},
+{Name = "KazotskyKickY", ID = 83225211078144},
 {Name = "2Two2", ID = 89348834081653},
 {Name = "BrickBattler", ID = 126521708275742},
 {Name = "Jumpstyle", ID = 123000284742156},
