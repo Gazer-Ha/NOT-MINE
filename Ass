@@ -1,4 +1,3 @@
-if not syn and not fluxus then return warn("Executor not supported") end
 
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
