@@ -8,13 +8,21 @@ local RunService = game:GetService("RunService")
 
 local weit = function(duration)
 	local start = os.clock()
-	local connection; connection = RunService.RenderStepped:Connect(function()
+	local finished = false
+
+	local conn
+	conn = RunService.PreSimulation:Connect(function()
 		if os.clock() - start >= duration then
-			connection:Disconnect()
+			finished = true
+			conn:Disconnect()
 		end
 	end)
-	repeat task.wait() until not connection.Connected
+
+	while not finished do
+		RunService.PreSimulation:Wait()
+	end
 end
+
 
 
 local ShowMessage = function(t, txt, dur)
