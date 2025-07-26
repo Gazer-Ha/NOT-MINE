@@ -510,6 +510,15 @@ local Others2 = {
 {Name = "MoonGazer", ID = 118766274919427},
 {Name = "tidy", ID = 77426216275542},
 {Name = "muffin time", ID = 104837571180061},
+{Name = "Aura Farming", ID = 138401129827593},
+{Name = "ImSickOfIt", ID = 139872813392663},
+{Name = "HotMilk", ID = 104930467601349},
+{Name = "HowCreeperWalk", ID = 17712068576},
+{Name = "TikTok dancing", ID = 115355903347159},
+{Name = "IveGotMyEyeOnYou 1", ID = 18974249350},
+{Name = "IveGotMyEyeOnYou2", ID = 18974251789},
+{Name = "CuteDanceIdk", ID = 114022611856932},
+{Name = "DOTHATHANG", ID = 121475869231992},
 {Name = "birdbrain", ID = 117448332356578},
 {Name = "owneronlycaramell", ID = 14281766612},
 {Name = "decadent life", ID = 84587788869282},
@@ -750,6 +759,10 @@ local Anims5 = {
     {Name = "NightBringer Idle", ID = 85968303676846},
     {Name = "Glitch Idle", ID = 18781246008},
     {Name = "Glitch Walk", ID = 18781252031},
+    {Name = "Pursuer Idle", ID = 94895464960972},
+    {Name = "Pursuer Walk", ID = 100206079439305},
+    {Name = "Pursuer Run", ID = 138660433982140},
+    
 }
 
 local InkGame6 = {
