@@ -3,6 +3,20 @@ local Hatless = {}
 
 
 do
+
+local RunService = game:GetService("RunService")
+
+local weit = function(duration)
+	local start = os.clock()
+	local connection; connection = RunService.RenderStepped:Connect(function()
+		if os.clock() - start >= duration then
+			connection:Disconnect()
+		end
+	end)
+	repeat task.wait() until not connection.Connected
+end
+
+
 local ShowMessage = function(t, txt, dur)
     pcall(function()
         game.StarterGui:SetCore("SendNotification", {
@@ -68,7 +82,7 @@ end
 			if InstantRespawn then
 			ShowMessage("Wait!","please wait for at least " .. Players.RespawnTime - 0.5 .. " second.", 10)
 				replicatesignal(LocalPlayer.ConnectDiedSignalBackend)
-				task.wait(Players.RespawnTime - 0.5)
+				weit(Players.RespawnTime - 0.5)
 
 				local RootPart = Character:FindFirstChild("HumanoidRootPart")
 				if RootPart then
