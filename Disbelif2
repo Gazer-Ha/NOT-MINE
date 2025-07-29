@@ -284,6 +284,7 @@ local DancesB = GUI:Tab("Others", "http://www.roblox.com/asset/?id=6023426915")
 local DancesC = GUI:Tab("Forsaken", "http://www.roblox.com/asset/?id=6023426915")
 local DancesD = GUI:Tab("SEWH", "http://www.roblox.com/asset/?id=6023426915")
 local DancesE = GUI:Tab("Ink Game", "http://www.roblox.com/asset/?id=6023426915")
+local DancesF = GUI:Tab("Azure Latch", "http://www.roblox.com/asset/?id=6023426915")
 
 local Dance1 = {
 {Name = "Static", ID = 139065991651723},
@@ -538,14 +539,10 @@ local Others2 = {
 {Name = "Proxima Creature", ID = 7241684161},
 {Name = "sstatic", ID = 128749693180577},
 {Name = "HoneyPie", ID = 18408532746},
-{Name = "Jersey Joe", ID = 88903690369919},
+,
 {Name = "Domain Expansion Homeless", ID = 16131197243},
 {Name = "JerseyJoe 2", ID = 92325659012324},
-{Name = "Requiem 2", ID = 110359775570174},
-{Name = "Maniac", ID = 130010439460275},
-{Name = "UnaUna", ID = 138510905194499},
-{Name = "Wait2", ID = 106777482236590},
-{Name = "Tula", ID = 93106893408594},
+
 {Name = "Assumptions2", ID = 112844131485001},
 {Name = "too much brain", ID = 86485871533985},
 {Name = "2Two2", ID = 89348834081653},
@@ -774,9 +771,24 @@ local InkGame6 = {
 {Name = "Gear5Laugh", ID = 73153501398103},
 {Name = "HOW IT FEELS", ID = 117953507564587},
 {Name = "I'VE PLAYED THESE GAMES BEFORE", ID = 81188815294213},
-{Name = "SUIII", ID = 105662368810176},
 {Name = "HONORED ONE", ID = 105636117191959},
 {Name = "SRank", ID = 103630853038666},
+{Name = "conquest", ID = 96445478648169},
+{Name = "arm wrestle(ask)", ID = 83306252382638},
+{Name = "arm wrestle(fight)", ID = 91197776444145},
+{Name = "arm wrestle(lose)", ID = 134643192208285},
+{Name = "arm wrestle(win)", ID = 81029211162745},
+{Name = "example", ID = 72947570932707},
+{Name = "Bloom Step", ID = 130344705445316},
+{Name = "cartwheel", ID = 131418698864660},
+{Name = "dejected", ID = 91714887241441},
+{Name = "Lively walk", ID = 99556634315867},
+{Name = "Mingle Dance (Internal)", ID = 139217118038092},
+{Name = "Mingle Dance (Main)", ID = 110395262025776},
+{Name = "Secret Handshake", ID = 132357868858581},
+{Name = "Secret Handshake Internal_1", ID = 113239786689541},
+{Name = "Secret Handshake Internal_2", ID = 104539493277301},
+{Name = "Thrill Rides", ID = 119031194061365},
 {Name = "Strongest", ID = 93430517935808},
 {Name = "Strongest Walk", ID = 73311448614702},
 {Name = "Weirdo Walk", ID = 129958625216192},
@@ -785,6 +797,34 @@ local InkGame6 = {
 {Name = "Frolic", ID = 119460860418071},
 {Name = "Funeral For The Living", ID = 123297701965318},
 {Name = "Flexing", ID = 80121910804727},
+
+}
+
+
+local AzureLatch7 = {
+{Name = "Jersey Joe", ID = 88903690369919}
+{Name = "Prince Egypt", ID = 118688477237196},
+{Name = "Wally West", ID = 122620745692730},
+{Name = "yatiyatiyati", ID = 122472278353066},
+{Name = "Onion", ID = 123320251028783},
+{Name = "Skeleton Orchestra", ID = 139625338173346},
+{Name = "Mogged", ID = 79678564787856},
+{Name = "IM OLD!", ID = 82283563971287},
+{Name = "Shocked", ID = 130100912137711},
+{Name = "GojoLike", ID = 90502521068254},
+{Name = "Fnf gF", ID = 136411814500792},
+{Name = "Objective!", ID = 111235488329330},
+{Name = "Cchicken", ID = 139756392122209},
+{Name = "Bruski", ID = 73226079746899},
+{Name = "Bala", ID = 70404141944926},
+{Name = "Mesmirazur", ID = 98849077206554},
+{Name = "SIUUU!!", ID = 93318863498912},
+{Name = "Requiem 2", ID = 110359775570174},
+{Name = "Maniac", ID = 130010439460275},
+{Name = "UnaUna", ID = 138510905194499},
+{Name = "Wait2", ID = 106777482236590},
+{Name = "Tula", ID = 93106893408594},
+
 }
 
 local idle, walk, run = nil, nil, nil
@@ -862,6 +902,19 @@ for _, v in ipairs(Anims5) do
 	end)
 
 	table.insert(btns, {Button = btn, Type = btnType, ID = v.ID})
+end
+
+for i, v in pairs(AzureLatch7) do
+if v.Divider then
+DancesF:Line()
+else
+DancesF:Button(v.Name, v.Name, function()
+if not Anims:FindFirstChild(v.Name) then
+CreateAnimation(v.Name, v.ID)
+end
+PlayAnim(Character, Anims[v.Name], 0.1, (v.Speed or 1))
+end)
+end
 end
 
 
