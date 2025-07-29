@@ -802,7 +802,7 @@ local InkGame6 = {
 
 
 local AzureLatch7 = {
-{Name = "Jersey Joe", ID = 88903690369919}
+{Name = "Jersey Joe", ID = 88903690369919},
 {Name = "Prince Egypt", ID = 118688477237196},
 {Name = "Wally West", ID = 122620745692730},
 {Name = "yatiyatiyati", ID = 122472278353066},
