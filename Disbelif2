@@ -17,7 +17,7 @@ for i,v in pairs(getgc()) do
     end
 end
 task.wait(1)
-Reanimate = getgenv.Framework
+Reanimate = getgenv().Framework
 local Character = nil
 
 if Reanimate == "Hatless" then
