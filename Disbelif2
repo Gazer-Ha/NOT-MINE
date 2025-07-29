@@ -17,7 +17,7 @@ for i,v in pairs(getgc()) do
     end
 end
 task.wait(1)
-Reanimate = getgenv().Framework
+Reanimate = getgenv.Framework
 local Character = nil
 
 if Reanimate == "Hatless" then
@@ -29,7 +29,7 @@ local fakeName = LocalPlayer.Name .. "_Fake"
 
 Character = workspace:FindFirstChild(fakeName)
 for _,p in ipairs(game:GetService("Players").LocalPlayer.Character:GetDescendants()) do if p:IsA("BasePart") then p.Massless = true end end
-elseif getgenv().Framework == "Krypton" then
+elseif _G.Framework == "Krypton" then
 KryptonConfiguration = {
 WaitTime = 0.251,
 FakeRigScale = 1,
