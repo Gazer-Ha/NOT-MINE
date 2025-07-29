@@ -87,22 +87,24 @@ end
 
 	if Character then
 		if rawget(getgenv(), "replicatesignal") then
-			if InstantRespawn then
-			ShowMessage("Wait!","please wait for at least " .. Players.RespawnTime - 0.5 .. " second.", 10)
-				replicatesignal(game.Players.LocalPlayer.Character.Humanoid.ServerBreakJoints)
-				weit(Players.RespawnTime - 0.5)
+	if InstantRespawn then
+		ShowMessage("Wait!","please wait for at least " .. Players.RespawnTime - 0.5 .. " second.", 10)
+		replicatesignal(LocalPlayer.ConnectDiedSignalBackend)
+		weit(Players.RespawnTime - 0.5)
 
-				local RootPart = Character:FindFirstChild("HumanoidRootPart")
-				if RootPart then
-					RootPartCFrame = RootPart.CFrame
-				end
-
-				replicatesignal(game.Players.LocalPlayer.Character.Humanoid.ServerBreakJoints)
-			end
-		else
-			replicatesignal(game.Players.LocalPlayer.Character.Humanoid.ServerBreakJoints)
+		local RootPart = Character:FindFirstChild("HumanoidRootPart")
+		if RootPart then
+			RootPartCFrame = RootPart.CFrame
 		end
+
+		local hum = Character:FindFirstChildOfClass("Humanoid")
+		if hum then hum:ChangeState(Enum.HumanoidStateType.Dead) end
 	end
+else
+	local hum = Character:FindFirstChildOfClass("Humanoid")
+	if hum then hum:ChangeState(Enum.HumanoidStateType.Dead) end
+end
+end
 
 	Character = Wait(CharacterAdded)
 
