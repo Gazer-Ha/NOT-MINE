@@ -37,7 +37,7 @@ local ShowMessage = function(t, txt, dur)
 end
 	local DefaultAnimations = true
 	local DisableCharacterCollisions = true
-	local InstantRespawn = true
+	local InstantRespawn = false
 	local ParentCharacterToRig = true
 	local RigTransparency = 1
 
