@@ -89,7 +89,7 @@ end
 		if rawget(getgenv(), "replicatesignal") then
 			if InstantRespawn then
 			ShowMessage("Wait!","please wait for at least " .. Players.RespawnTime - 0.5 .. " second.", 10)
-				replicatesignal(LocalPlayer.ConnectDiedSignalBackend)
+				replicatesignal(game.Players.LocalPlayer.Character.Humanoid.ServerBreakJoints)
 				weit(Players.RespawnTime - 0.5)
 
 				local RootPart = Character:FindFirstChild("HumanoidRootPart")
