@@ -81,25 +81,34 @@ do
 	RigHumanoid.DisplayName = LocalPlayer.DisplayName -- if theres no display it will be just name so this is fine
 	
 	if Character then
-		if replicatesignal then
-			if InstantRespawn then
-				replicatesignal(LocalPlayer.ConnectDiedSignalBackend)
-				task.wait(Players.RespawnTime - 0.1)
-				
-				local RootPart = FindFirstChild(Character, "HumanoidRootPart")
+	if replicatesignal then
+		if InstantRespawn then
+			replicatesignal(LocalPlayer.ConnectDiedSignalBackend)
+			task.wait(Players.RespawnTime - 0.1)
 
-				if RootPart then
-					RootPartCFrame = RootPart.CFrame
-				end
-				
-				replicatesignal(LocalPlayer.Kill)
+			local RootPart = FindFirstChild(Character, "HumanoidRootPart")
+			if RootPart then
+				RootPartCFrame = RootPart.CFrame
 			end
+
+			replicatesignal(LocalPlayer.Kill)
 		else
-			BreakJoints(Character)
+			local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+			if Humanoid then
+				Humanoid.Health = 0
+			end
+			Character = Wait(CharacterAdded)
 		end
+	else
+		local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+		if Humanoid then
+			Humanoid.Health = 0
+		end
+		Character = Wait(CharacterAdded)
 	end
-	
+else
 	Character = Wait(CharacterAdded)
+end
 	
 	local Animate = WaitForChild(Character, "Animate")
 	Animate.Enabled = false
@@ -136,7 +145,7 @@ do
 	end
 	
 	Rig.Parent = Workspace
-	Hatless.Rig = Rig
+
 	
 	if ParentCharacterToRig then
 		Character.Parent = Rig
@@ -189,5 +198,5 @@ do
 	end))
 end
 task.wait(1)
-
+Hatless.Rig = Rig
 return Hatless
