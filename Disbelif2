@@ -27,7 +27,7 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local fakeName = LocalPlayer.Name .. "_Fake"
 
-local Character = workspace:WaitForChild(fakeName)
+Character = workspace:WaitForChild(fakeName)
 for _,p in ipairs(game:GetService("Players").LocalPlayer.Character:GetDescendants()) do
 	if p:IsA("BasePart") and p.Name ~= "HumanoidRootPart" then
 		p.Massless = true
