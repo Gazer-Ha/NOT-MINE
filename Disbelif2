@@ -22,7 +22,17 @@ local Character = nil
 
 if Reanimate == "Hatless" then
 local Hatless = loadstring(game:HttpGet("https://raw.githubusercontent.com/Gazer-Ha/NOT-MINE/refs/heads/main/Patched%20hatless"))()
-Character = Hatless.Rig
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local fakeName = LocalPlayer.Name .. "_Fake"
+
+local Character = workspace:WaitForChild(fakeName)
+for _,p in ipairs(game:GetService("Players").LocalPlayer.Character:GetDescendants()) do
+	if p:IsA("BasePart") and p.Name ~= "HumanoidRootPart" then
+		p.Massless = true
+	end
+end
 elseif getgenv().Framework == "Krypton" then
 KryptonConfiguration = {
 WaitTime = 0.251,
