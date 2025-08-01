@@ -119,7 +119,7 @@ end
 	end
 
 	Rig.Parent = Workspace
-        Hatless.Rig = Rig
+        getgenv().HatlessRig = Rig
 
 	if ParentCharacterToRig then
 		Character.Parent = Rig
