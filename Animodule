@@ -1,5 +1,9 @@
 local AnimatorModule = {}
 
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+-- Default joint C0 values
 local AnimDefaults = {
 	["Neck"] = CFrame.new(0, 1, 0, -1, 0, 0, 0, 0, 1, 0, 1, -0),
 	["RootJoint"] = CFrame.new(0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 1, -0),
@@ -15,16 +19,26 @@ local AnimDefaults = {
 	["Left Leg"] = CFrame.new(-1, -1, 0, 0, 0, -1, 0, 1, 0, 1, 0, 0)
 }
 
-local function Edit(joint, change)
-	if joint then joint.C0 = change end
+-- Tween helper
+local function Edit(joint, change, duration, style, direction)
+	if not joint then return end
+
+	style = typeof(style) == "EnumItem" and style or Enum.EasingStyle.Cubic
+	direction = typeof(direction) == "EnumItem" and direction or Enum.EasingDirection.Out
+	duration = duration or 0.1
+
+	local tween = TweenService:Create(joint, TweenInfo.new(duration, style, direction), { C0 = change })
+	tween:Play()
+	return tween
 end
 
-function AnimatorModule:ResetJoints(Rig)
-	local Humanoid = Rig:FindFirstChildOfClass("Humanoid")
-	if not Humanoid or Humanoid.RigType ~= Enum.HumanoidRigType.R6 then return end
+-- Reset R6 joints to T-pose
+function AnimatorModule:ResetJoints(rig)
+	local humanoid = rig:FindFirstChildOfClass("Humanoid")
+	if not humanoid or humanoid.RigType ~= Enum.HumanoidRigType.R6 then return end
 
-	local torso = Rig:FindFirstChild("Torso")
-	local root = Rig:FindFirstChild("HumanoidRootPart")
+	local torso = rig:FindFirstChild("Torso")
+	local root = rig:FindFirstChild("HumanoidRootPart")
 	if not torso or not root then return end
 
 	local joints = {
@@ -37,16 +51,17 @@ function AnimatorModule:ResetJoints(Rig)
 	}
 
 	for part, joint in pairs(joints) do
-		Edit(joint, AnimDefaults[part])
+		Edit(joint, AnimDefaults[part], 0.25)
 	end
 end
 
-function AnimatorModule:LoadAnimation(Rig, Sequence)
-	local Humanoid = Rig:FindFirstChildOfClass("Humanoid")
-	if not Humanoid or Humanoid.RigType ~= Enum.HumanoidRigType.R6 then return end
+-- Load and play an animation from KeyframeSequence
+function AnimatorModule:LoadAnimation(rig, sequence)
+	local humanoid = rig:FindFirstChildOfClass("Humanoid")
+	if not humanoid or humanoid.RigType ~= Enum.HumanoidRigType.R6 then return end
 
-	local torso = Rig:FindFirstChild("Torso")
-	local root = Rig:FindFirstChild("HumanoidRootPart")
+	local torso = rig:FindFirstChild("Torso")
+	local root = rig:FindFirstChild("HumanoidRootPart")
 	if not torso or not root then return end
 
 	local jointMap = {
@@ -58,112 +73,107 @@ function AnimatorModule:LoadAnimation(Rig, Sequence)
 		["Head"] = torso:FindFirstChild("Neck")
 	}
 
+	-- Clean invalid or useless objects
 	local validNames = {}
-	for _, obj in ipairs(Rig:GetDescendants()) do
+	for _, obj in ipairs(rig:GetDescendants()) do
 		validNames[obj.Name] = true
 	end
 
-	for _, obj in ipairs(Sequence:GetDescendants()) do
+	for _, obj in ipairs(sequence:GetDescendants()) do
 		if obj:IsA("IntValue") or obj:IsA("StringValue") or obj:IsA("Folder") or (obj:IsA("Pose") and not validNames[obj.Name]) then
 			obj:Destroy()
 		end
 	end
 
-	local Keyframes = Sequence:GetKeyframes()
-	table.sort(Keyframes, function(a, b) return a.Time < b.Time end)
+	local keyframes = sequence:GetKeyframes()
+	table.sort(keyframes, function(a, b) return a.Time < b.Time end)
 
 	local Class = {}
 	Class.Speed = 1
-	Class.KeepLast = 0
-	Class.Length = Keyframes[#Keyframes].Time
 	Class.TimePosition = 0
-	Class.Stopped = true
 	Class.IsPlaying = false
-	Class.Looped = Sequence.Loop
+	Class.Stopped = true
+	Class.Looped = sequence.Loop
+	Class.Length = keyframes[#keyframes].Time
+
 	local Completion = Instance.new("BindableEvent")
 	local Reached = Instance.new("BindableEvent")
 	Class.Completed = Completion.Event
 	Class.KeyframeReached = Reached.Event
-	local connection = nil
 
-	function Class:Play(FadeIn, Speed)
+	local connection
+
+	function Class:Play(fadeIn, speed)
 		self:Stop()
+		self.Speed = math.clamp(math.abs(speed or 1), 0.01, 180)
+		self.Stopped = false
+		self.IsPlaying = true
+		self.TimePosition = -(fadeIn or 0)
 
-		Class.Speed = math.clamp(math.abs(Speed or 180), 1, 180)
-		Class.Stopped = false
-		Class.IsPlaying = true
-		Class.TimePosition = -(FadeIn or 0)
-		local index = 1
 		local keyframeData = {}
-
-		for _, kf in ipairs(Keyframes) do
+		for _, kf in ipairs(keyframes) do
 			local poses = {}
 			for _, pose in ipairs(kf:GetDescendants()) do
 				local joint = jointMap[pose.Name]
 				if joint and AnimDefaults[pose.Name] then
-					table.insert(poses, { Joint = joint, CFrame = AnimDefaults[pose.Name] * pose.CFrame })
+					table.insert(poses, {
+						Joint = joint,
+						CFrame = AnimDefaults[pose.Name] * pose.CFrame
+					})
 				end
 			end
-			table.insert(keyframeData, { Time = kf.Time, Name = kf.Name, Poses = poses })
+			table.insert(keyframeData, {
+				Time = kf.Time,
+				Name = kf.Name,
+				Poses = poses
+			})
 		end
 
+		local index = 1
 		local lastTime = os.clock()
-		local RunService = game:GetService("RunService")
 
 		connection = RunService.RenderStepped:Connect(function()
-			if Class.Stopped or not Class.IsPlaying or Humanoid.Health <= 0 then
-				if connection then
-					connection:Disconnect()
-					connection = nil
-				end
+			if self.Stopped or not self.IsPlaying or humanoid.Health <= 0 then
+				if connection then connection:Disconnect() connection = nil end
 				return
 			end
 
 			local now = os.clock()
 			local delta = now - lastTime
 			lastTime = now
-			Class.TimePosition += delta * Class.Speed
+			self.TimePosition += delta * self.Speed
 
-			while keyframeData[index] and Class.TimePosition >= keyframeData[index].Time do
-				for _, p in ipairs(keyframeData[index].Poses) do
-					Edit(p.Joint, p.CFrame)
+			while keyframeData[index] and self.TimePosition >= keyframeData[index].Time do
+				for _, pose in ipairs(keyframeData[index].Poses) do
+					Edit(pose.Joint, pose.CFrame, 0.1)
 				end
 				Reached:Fire(keyframeData[index].Name)
 				index += 1
-				if index > #keyframeData then
-					break
-				end
 			end
 
 			if index > #keyframeData then
-				if Class.Looped then
-					Class.TimePosition = 0
+				if self.Looped then
+					self.TimePosition = 0
 					index = 1
 				else
-					Class.IsPlaying = false
-					Class.Stopped = true
+					self.Stopped = true
+					self.IsPlaying = false
 					Completion:Fire()
-					if connection then
-						connection:Disconnect()
-						connection = nil
-					end
+					if connection then connection:Disconnect() connection = nil end
 				end
 			end
 		end)
 	end
 
 	function Class:Stop()
-		Class.Stopped = true
-		Class.IsPlaying = false
-		Class.TimePosition = 0
-		if connection then
-			connection:Disconnect()
-			connection = nil
-		end
+		self.Stopped = true
+		self.IsPlaying = false
+		self.TimePosition = 0
+		if connection then connection:Disconnect() connection = nil end
 	end
 
-	function Class:AdjustSpeed(Speed)
-		Class.Speed = math.clamp(math.abs(Speed or Class.Speed), 1, 180)
+	function Class:AdjustSpeed(speed)
+		self.Speed = math.clamp(math.abs(speed or self.Speed), 0.01, 180)
 	end
 
 	return Class
