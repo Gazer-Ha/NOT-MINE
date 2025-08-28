@@ -1,12 +1,23 @@
-local TweenService = game:GetService("TweenService");
-local RunService = game:GetService("RunService");
-local TextService = game:GetService("TextService");
+function missing(t, f, fallback)
+    if type(f) == t then return f end
+    return fallback
+end
+
+cloneref = missing("function", cloneref, function(...) return ... end)
+local Services= setmetatable({}, {
+__index= function(_, name)
+return cloneref(game:GetService(name))end})
+
+local TweenService = Services.TweenService;
+local RunService = Services.RunService;
+local TextService = Services.TextService;
 
 local Player = game:GetService("Players").LocalPlayer;
 
 local NotifGui = Instance.new("ScreenGui");
 NotifGui.Name = "AkaliNotif";
-NotifGui.Parent = RunService:IsStudio() and Player.PlayerGui or game:GetService("CoreGui");
+NotifGui.Parent = RunService:IsStudio() and Player.PlayerGui or Services.CoreGui;
+NotifGui.DisplayOrder = 69
 
 local Container = Instance.new("Frame");
 Container.Name = "Container";
