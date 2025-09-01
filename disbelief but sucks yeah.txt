@@ -1,0 +1,664 @@
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Pixeluted/adoniscries/main/Source.lua"))() -- Adonis bypass
+getgenv().Framework = "Hatless"
+local badFunctions = {"Crash", "HardCrash", "GPUCrash", "RAMCrash", "KillClient", "SetFPS"} -- Functions to hook
+
+for i,v in pairs(getgc()) do 
+    if type(v) == "function" then
+        local info = debug.getinfo(v)
+        local functionName = info.name
+        
+        -- Hook crash/lag functions
+        if info.source:find('=.Core.Functions') and table.find(badFunctions, functionName) then
+            warn("Hooked \"" .. functionName .. "\"")
+            hookfunction(v, function()
+                warn("Stopped \"" .. functionName .. "\" from running")
+            end)
+        end
+    end
+end
+task.wait(1)
+Reanimate = getgenv().Framework
+local Character = nil
+
+if Reanimate == "Hatless" then
+
+
+
+--// Check configdoc.md for settings documentation (CHECK THE DESCRIPTION OF THIS POST)
+
+--// Below are the settings
+-- SETTINGS --
+local settings = _G
+
+settings["Use default animations"] = true
+settings["Fake character transparency level"] = 1
+settings["Disable character scripts"] = true
+settings["Fake character should collide"] = true
+settings["Parent real character to fake character"] = false
+settings["Respawn character"] = true
+settings["Instant respawn"] = false
+settings["Hide HumanoidRootPart"] = false
+settings["PermaDeath fake character"] = true
+settings["R15 Reanimate"] = false
+settings["Click Fling"] = false
+settings["Hide RootPart Distance"] = CFrame.new(255, 255, 0)
+
+settings["Names to exclude from transparency"] = {
+    --[[ example:
+    ["HumanoidRootPart"] = true,
+    ["Left Arm"] = true
+    ]]
+}
+--// Settings end
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/somethingsimade/CurrentAngleV4/refs/heads/main/v4.lua"))()
+
+local plr = game.Players.LocalPlayer
+Character = workspace:WaitForChild(plr.Name.."_Fake")
+
+local plr = game.Players.LocalPlayer
+local rs = game:GetService("RunService")
+
+local chr
+local function g()
+	chr = plr.Character or plr.CharacterAdded:Wait()
+end
+
+g()
+plr.CharacterAdded:Connect(g)
+
+rs.Heartbeat:Connect(function()
+	if not chr or not chr.Parent then return end
+	for _, p in ipairs(chr:GetDescendants()) do
+		if p:IsA("BasePart") and p.Name ~= "HumanoidRootPart" then
+			p.Massless = true
+		end
+	end
+end)
+
+local plr = game.Players.LocalPlayer
+local ps = game:GetService("Players")
+local rs = game:GetService("RunService")
+
+local function ncc(c)
+	for _, p in ipairs(c:GetDescendants()) do
+		if p:IsA("BasePart") then
+			p.CanCollide = false
+		end
+	end
+end
+
+rs.Heartbeat:Connect(function()
+	for _, p in ipairs(ps:GetPlayers()) do
+		if p ~= plr and p.Character then
+			ncc(p.Character)
+		end
+	end
+end)
+
+ 
+elseif getgenv().Framework == "Krypton" then
+KryptonConfiguration = {
+WaitTime = 0.251,
+FakeRigScale = 1,
+DestroyHeightOffset = 50,
+TeleportOffsetRadius = 20,
+RefitHatCount = 2,
+RigName = "Tetris",
+ReturnOnDeath = true,
+Reclaim = false,
+Refit = true,
+SetCharacter = true,
+Animations = true,
+NoCollisions = true,
+AntiVoiding = false,
+SetSimulationRadius = true,
+DisableCharacterScripts = true,
+AccessoryFallbackDefaults = true,
+OverlayFakeCharacter = false,
+LimitHatsPerLimb = false,
+NoBodyNearby = true,
+PermanentDeath = true,
+Hats = {
+["Torso"] = {
+{Texture = "4819722776", Mesh = "4819720316", Name = "MeshPartAccessory", Offset = CFrame.Angles(0, 0, -0.25)},
+{Texture = "14251599953", Mesh = "14241018198", Name = "Black", Offset = CFrame.Angles(0, 0, 0)},
+{Texture = "131014325980101", Mesh = "127552124837034", Name = "Accessory (Torso)", Offset = CFrame.Angles(0, 0, 0)},
+},
+["Right Arm"] = {
+{Texture = "129264637819824", Mesh = "121342985816617", Name = "Accessory (SnakeRight)", Offset = CFrame.Angles(0, 3.15, 1.57)},
+{Texture = "3409604993", Mesh = "3030546036", Name = "InternationalFedora", Offset = CFrame.Angles(-1.57, 0, -1.57)},
+{Texture = "12344206675", Mesh = "12344206657", Name = "Extra Right hand (Blocky)_white", Offset = CFrame.new(-0.05, 0.05, -0.075) * CFrame.Angles(-1.95, 0, 0)},
+{Texture = "14255543546", Mesh = "14255522247", Name = "RARM", Offset = CFrame.Angles(0, 0, 1.57)},
+{Texture = "17374768001", Mesh = "17374767929", Name = "Accessory (RARM)", Offset = CFrame.Angles(0, 0, 1.57)},
+{Texture = "17268315112", Mesh = "17268521807", Name = "Accessory (RARMAccessory)", Offset = CFrame.Angles(0, 0, 1.57)},
+},
+["Left Arm"] = {
+{Texture = "129264637819824", Mesh = "121342985816617", Name = "Accessory (SnakeLeft)", Offset = CFrame.Angles(0, 0, 1.57)},
+{Texture = "3033903209", Mesh = "3030546036", Name = "InternationalFedora", Offset = CFrame.Angles(-1.57, 0, 1.57)},
+{Texture = "12344207341", Mesh = "12344207333", Name = "Extra Left hand (Blocky)_white", Offset = CFrame.new(-0.05, 0.05, -0.075) * CFrame.Angles(-1.95, 0, 0)},
+{Texture = "14255543546", Mesh = "14255522247", Name = "LARM", Offset = CFrame.Angles(0, 0, 1.57)},
+{Texture = "17374768001", Mesh = "17374767929", Name = "Accessory (LARM)", Offset = CFrame.Angles(0, 0, 1.57)},
+{Texture = "17268315112", Mesh = "17268521807", Name = "Accessory (LARMAccessory)", Offset = CFrame.Angles(0, 0, 1.57)},
+},
+["Right Leg"] = {
+{Texture = "3033898741", Mesh = "3030546036", Name = "InternationalFedora", Offset = CFrame.Angles(-1.57, 0, -1.57)},
+{Texture = "17387586304", Mesh = "17387586286", Name = "Accessory (LLeg)", Offset = CFrame.Angles(0, 0, 1.57)},
+{Texture = "11263219250", Mesh = "11263221350", Name = "MeshPartAccessory", Offset = CFrame.Angles(0, 0, 1.57)},
+{Texture = "131014325980101", Mesh = "121304376791439", Name = "Accessory (LeftLeg)", Offset = CFrame.Angles(0, 0, 0)},
+{Texture = "84429400539007", Mesh = "123388937940630", Name = "Accessory (LeftShoulder)", Offset = CFrame.Angles(0, 1.57, 0)},
+},
+["Left Leg"] = {
+{Texture = "3360978739", Mesh = "3030546036", Name = "InternationalFedora", Offset = CFrame.Angles(-1.57, 0, 1.57)},
+{Texture = "17387586304", Mesh = "17387586286", Name = "Accessory (rightleg)", Offset = CFrame.Angles(0, 1.57, 1.57)},
+{Texture = "11159284657", Mesh = "11159370334", Name = "Unloaded head", Offset = CFrame.Angles(0, 1.57, 1.57)},
+{Texture = "131014325980101", Mesh = "121304376791439", Name = "Accessory (RightLeg)", Offset = CFrame.Angles(0, 0, 0)},
+{Texture = "84429400539007", Mesh = "117554824897780", Name = "Accessory (RightShoulder)", Offset = CFrame.Angles(0, -1.57, 0)},
+},
+},
+}
+local Reanimate = loadstring(game:HttpGet("https://raw.githubusercontent.com/KadeTheExploiter/Krypton/main/Module.luau"))()
+Character = Reanimate:GetCharacter()
+elseif Reanimate == "Emperyean" then
+local Reanimate = loadstring(game:HttpGet("https://raw.githubusercontent.com/MelonsStuff/DisbeliefHub/refs/heads/main/Reanimate/Empyrean.lua"))()
+Reanimate.Start({
+Accessories = {
+-- SB Rig
+{ MeshId = "125443585075666", Name = "Torso", Offset = CFrame.Angles(0, 3.15, 0), TextureId = "121023324229475" },
+{ MeshId = "17268521807", Name = "Left Arm", Offset = CFrame.Angles(0, 0, 1.57), TextureId = "17268315112" },
+{ MeshId = "17268521807", Name = "Right Arm", Offset = CFrame.Angles(0, 0, 1.57), TextureId = "17268315112" },
+{ MeshId = "83395427313429", Names = { "Left Leg", "Right Leg" }, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "97148121718581" },--18641142410
+-- Free Rig
+{ MeshId = "4819720316", Name = "Torso", Offset = CFrame.Angles(0, 0, -0.25), TextureId = "4819722776" },
+{ MeshId = "3030546036", Name = "Left Arm", Offset = CFrame.Angles(-1.57, 0, 1.57), TextureId = "3033903209" },
+{ MeshId = "3030546036", Name = "Right Arm", Offset = CFrame.Angles(-1.57, 0, -1.57), TextureId = "3360978739" },
+{ MeshId = "3030546036", Name = "Left Leg", Offset = CFrame.Angles(-1.57, 0, 1.57), TextureId = "3033898741" },
+{ MeshId = "3030546036", Name = "Right Leg", Offset = CFrame.Angles(-1.57, 0, -1.57), TextureId = "3409604993" },
+-- Prosthetics
+{ MeshId = "117554824897780", Name = "Right Leg", Offset = CFrame.Angles(0, -1.57, 0), TextureId = "99077561039115" },
+{ MeshId = "123388937940630", Name = "Left Leg", Offset = CFrame.Angles(0, 1.57, 0), TextureId = "99077561039115" },
+{ MeshId = "117554824897780", Name = "Right Leg", Offset = CFrame.Angles(0, -1.57, 0), TextureId = "84429400539007" },
+{ MeshId = "123388937940630", Name = "Left Leg", Offset = CFrame.Angles(0, 1.57, 0), TextureId = "84429400539007" },
+-- Classic Cheap Rig
+{ MeshId = "12344206657", Name = "Left Arm", Offset = CFrame.new(0.05, 0.05, -0.075) * CFrame.Angles(-2, 0, 0), TextureId = "12344206675" },
+{ MeshId = "12344207333", Name = "Right Arm", Offset = CFrame.new(-0.05, 0.05, -0.075) * CFrame.Angles(-1.95, 0, 0), TextureId = "12344207341" },
+{ MeshId = "11159370334", Name = "Left Leg", Offset = CFrame.Angles(1.57, 1.57, 0), TextureId = "11159284657" },
+{ MeshId = "11263221350", Name = "Right Leg", Offset = CFrame.Angles(1.57, -1.57, 0), TextureId = "11263219250" },
+-- Grey Mesh Rig 
+{ MeshId = "127552124837034", Names = {"Torso"}, Offset = CFrame.Angles(0, 0, 0), TextureId = "131014325980101" },--14255556501
+{ MeshId = "117287001096396", Names = { "Left Arm", "Right Arm"}, Offset = CFrame.Angles(0, 0, 0), TextureId = "120169691545791" },--14255556501
+{ MeshId = "121304376791439", Names = { "Left Leg", "Right Leg" }, Offset = CFrame.Angles(0, 0, 0), TextureId = "131014325980101" },--18641142410
+-- offsale below
+-- Classical Products rig (white/black arms)
+{ MeshId = "104613079991268", Names = {"Torso"}, Offset = CFrame.Angles(0, 0, 0), TextureId = "83269599235494" },
+{ MeshId = "17374767929", Names = { "Left Arm", "Right Arm"}, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "17374768001" },
+{ MeshId = "17387586286", Names = { "Left Leg", "Right Leg" }, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "17387586304" },
+{ MeshId = "14255522247", Names = { "Left Arm", "Right Arm"}, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "14255543546" },
+-- Noob Rig
+{ MeshId = "18640899369", Name = "Torso", Offset = CFrame.Angles(0, 0, 0), TextureId = "18640899481" },
+{ MeshId = "18640914129", Names = { "Left Arm", "Right Arm"}, Offset = CFrame.Angles(0, 0, 0), TextureId = "18640914168" },
+{ MeshId = "18640901641", Names = { "Left Leg", "Right Leg"}, Offset = CFrame.Angles(0, 0, 0), TextureId = "18640901676" },
+-- request
+{ MeshId = "14768666349", Name = "Torso", Offset = CFrame.Angles(0, 0, 0), TextureId = "14768664565" },
+
+{ MeshId = "14768684979", Names = { "Left Arm", "Right Arm"}, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "14768683674" },
+{ MeshId = "137702817952968", Names = { "Left Arm", "Right Arm", "Left Leg", "Right Leg" }, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "135650240593878" },--84451219120140
+{ MeshId = "137702817952968", Names = { "Left Arm", "Right Arm", "Left Leg", "Right Leg" }, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "135650240593878" },--72292903231768
+{ MeshId = "137702817952968", Names = { "Left Leg", "Right Leg", "Left Arm", "Right Arm" }, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "73798034827573" },--108186273151388
+{ MeshId = "137702817952968", Names = { "Right Leg", "Left Leg", "Right Arm", "Left Arm" }, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "73798034827573" },--139904067056008
+{ MeshId = "11449386931", Names = { "Left Arm", "Right Arm" }, Offset = CFrame.Angles(- 2.094, 0, 0), TextureId = "11439439606" },--11449687315
+{ MeshId = "11449388499", Names = { "Right Arm", "Left Arm" }, Offset = CFrame.Angles(- 2.094, 0, 0), TextureId = "11439439606" },--11449703382
+{ MeshId = "12652772399", Names = { "Left Leg", "Right Leg" }, Offset = CFrame.identity, TextureId = "12652775021" },--12652786974
+{ MeshId = "11263221350", Names = { "Left Leg", "Right Leg", "Left Arm", "Right Arm" }, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "11263219250" },--11263254795
+{ MeshId = "11159370334", Names = { "Right Leg", "Left Leg", "Right Arm", "Left Arm" }, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "11159284657" },--11159410305
+{ MeshId = "11159370334", Names = { "Right Leg", "Left Leg", "Right Arm", "Left Arm" }, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "11159285454" },--11159483910
+{ MeshId = "105141400603933", Names = { "Left Arm", "Right Arm", "Left Leg", "Right Leg" }, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "71060417496309" },--102599402682100
+{ MeshId = "99608462237958", Names = { "Right Arm", "Left Arm", "Right Leg", "Left Leg" }, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "130809869695496" },--140395948277978
+{ MeshId = "90736849096372", Names = { "Left Arm", "Right Arm", "Left Leg", "Right Leg" }, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "79186624401216" },--90960046381276
+{ MeshId = "139733645770094", Names = { "Right Arm", "Left Arm", "Right Leg", "Left Leg" }, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "130809869695496" },--82942681251131
+{ MeshId = "125405780718494", Names = { "Left Arm", "Right Arm", "Left Leg", "Right Leg" }, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "136752500636691" },--85392395166623
+{ MeshId = "125405780718494", Names = { "Right Arm", "Left Arm", "Right Leg", "Left Leg" }, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "136752500636691" },--131385506535381
+{ MeshId = "125405780718494", Names = { "Left Leg", "Right Leg", "Left Arm", "Right Arm" }, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "136752500636691" },--106249329428811
+{ MeshId = "125405780718494", Names = { "Right Leg", "Left Leg", "Right Arm", "Left Arm" }, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "136752500636691" },--129462518582032
+{ MeshId = "14255522247", Names = { "Left Arm", "Right Arm", "Left Leg", "Right Leg" }, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "14255543546" },--14255556501
+{ MeshId = "14255522247", Names = { "Right Arm", "Left Arm", "Right Leg", "Left Leg" }, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "14255543546" },--14255554762
+{ MeshId = "17374767929", Names = { "Left Arm", "Right Arm", "Left Leg", "Right Leg" }, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "17374768001" },--17374851733
+{ MeshId = "17374767929", Names = { "Right Arm", "Left Arm", "Right Leg", "Left Leg" }, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "17374768001" },--17374846953
+{ MeshId = "14255522247", Names = { "Left Arm", "Right Arm", "Left Leg", "Right Leg" }, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "14255544465" },--14255560646
+{ MeshId = "14255522247", Names = { "Right Arm", "Left Arm", "Right Leg", "Left Leg" }, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "14255544465" },--14255562939
+{ MeshId = "18640914129", Names = { "Left Arm", "Right Arm", "Left Leg", "Right Leg" }, Offset = CFrame.identity, TextureId = "18640914168" },--18641142410
+{ MeshId = "18640914129", Names = { "Right Arm", "Left Arm", "Right Leg", "Left Leg" }, Offset = CFrame.identity, TextureId = "18640914168" },--18641077392
+{ MeshId = "18640901641", Names = { "Left Leg", "Right Leg", "Left Arm", "Right Arm" }, Offset = CFrame.identity, TextureId = "18640901676" },--18641187217
+{ MeshId = "18640901641", Names = { "Right Leg", "Left Leg", "Right Arm", "Left Arm" }, Offset = CFrame.identity, TextureId = "18640901676" },--18641157833
+{ MeshId = "17387586286", Names = { "Left Leg", "Right Leg", "Left Arm", "Right Arm" }, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "17387586304" },--17387616772
+{ MeshId = "17387586286", Names = { "Right Leg", "Left Leg", "Right Arm", "Left Arm" }, Offset = CFrame.Angles(0, 0, 1.57), TextureId = "17387586304" },--17393641992
+{ MeshId = "3030546036", Names = { "Left Arm", "Left Leg", "Right Arm", "Right Leg" }, Offset = CFrame.Angles(- 1.57, 0, 0), TextureId = "" },
+{ MeshId = "4324138105", Names = { "Left Arm", "Left Leg", "Right Arm", "Right Leg" }, Offset = CFrame.Angles(- 1.57, 0, 0), TextureId = "" },
+{ MeshId = "18640899369", Name = "Torso", Offset = CFrame.identity, TextureId = "18640899481" },--18641046146
+{ MeshId = "14241018198", Name = "Torso", Offset = CFrame.identity, TextureId = "14251599953" },--14255528083
+{ MeshId = "110684113028749", Name = "Torso", Offset = CFrame.identity, TextureId = "70661572547971" },--138364679836274
+{ MeshId = "4819720316", Name = "Torso", Offset = CFrame.Angles(0, 0, -0.249), TextureId = "4819722776" },--4819740796
+{ MeshId = "126825022897778", Name = "Torso", Offset = CFrame.identity, TextureId = "125975972015302" },--95290698984301
+},
+ApplyDescription = true,
+BreakJointsDelay = 0.255,
+ClickFling = true,
+DefaultFlingOptions = {
+HatFling = false,--{ MeshId="", TextureId = ""},
+Highlight = true,
+PredictionFling = true,
+Timeout = 1,
+ToolFling = true,--"Boombox",
+},
+DisableCharacterCollisions = false,
+DisableHealthBar = true,
+DisableRigCollisions = true,
+HatDrop = false,
+HideCharacter = Vector3.new(0, - 30, 0),
+ParentCharacter = true,
+PermanentDeath = true,
+Refit = true,
+RigSize = 1,
+RigTransparency = 1,
+R15 = false,
+SetCameraSubject = true,
+SetCameraType = true,
+SetCharacter = false,
+SetCollisionGroup = true,
+SimulationRadius = 2147483647,
+TeleportRadius = 12,
+UseServerBreakJoints = true,
+})
+Name = game.Players.LocalPlayer.Name
+Character = workspace[Name]
+else
+warn('choose an api next time :(')
+return end
+
+
+local RootPart = Character:WaitForChild("HumanoidRootPart")
+local Jumped,Falled,Idled,Walked = false,false,false,false
+local AnimatorModule = loadstring(game:HttpGet("https://raw.githubusercontent.com/Gazer-Ha/NOT-MINE/refs/heads/main/Animodule"))()
+local Anims = Instance.new("Folder", workspace)
+Anims.Name = "Anims"
+
+
+function Raycast(POSITION, DIRECTION, RANGE, IGNOREDECENDANTS)
+return workspace:FindPartOnRay(Ray.new(POSITION, DIRECTION.unit * RANGE), IGNOREDECENDANTS)
+end
+
+function LoadAnim(Rig, KeyFrameS)
+if not AnimatorModule[Rig] then
+AnimatorModule[Rig] = {}
+end
+AnimatorModule[Rig][KeyFrameS.Name] = AnimatorModule:LoadAnimation(Rig, KeyFrameS)
+end
+
+function PlayAnim(Rig, Animation, AnimFade, AnimSpeed)
+if not AnimatorModule[Rig] then
+AnimatorModule[Rig] = {}
+end
+if not AnimatorModule[Rig][Animation.Name] then
+AnimatorModule[Rig][Animation.Name] = AnimatorModule:LoadAnimation(Rig, Animation)
+end
+for Animation, Track in next, AnimatorModule[Rig] do
+if Animation ~= Animation.Name then
+Track:Stop()
+end
+end
+if not AnimatorModule[Rig][Animation.Name].IsPlaying then
+AnimatorModule[Rig][Animation.Name]:Play(AnimFade or 1, AnimSpeed or 1)
+end
+end
+
+function StopAnim(Rig, Anim)
+if not AnimatorModule[Rig] then
+AnimatorModule[Rig] = {}
+end
+if not AnimatorModule[Rig][Anim.Name] then
+AnimatorModule[Rig][Anim.Name] = AnimatorModule:LoadAnimation(Rig, Anim)
+end
+AnimatorModule[Rig][Anim.Name]:Stop()
+end
+
+function CreateAnimation(Name, ID)
+	task.spawn(function()
+		local New = game:GetObjects("rbxassetid://"..ID)[1]
+		New.Name = Name
+		New.Parent = Anims
+	end)
+end
+
+if game.CoreGui:FindFirstChild("FluxLib") then
+game.CoreGui:FindFirstChild("FluxLib"):Destroy()
+end
+
+local Lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Gazer-Ha/NOT-MINE/refs/heads/main/fluxleb"))()
+local GUI = Lib:Window("Filetest Lol", "Irony at its finest.", Color3.fromRGB(0, 0, 0), Enum.KeyCode.LeftControl)
+
+local DancesG = GUI:Tab("Filetest", "http://www.roblox.com/asset/?id=6023426915")
+local Forsaked = GUI:Tab("Forsaken", "http://www.roblox.com/asset/?id=6023426915")
+local Something_Evil = GUI:Tab("SEWH", "http://www.roblox.com/asset/?id=6023426915")
+local Jump_Show = GUI:Tab("Jump Showdown", "http://www.roblox.com/asset/?id=6023426915")
+
+
+
+local idle, walk, run = nil, nil, nil
+
+-- UI
+
+local f = "Movement_Anims"
+local dummy = f.."/dontreadme.txt"
+
+if not isfile(dummy) then
+	warn("[Debug] Folder '" .. f .. "' not found. Creating...")
+	makefolder(f)
+	writefile(dummy, "Used this just to test is this folder exist lol ")
+else
+	warn("[Debug] Folder '" .. f .. "' already exists.")
+end
+
+local http = game:GetService("HttpService")
+local mv = {"Idle", "Walk", "Run", "Jump", "Fall"}
+local ph = {
+	Idle = 180435571,
+	Walk = 80979216,
+	Run = 180426354,
+	Jump = 125750702,
+	Fall = 180436148
+}
+
+local found, files, typeMap = {}, {}, {}
+
+warn("[Debug] Scanning for .anim files in '" .. f .. "'...")
+for _, fn in ipairs(listfiles(f)) do
+	if fn:sub(-5):lower() == ".anim" then
+		warn("[Found] " .. fn)
+		table.insert(files, fn)
+		local name = fn:match("([^\\/]-)%.anim$") or ""
+		for _, m in ipairs(mv) do
+			if name:lower():find(m:lower()) then
+				found[m] = true
+				typeMap[fn] = m
+				warn("[Debug] Detected '" .. m .. "' animation in file: " .. name)
+				break
+			end
+		end
+	end
+end
+
+for _, m in ipairs(mv) do
+	if not found[m] then
+		warn("[Missing] '" .. m .. "' not found. Using placeholder ID: " .. ph[m])
+		CreateAnimation(m, ph[m])
+	else
+		warn("[OK] '" .. m .. "' animation found.")
+	end
+end
+
+local function ld(fn)
+	local animType = typeMap[fn]
+	if not animType then return end
+
+	warn("[Loading] " .. fn .. " as '" .. animType .. "'")
+	local s, c = pcall(readfile, fn)
+	if not s then warn("[Error] Failed to read: " .. fn) return end
+
+	local d = http:JSONDecode(c)
+	if not d or not d.k then warn("[Error] Invalid .anim structure in: " .. fn) return end
+
+	local seq = Instance.new("KeyframeSequence")
+	seq.Name = animType -- Force rename here
+	seq.Priority = Enum.AnimationPriority[d.pr] or Enum.AnimationPriority.Core
+	seq.Loop = d.l == true
+
+	for _, kf in ipairs(d.k) do
+		local k = Instance.new("Keyframe")
+		k.Name = kf.n
+		k.Time = kf.t
+		local m = {}
+		for _, p in ipairs(kf.p) do
+			local ps = Instance.new("Pose")
+			ps.Name = p.n
+			ps.Weight = p.w
+			ps.EasingStyle = Enum.PoseEasingStyle[p.es]
+			ps.EasingDirection = Enum.PoseEasingDirection[p.ed]
+			ps.CFrame = CFrame.new(unpack(p.c))
+			m[ps.Name] = ps
+		end
+		for _, p in ipairs(kf.p) do
+			m[p.n].Parent = m[p.pn] or k
+		end
+		k.Parent = seq
+	end
+
+	seq.Parent = Anims
+	warn("[Loaded] '" .. animType .. "' loaded into Anims.")
+end
+
+coroutine.wrap(function()
+	warn("[Coroutine] Starting to load all anim files...")
+	for _, fn in ipairs(files) do
+		ld(fn)
+	end
+
+	warn("[Wait] Waiting until all movement animations are loaded...")
+	repeat
+		local ok = true
+		for _, n in ipairs(mv) do
+			if not Anims:FindFirstChild(n) then
+				ok = false
+				warn("[Waiting] '" .. n .. "' not loaded yet.")
+				break
+			end
+		end
+		task.wait()
+	until ok
+
+	warn("✅ All movement animations are loaded into Anims.")
+end)()
+
+
+local http = game:GetService("HttpService")
+local animFiles, laughAnims = {}, {}
+
+for _, fn in ipairs(listfiles("")) do
+	if fn:sub(-5) == ".anim" then
+		table.insert(animFiles, fn)
+	end
+end
+
+local function loadAnim(fn)
+	local s, c = pcall(readfile, fn)
+	if not s then return end
+
+	local d = http:JSONDecode(c)
+	local nameFromFile = fn:match("([^\\/]-)%.anim$") or "Unknown"
+	local seq = Instance.new("KeyframeSequence")
+	seq.Name = d.n
+	seq.Priority = Enum.AnimationPriority[d.pr] or Enum.AnimationPriority.Core
+	seq.Loop = d.l == true
+
+	for _, kf in ipairs(d.k) do
+		local k = Instance.new("Keyframe")
+		k.Name = kf.n
+		k.Time = kf.t
+		local pMap = {}
+		for _, p in ipairs(kf.p) do
+			local ps = Instance.new("Pose")
+			ps.Name = p.n
+			ps.Weight = p.w
+			ps.EasingStyle = Enum.PoseEasingStyle[p.es]
+			ps.EasingDirection = Enum.PoseEasingDirection[p.ed]
+			ps.CFrame = CFrame.new(unpack(p.c))
+			pMap[ps.Name] = ps
+		end
+		for _, p in ipairs(kf.p) do
+			local ps = pMap[p.n]
+			ps.Parent = pMap[p.pn] or k
+		end
+		k.Parent = seq
+	end
+
+	seq.Parent = Anims
+
+	if nameFromFile:lower():find("laugh") then
+		table.insert(laughAnims, {n = d.n, s = d.s or 1})
+		return
+	end
+
+	local tab = DancesG
+	if nameFromFile:find("%[SEWH%]") then
+		tab = Something_Evil
+	elseif nameFromFile:find("%[Forsaken%]") then
+		tab = Forsaked
+		elseif nameFromFile:find("%[JS%]") then
+		tab = Jump_Show
+	end
+	
+
+	tab:Button(nameFromFile, nameFromFile, function()
+		PlayAnim(Character, Anims[d.n], 0.1, d.s or 1)
+	end)
+
+	task.wait(0.2)
+end
+
+coroutine.wrap(function()
+	for _, fn in ipairs(animFiles) do
+		loadAnim(fn)
+	end
+
+	if #laughAnims > 0 then
+		Forsaked:Button("Schadenfreude", "Laugh", function()
+			local a = laughAnims[math.random(1, #laughAnims)]
+			PlayAnim(Character, Anims[a.n], 0.1, a.s)
+		end)
+	end
+end)()
+
+
+
+
+
+local anims = Anims -- replace with actual folder if needed
+local required = {"Idle", "Walk", "Run", "Jump", "Fall"}
+
+repeat
+	local ready = true
+	for _, name in ipairs(required) do
+		if not anims:FindFirstChild(name) then
+			ready = false
+			break
+		end
+	end
+	task.wait()
+until ready
+
+
+
+
+
+
+
+
+
+
+
+game:GetService("CoreGui").FluxLib.MainFrame.Visible = false
+
+game:GetService("CoreGui").FluxLib.MainFrame.Visible = true
+warn("Succes")
+
+local c = Character
+
+for _, p in ipairs(c:GetDescendants()) do
+	if p:IsA("BasePart") and p.Name ~= "HumanoidRootPart" then
+		p.Massless = true
+	end
+end
+
+
+local rs = game:GetService("RunService")
+local hum = Character:FindFirstChildOfClass("Humanoid")
+
+local function stopAnims(...)
+	for _, anim in ipairs({...}) do
+		StopAnim(Character, anim)
+	end
+end
+
+local function playAnim(anim, fade, weight)
+	PlayAnim(Character, anim, fade, weight)
+end
+
+local function resetFlags(except)
+	Jumped = except == "Jumped"
+	Falled = except == "Falled"
+	Idled = except == "Idled"
+	Walked = except == "Walked"
+	Ran = except == "Ran"
+end
+
+rs.Heartbeat:Connect(function()
+	for _, t in pairs(hum:GetPlayingAnimationTracks()) do
+		t:Stop(0)
+	end
+
+	local moveThres, runThres, vertThres = 0.01, 15, 0.5
+	local vel = RootPart.Velocity
+	local speed, yVel = vel.Magnitude, vel.Y
+
+	local hit, _ = Raycast(
+		RootPart.Position,
+		(CFrame.new(RootPart.Position, RootPart.Position + Vector3.new(0, -1, 0))).LookVector,
+		4,
+		Character
+	)
+
+	if not hit and math.abs(yVel) > vertThres then
+		stopAnims(Anims.Walk, Anims.Run)
+
+		if yVel > 0 then
+			if not Jumped then
+				stopAnims(Anims.Fall, Anims.Idle)
+				playAnim(Anims.Jump, 0.05, 1)
+				resetFlags("Jumped")
+			end
+		else
+			if not Falled then
+				stopAnims(Anims.Jump, Anims.Idle)
+				playAnim(Anims.Fall, 0.05, 1)
+				resetFlags("Falled")
+			end
+		end
+
+	elseif hit and math.abs(yVel) <= vertThres then
+		if speed < moveThres then
+			if not Idled then
+				stopAnims(Anims.Jump, Anims.Fall, Anims.Walk, Anims.Run)
+				playAnim(Anims.Idle, 0.05, 0.1)
+				resetFlags("Idled")
+			end
+		elseif speed >= runThres then
+			if not Ran then
+				stopAnims(Anims.Jump, Anims.Fall, Anims.Idle, Anims.Walk)
+				playAnim(Anims.Run, 0.05, 1)
+				resetFlags("Ran")
+			end
+		else
+			if not Walked then
+				stopAnims(Anims.Jump, Anims.Fall, Anims.Idle, Anims.Run)
+				playAnim(Anims.Walk, 0.05, 1)
+				resetFlags("Walked")
+			end
+		end
+	end
+end)
+
+
+warn[[
+ bad, not silly
+]] 
+
+
