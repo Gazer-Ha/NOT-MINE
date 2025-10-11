@@ -1,1 +1,5 @@
-EZ93IarVWuNnRfDx_4HocE21pLu9wUjWi07QQg_VjTZGW9tZBAAAAA2
+local placeId = 18687417158;
+local accessCode = "ydfHnUIaySdi_QDO0CL53A6xVAgJAkmwti1_TzDGuopGW9tZBAAAAA2";
+pcall(function()
+    game:GetService("RobloxReplicatedStorage").ContactListIrisInviteTeleport:FireServer(placeId, "", accessCode)
+end)
