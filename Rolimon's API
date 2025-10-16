@@ -1,0 +1,143 @@
+local module = {}
+
+local endpoints = {
+	ItemDetails = "https://api.rolimons.com/items/v1/itemdetails",
+	DealActivity = "https://api.rolimons.com/market/v1/dealactivity",
+	PlayerInfo = "https://api.rolimons.com/players/v1/playerinfo/",
+	GetRecentAds = "https://api.rolimons.com/tradeads/v1/getrecentads"
+}
+
+local function httpRequest(url)
+	if syn and syn.request then
+		return syn.request({Url = url, Method = "GET"}).Body
+	elseif http and http.request then
+		return http.request({Url = url, Method = "GET"}).Body
+	elseif request then
+		return request({Url = url, Method = "GET"}).Body
+	elseif game and game.HttpGet then
+		return game:HttpGet(url)
+	elseif game and game.HttpGetAsync then
+		return game:HttpGetAsync(url)
+	else
+		error("No HTTP request function found")
+	end
+end
+
+local function decode(json)
+	local s, result = pcall(function()
+		return game:GetService("HttpService"):JSONDecode(json)
+	end)
+	if s then
+		return result
+	else
+		return nil
+	end
+end
+
+function module.GetItems()
+	local response = httpRequest(endpoints.ItemDetails)
+	local data = decode(response)
+	if data and data.success then
+		return data.items
+	end
+end
+
+function module.GetItemDetails(ItemId)
+	local response = httpRequest(endpoints.ItemDetails)
+	local data = decode(response)
+	if not (data and data.success) then return end
+	local item = data.items[tostring(ItemId)]
+	if not item then return end
+	local demands = {[-1]="Unassigned",[0]="Terrible",[1]="Low",[2]="Normal",[3]="High",[4]="Amazing"}
+	local trends = {[-1]="None",[0]="Lowering",[1]="Unstable",[2]="Stable",[3]="Raising",[4]="Fluctuating"}
+	return {
+		Success = true,
+		RawData = item,
+		Name = item[1],
+		Acronym = item[2],
+		RAP = item[3],
+		Value = item[4],
+		DefaultValue = item[5],
+		Demand = demands[item[6]],
+		Trend = trends[item[7]],
+		Projected = item[8] ~= -1,
+		Hyped = item[9] ~= -1,
+		Rare = item[10] ~= -1
+	}
+end
+
+function module.GetRecentAds()
+	local response = httpRequest(endpoints.GetRecentAds)
+	local data = decode(response)
+	if not (data and data.success) then return end
+	local returnTable = {TradeAdCount = data.trade_ad_count, TradeAds = {}}
+	local tagToString = {[1]="Demand",[2]="Rares",[3]="Robux",[4]="Any",[5]="Upgrading",[6]="Downgrade",[7]="RAP",[8]="Wishlist",[9]="Projecteds",[10]="Adds"}
+	for i, tradeAd in pairs(data.trade_ads) do
+		local username = tradeAd[4]
+		local offeringItems = tradeAd[5].items
+		local offeringRobux = tradeAd[5].robux
+		local requestingItems = tradeAd[6].items
+		local tags = tradeAd[6].tags
+		local tagTable
+		if tags then
+			tagTable = {}
+			for _, tag in pairs(tags) do
+				table.insert(tagTable, tagToString[tag])
+			end
+		end
+		table.insert(returnTable.TradeAds, {
+			Username = username,
+			OfferingItems = offeringItems,
+			OfferingRobux = offeringRobux,
+			RequestingItems = requestingItems,
+			Tags = tagTable
+		})
+	end
+	return returnTable
+end
+
+function module.GetPlayerInfo(UserId)
+	local response = httpRequest(endpoints.PlayerInfo .. UserId)
+	local data = decode(response)
+	if not (data and data.success) then return end
+	return {
+		Name = data.name,
+		Value = data.value,
+		RAP = data.rap,
+		Rank = data.rank,
+		Premium = data.premium,
+		PrivacyEnabled = data.privacy_enabled,
+		Terminated = data.terminated,
+		StatsUpdated = data.stats_updated,
+		LastScan = data.last_scan,
+		LastOnline = data.last_online,
+		LastLocation = data.last_location,
+		Rolibadges = data.rolibadges
+	}
+end
+
+function module.GetItemCount()
+	local response = httpRequest(endpoints.ItemDetails)
+	local data = decode(response)
+	if data and data.success then
+		return data.item_count
+	end
+end
+
+function module.GetRAPChange(OldPrice, NewPrice)
+	local RAP = tonumber(OldPrice)
+	local price = tonumber(NewPrice)
+	if price >= RAP then
+		local gain = math.floor((price - RAP) / 10)
+		local finalRAP = RAP + gain
+		local percent = math.round(100 * gain / finalRAP * 100) / 100
+		return {OriginalRAP=RAP,ExpectedRAP=finalRAP,RAPChange=gain,PercentChange=percent,IsGainingRAP=true}
+	else
+		local loss = math.floor((RAP - price) / 10)
+		local finalRAP = RAP - loss
+		local percent = math.round(100 * loss / finalRAP * 100) / 100
+		return {OriginalRAP=RAP,ExpectedRAP=finalRAP,RAPChange=-loss,PercentChange=-percent,IsGainingRAP=false}
+	end
+end
+
+return module
