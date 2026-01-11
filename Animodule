@@ -1,5 +1,13 @@
 -- wzpd was here 
 local AnimatorModule = {}
+local RunService = game:GetService("RunService")
+
+local function accurateWait(seconds)
+    local start = tick()
+    repeat
+        RunService.PreSimulation:Wait()
+    until tick() - start >= seconds
+end
 
 local function Contains(Table, Check)
     for Index, Value in next, Table do 
@@ -80,7 +88,7 @@ function AnimatorModule:LoadAnimation(Rig, KeyframeSequence)
     end
     
     local Joints = {
-        ["Torso"] = Rig.HumanoidRootPart:FindFirstChild("RootJoint") or Rig.HumanoidRootPart:FindFirstChild("Root Joint"),
+        ["Torso"] = Rig.HumanoidRootPart:FindFirstChild("RootJoint") or RigHumanoidRootPart:FindFirstChild("Root Joint"),
         ["Left Arm"] = Rig.Torso["Left Shoulder"],
         ["Right Arm"] = Rig.Torso["Right Shoulder"],
         ["Left Leg"] = Rig.Torso["Left Hip"],
@@ -126,36 +134,110 @@ function AnimatorModule:LoadAnimation(Rig, KeyframeSequence)
     Class.Completed = Completion.Event
     Class.KeyframeReached = Reached.Event
     
-    -- Animation update function
-    local function UpdateAnimation(startTime, currentTime, jointTargets, interpolationStartTimes)
-        local elapsed = (currentTime - startTime) * Class.Speed
-        Class.TimePosition = elapsed
-        
-        for jointName, joint in pairs(Joints) do
-            if jointTargets[jointName] then
-                local target = jointTargets[jointName]
-                local startTime = interpolationStartTimes[jointName]
-                
-                if startTime and currentTime >= startTime then
-                    local interpolationTime = currentTime - startTime
-                    local duration = target.Duration
+    -- Animation playback function with accurate timing
+    local function PlayAnimationThread()
+        while not Class.Stopped and RigHumanoid.Health > 0 do
+            local animationStartTime = tick()
+            local currentAnimationTime = 0
+            
+            repeat
+                for i = 1, #Keyframes do
+                    local currentKeyframe = Keyframes[i]
+                    local nextKeyframe = Keyframes[i + 1]
                     
-                    if interpolationTime <= duration then
-                        local alpha = interpolationTime / duration
-                        local interpolatedCF = InterpolateCFrame(
-                            target.StartCF,
-                            target.EndCF,
-                            alpha,
-                            target.Style,
-                            target.Direction
-                        )
-                        joint.C0 = AnimDefaults[jointName] * interpolatedCF
-                    else
-                        -- Interpolation complete
-                        joint.C0 = AnimDefaults[jointName] * target.EndCF
-                        jointTargets[jointName] = nil
+                    if Class.Stopped or RigHumanoid.Health <= 0 then
+                        break
                     end
+                    
+                    -- Calculate wait time for this keyframe segment
+                    local waitTime = 0
+                    if nextKeyframe then
+                        waitTime = (nextKeyframe.Time - currentKeyframe.Time) / Class.Speed
+                    else
+                        waitTime = Class.KeepLast / Class.Speed
+                    end
+                    
+                    -- Fire keyframe reached event
+                    Reached:Fire(currentKeyframe.Name)
+                    
+                    -- Get poses for this keyframe
+                    local poses = KeyframeData[currentKeyframe].Poses
+                    
+                    -- If this is not the last keyframe, interpolate to next
+                    if nextKeyframe then
+                        local nextPoses = KeyframeData[nextKeyframe].Poses
+                        local interpolationStartTime = tick()
+                        
+                        -- Start interpolation for all poses
+                        while tick() - interpolationStartTime < waitTime and not Class.Stopped and RigHumanoid.Health > 0 do
+                            local elapsed = tick() - interpolationStartTime
+                            local alpha = math.min(elapsed / waitTime, 1)
+                            
+                            -- Update all joints
+                            for jointName, joint in pairs(Joints) do
+                                if poses[jointName] and nextPoses[jointName] then
+                                    local interpolatedCF = InterpolateCFrame(
+                                        poses[jointName].CFrame,
+                                        nextPoses[jointName].CFrame,
+                                        alpha,
+                                        poses[jointName].Style or Enum.EasingStyle.Linear,
+                                        poses[jointName].Direction or Enum.EasingDirection.In
+                                    )
+                                    joint.C0 = AnimDefaults[jointName] * interpolatedCF
+                                elseif poses[jointName] then
+                                    -- No corresponding pose in next keyframe, maintain current
+                                    joint.C0 = AnimDefaults[jointName] * poses[jointName].CFrame
+                                end
+                            end
+                            
+                            accurateWait(0) -- Yield without waiting, just for frame synchronization
+                        end
+                        
+                        -- Ensure we end at exact pose
+                        if not Class.Stopped and RigHumanoid.Health > 0 then
+                            for jointName, joint in pairs(Joints) do
+                                if nextPoses[jointName] then
+                                    joint.C0 = AnimDefaults[jointName] * nextPoses[jointName].CFrame
+                                end
+                            end
+                        end
+                    else
+                        -- Last keyframe, apply poses and wait for KeepLast
+                        for jointName, joint in pairs(Joints) do
+                            if poses[jointName] then
+                                joint.C0 = AnimDefaults[jointName] * poses[jointName].CFrame
+                            end
+                        end
+                        
+                        if waitTime > 0 then
+                            accurateWait(waitTime)
+                        end
+                    end
+                    
+                    -- Update current animation time
+                    currentAnimationTime = currentKeyframe.Time
                 end
+                
+                -- Check if looped animation should continue
+                if Class.Looped and not Class.Stopped and RigHumanoid.Health > 0 then
+                    Completion:Fire()
+                    -- Reset to start
+                    for jointName, joint in pairs(Joints) do
+                        local firstPoses = KeyframeData[Keyframes[1]].Poses
+                        if firstPoses[jointName] then
+                            joint.C0 = AnimDefaults[jointName] * firstPoses[jointName].CFrame
+                        end
+                    end
+                else
+                    break
+                end
+                
+            until not Class.Looped or Class.Stopped or RigHumanoid.Health <= 0
+            
+            Class.IsPlaying = false
+            if not Class.Looped or RigHumanoid.Health <= 0 then
+                Completion:Fire()
+                break
             end
         end
     end
@@ -168,89 +250,52 @@ function AnimatorModule:LoadAnimation(Rig, KeyframeSequence)
         Class.Stopped = false
         Class.IsPlaying = true
         
-        local startTime = tick()
-        if FadeIn then
-            startTime = startTime + (FadeIn / Class.Speed)
+        -- Handle fade in
+        if FadeIn and FadeIn > 0 then
+            local fadeStartTime = tick()
+            local initialPoses = {}
+            
+            -- Store initial joint positions
+            for jointName, joint in pairs(Joints) do
+                initialPoses[jointName] = joint.C0
+            end
+            
+            -- Fade in from initial poses to first keyframe poses
+            local firstPoses = KeyframeData[Keyframes[1]].Poses
+            while tick() - fadeStartTime < FadeIn and not Class.Stopped do
+                local elapsed = tick() - fadeStartTime
+                local alpha = math.min(elapsed / FadeIn, 1)
+                
+                for jointName, joint in pairs(Joints) do
+                    if firstPoses[jointName] then
+                        local targetCF = AnimDefaults[jointName] * firstPoses[jointName].CFrame
+                        local currentCF = initialPoses[jointName] or AnimDefaults[jointName]
+                        local interpolatedCF = InterpolateCFrame(
+                            currentCF,
+                            targetCF,
+                            alpha,
+                            Enum.EasingStyle.Linear,
+                            Enum.EasingDirection.In
+                        )
+                        joint.C0 = interpolatedCF
+                    end
+                end
+                
+                accurateWait(0)
+            end
+            
+            -- Ensure we end at exact first pose
+            if not Class.Stopped then
+                for jointName, joint in pairs(Joints) do
+                    if firstPoses[jointName] then
+                        joint.C0 = AnimDefaults[jointName] * firstPoses[jointName].CFrame
+                    end
+                end
+            end
         end
         
-        local jointTargets = {}
-        local interpolationStartTimes = {}
-        local currentKeyframeIndex = 0
-        local lastUpdateTime = tick()
-        
-        local connection
-        connection = game:GetService("RunService").Heartbeat:Connect(function()
-            if not Class.IsPlaying or Class.Stopped or RigHumanoid.Health <= 0 then
-                connection:Disconnect()
-                return
-            end
-            
-            local currentTime = tick()
-            local deltaTime = currentTime - lastUpdateTime
-            lastUpdateTime = currentTime
-            
-            -- Calculate animation time
-            local animationTime = (currentTime - startTime) * Class.Speed
-            
-            if Class.Looped then
-                animationTime = animationTime % Class.Length
-            elseif animationTime > Class.Length then
-                animationTime = Class.Length
-                Class.Stopped = true
-                Completion:Fire()
-            end
-            
-            -- Find current and next keyframe
-            for i = currentKeyframeIndex + 1, #Keyframes do
-                if Keyframes[i].Time <= animationTime then
-                    currentKeyframeIndex = i
-                    Reached:Fire(Keyframes[i].Name)
-                else
-                    break
-                end
-            end
-            
-            -- Set up interpolations for current keyframe
-            if currentKeyframeIndex < #Keyframes then
-                local currentKeyframe = Keyframes[currentKeyframeIndex]
-                local nextKeyframe = Keyframes[currentKeyframeIndex + 1]
-                local duration = (nextKeyframe.Time - currentKeyframe.Time) / Class.Speed
-                
-                local currentPoses = KeyframeData[currentKeyframe].Poses
-                local nextPoses = KeyframeData[nextKeyframe].Poses
-                
-                for jointName, nextPoseData in pairs(nextPoses) do
-                    if currentPoses[jointName] then
-                        jointTargets[jointName] = {
-                            StartCF = currentPoses[jointName].CFrame,
-                            EndCF = nextPoseData.CFrame,
-                            Style = nextPoseData.Style,
-                            Direction = nextPoseData.Direction,
-                            Duration = duration
-                        }
-                        interpolationStartTimes[jointName] = currentTime
-                    end
-                end
-            end
-            
-            -- Update all joint interpolations
-            UpdateAnimation(startTime, currentTime, jointTargets, interpolationStartTimes)
-            
-            -- Handle KeepLast
-            if currentKeyframeIndex == #Keyframes and Class.KeepLast > 0 then
-                if (currentTime - startTime) * Class.Speed > Class.Length + Class.KeepLast then
-                    if Class.Looped then
-                        currentKeyframeIndex = 0
-                        startTime = tick()
-                        jointTargets = {}
-                        interpolationStartTimes = {}
-                    else
-                        Class.Stopped = true
-                        Completion:Fire()
-                    end
-                end
-            end
-        end)
+        -- Start animation thread
+        task.spawn(PlayAnimationThread)
     end
     
     function Class:Stop()
