@@ -1,0 +1,1412 @@
+if getgenv().SignalSpyExecuted and type(getgenv().SignalSpyShutdown) == "function" then
+    pcall(getgenv().SignalSpyShutdown)
+    task.wait(0.3)
+end
+
+getgenv().SignalSpyExecuted = true
+if not game:IsLoaded() then game.Loaded:Wait() end
+
+getgenv().CaptureClasses = getgenv().CaptureClasses or {"Humanoid", "Tool", "ClickDetector", "ProximityPrompt", "Player"}
+getgenv().CaptureHidden = getgenv().CaptureHidden or false
+getgenv().CaptureDeprecated = getgenv().CaptureDeprecated or false
+getgenv().Ignore = getgenv().Ignore or {}
+
+local function missing(t, f, fallback)
+    if type(f) == t then return f end
+    return fallback
+end
+
+cloneref = missing("function", cloneref, function(...) return ... end)
+newcclosure = missing("function", newcclosure, function(f) return f end)
+checkcaller = missing("function", checkcaller, function() return false end)
+getconnections = missing("function", getconnections or get_signal_cons)
+firesignal = missing("function", firesignal or fire_signal)
+replicatesignal = missing("function", replicatesignal)
+getnilinstances = missing("function", getnilinstances or get_nil_instances, function() return {} end)
+everyClipboard = missing("function", setclipboard or toclipboard or set_clipboard)
+gethui = missing("function", gethui or get_hidden_gui)
+protect_gui = missing("function", protect_gui or (syn and syn.protect_gui))
+gethiddenproperty = missing("function", gethiddenproperty or get_hidden_property)
+sethiddenproperty = missing("function", sethiddenproperty or set_hidden_property)
+isscriptable = missing("function", isscriptable or is_scriptable)
+setscriptable = missing("function", setscriptable or set_scriptable)
+getrawmetatable = missing("function", getrawmetatable)
+setreadonly = missing("function", setreadonly)
+isfile = missing("function", isfile, function() return false end)
+isfolder = missing("function", isfolder, function() return false end)
+readfile = missing("function", readfile, function() return "" end)
+writefile = missing("function", writefile)
+makefolder = missing("function", makefolder)
+delfile = missing("function", delfile)
+listfiles = missing("function", listfiles, function() return {} end)
+iscclosure = missing("function", iscclosure, function() return false end)
+getinfo = missing("function", getinfo or debug.getinfo, function() return {} end)
+
+local ExploitCapabilities = {
+    setscriptable = type(setscriptable) == "function",
+    isscriptable = type(isscriptable) == "function",
+    gethiddenproperty = type(gethiddenproperty) == "function",
+    getrawmetatable = type(getrawmetatable) == "function",
+    replicatesignal = type(replicatesignal) == "function",
+    firesignal = type(firesignal) == "function",
+    getconnections = type(getconnections) == "function",
+}
+
+local HiddenAccessMethods = {}
+if ExploitCapabilities.setscriptable then table.insert(HiddenAccessMethods, "setscriptable") end
+if ExploitCapabilities.gethiddenproperty then table.insert(HiddenAccessMethods, "gethiddenproperty") end
+if ExploitCapabilities.getrawmetatable then table.insert(HiddenAccessMethods, "rawmetatable") end
+table.insert(HiddenAccessMethods, "direct")
+
+local Services = setmetatable({}, {
+    __index = function(self, name)
+        local ok, svc = pcall(function() return cloneref(game:GetService(name)) end)
+        if ok and svc then rawset(self, name, svc) return svc end
+        return nil
+    end
+})
+
+local Players = Services.Players
+local HttpService = Services.HttpService
+local TweenService = Services.TweenService
+local UserInputService = Services.UserInputService
+local RunService = Services.RunService
+local CoreGui = Services.CoreGui
+local TextService = Services.TextService
+local GuiService = Services.GuiService
+
+local LocalPlayer = Players and Players.LocalPlayer
+local GuiInset = GuiService:GetGuiInset()
+
+local Highlight
+pcall(function() Highlight = loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/refs/heads/main/SimpleSpyV3/highlight.lua"))() end)
+
+local LazyFix
+pcall(function() LazyFix = loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/refs/heads/main/SimpleSpyV3/DataToCode.lua"))() end)
+
+local COLORS = {
+    Background = Color3.fromRGB(37, 36, 38),
+    Panel = Color3.fromRGB(53, 52, 55),
+    Darker = Color3.fromRGB(21, 19, 20),
+    TopBar = Color3.fromRGB(37, 35, 38),
+    Accent = Color3.fromRGB(255, 100, 150),
+    Green = Color3.fromRGB(100, 255, 100),
+    Red = Color3.fromRGB(255, 100, 100),
+    Yellow = Color3.fromRGB(255, 200, 100),
+    Text = Color3.fromRGB(255, 255, 255),
+    TextDark = Color3.fromRGB(150, 150, 150),
+    Selected = Color3.fromRGB(92, 126, 229),
+    Orange = Color3.fromRGB(255, 150, 50),
+    Purple = Color3.fromRGB(180, 100, 255),
+    Cyan = Color3.fromRGB(100, 200, 255),
+}
+
+local CONFIG = {
+    Enabled = true,
+    FilterSpammy = true,
+    FilterHiddenOnly = false,
+    FilterDeprecatedOnly = false,
+    SpamThreshold = 5,
+    SpamTimeWindow = 1,
+    MaxLogs = 500,
+    ShowClassName = true,
+    LeftPanelWidth = 131,
+    SafeMode = true,
+}
+
+local logs = {}
+local groupedLogs = {}
+local selected = nil
+local layoutOrderNum = 999999999
+local SpamHistory = {}
+local HookedSignals = {}
+local Connections = {}
+local blacklist = {}
+local blocklist = {}
+local searchQuery = ""
+local classSearchQuery = ""
+local closed = false
+local sideClosed = false
+local sideClosing = false
+local mainClosing = false
+local classBrowserOpen = false
+local connectionViewerOpen = false
+local codebox
+local CachedAPIEvents = {}
+local TotalHookedCount = 0
+local HiddenHookedCount = 0
+local DeprecatedHookedCount = 0
+local FailedHooks = {hidden = {}, deprecated = {}, normal = {}}
+local SignalStats = {}
+local TotalCalls = 0
+local BlockedConnections = {}
+local HookAttempts = {}
+
+local POPULAR_CLASSES = {"Humanoid", "Tool", "ClickDetector", "ProximityPrompt", "Player", "Sound", "AnimationTrack", "RemoteEvent", "RemoteFunction"}
+
+local function Create(instance, properties, children)
+    local obj = Instance.new(instance)
+    for i, v in next, properties or {} do obj[i] = v end
+    for _, child in next, children or {} do child.Parent = obj end
+    return obj
+end
+
+local function randomString()
+    local arr = {}
+    for i = 1, math.random(10, 20) do arr[i] = string.char(math.random(65, 90)) end
+    return table.concat(arr)
+end
+
+local function safeCall(func, ...)
+    if CONFIG.SafeMode then
+        local ok, result = pcall(func, ...)
+        return ok, result
+    else
+        return true, func(...)
+    end
+end
+
+local function getSignalFromInstance(instance, signalName, isHidden, isDeprecated)
+    local signal = nil
+    local method = "failed"
+    local wasScriptable = nil
+    
+    if (isHidden or isDeprecated) and ExploitCapabilities.setscriptable then
+        local ok1, wasScript = pcall(function()
+            return isscriptable and isscriptable(instance, signalName)
+        end)
+        wasScriptable = ok1 and wasScript
+        
+        if wasScriptable == false then
+            local ok2 = pcall(function()
+                setscriptable(instance, signalName, true)
+            end)
+            if ok2 then
+                local ok3, sig = pcall(function() return instance[signalName] end)
+                if ok3 and sig and typeof(sig) == "RBXScriptSignal" then
+                    return sig, "setscriptable", true
+                end
+            end
+        end
+    end
+    
+    local ok1, result1 = pcall(function() return instance[signalName] end)
+    if ok1 and result1 and typeof(result1) == "RBXScriptSignal" then
+        return result1, "direct", false
+    end
+    
+    if isHidden and ExploitCapabilities.gethiddenproperty then
+        local ok2, result2 = pcall(function() return gethiddenproperty(instance, signalName) end)
+        if ok2 and result2 and typeof(result2) == "RBXScriptSignal" then
+            return result2, "gethiddenproperty", false
+        end
+    end
+    
+    if isHidden and ExploitCapabilities.getrawmetatable then
+        local ok3, mt = pcall(function() return getrawmetatable(instance) end)
+        if ok3 and mt then
+            local oldReadonly
+            if setreadonly then
+                pcall(function() oldReadonly = mt.__metatable setreadonly(mt, false) end)
+            end
+            
+            local ok4, result4 = pcall(function()
+                local oldIndex = rawget(mt, "__index")
+                if type(oldIndex) == "function" then
+                    return oldIndex(instance, signalName)
+                elseif type(oldIndex) == "table" then
+                    return rawget(oldIndex, signalName)
+                end
+            end)
+            
+            if setreadonly and oldReadonly then
+                pcall(function() setreadonly(mt, true) end)
+            end
+            
+            if ok4 and result4 and typeof(result4) == "RBXScriptSignal" then
+                return result4, "rawmetatable", false
+            end
+        end
+    end
+    
+    local ok5, result5 = pcall(function() return rawget(instance, signalName) end)
+    if ok5 and result5 and typeof(result5) == "RBXScriptSignal" then
+        return result5, "rawget", false
+    end
+    
+    return nil, "failed", false
+end
+
+local function FetchAPIEvents()
+    local ok, response = pcall(function()
+        return game:HttpGet("https://raw.githubusercontent.com/MaximumADHD/Roblox-Client-Tracker/refs/heads/roblox/Full-API-Dump.json")
+    end)
+    if not ok or not response then return {} end
+    
+    local success, apiData = pcall(function() return HttpService:JSONDecode(response) end)
+    if not success or not apiData or not apiData.Classes then return {} end
+    
+    local events = {}
+    local stats = {normal = 0, hidden = 0, deprecated = 0, notscriptable = 0}
+    
+    for _, class in ipairs(apiData.Classes) do
+        if type(class.Name) == "string" then
+            events[class.Name] = {Superclass = class.Superclass, Events = {}, HiddenEvents = {}, DeprecatedEvents = {}}
+            if class.Members then
+                for _, member in ipairs(class.Members) do
+                    if member.MemberType == "Event" and type(member.Name) == "string" then
+                        local isHidden = false
+                        local isDeprecated = false
+                        local isNotScriptable = false
+                        
+                        for _, tag in ipairs(member.Tags or {}) do
+                            if tag == "Hidden" then isHidden = true end
+                            if tag == "Deprecated" then isDeprecated = true end
+                            if tag == "NotScriptable" then isNotScriptable = true end
+                        end
+                        
+                        if isNotScriptable then
+                            stats.notscriptable = stats.notscriptable + 1
+                        elseif isDeprecated then
+                            table.insert(events[class.Name].DeprecatedEvents, member.Name)
+                            stats.deprecated = stats.deprecated + 1
+                        elseif isHidden then
+                            table.insert(events[class.Name].HiddenEvents, member.Name)
+                            stats.hidden = stats.hidden + 1
+                        else
+                            table.insert(events[class.Name].Events, member.Name)
+                            stats.normal = stats.normal + 1
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    print("[SignalSpy] API Stats - Normal:", stats.normal, "| Hidden:", stats.hidden, "| Deprecated:", stats.deprecated, "| NotScriptable:", stats.notscriptable)
+    return events
+end
+
+local function GetClassEvents(className, includeHidden, includeDeprecated)
+    if type(className) ~= "string" then return {} end
+    local allEvents = {}
+    local current = className
+    local visited = {}
+    
+    while current and CachedAPIEvents[current] and not visited[current] do
+        visited[current] = true
+        local classData = CachedAPIEvents[current]
+        
+        for _, eventName in ipairs(classData.Events or {}) do
+            allEvents[eventName] = {hidden = false, deprecated = false}
+        end
+        
+        if includeHidden then
+            for _, eventName in ipairs(classData.HiddenEvents or {}) do
+                allEvents[eventName] = {hidden = true, deprecated = false}
+            end
+        end
+        
+        if includeDeprecated then
+            for _, eventName in ipairs(classData.DeprecatedEvents or {}) do
+                allEvents[eventName] = {hidden = false, deprecated = true}
+            end
+        end
+        
+        current = classData.Superclass
+    end
+    
+    local result = {}
+    for name, data in pairs(allEvents) do
+        table.insert(result, {name = name, hidden = data.hidden, deprecated = data.deprecated})
+    end
+    table.sort(result, function(a, b) return a.name < b.name end)
+    return result
+end
+
+local function deepClone(args, seen)
+    seen = seen or {}
+    if type(args) ~= "table" then
+        if typeof(args) == "Instance" then
+            local ok, c = pcall(cloneref, args)
+            return ok and c or args
+        end
+        return args
+    end
+    if seen[args] then return seen[args] end
+    local copy = {}
+    seen[args] = copy
+    for k, v in next, args do copy[deepClone(k, seen)] = deepClone(v, seen) end
+    return copy
+end
+
+local function instanceToPath(inst)
+    if not inst then return "nil" end
+    if inst == game then return "game" end
+    if inst == workspace then return "workspace" end
+    if inst == LocalPlayer then return 'game:GetService("Players").LocalPlayer' end
+    
+    local player = nil
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p.Character then
+            if inst == p.Character then
+                return p == LocalPlayer and 'game:GetService("Players").LocalPlayer.Character' or string.format('game:GetService("Players"):FindFirstChild("%s").Character', p.Name)
+            elseif inst:IsDescendantOf(p.Character) then
+                player = p
+                break
+            end
+        end
+    end
+    
+    local parts = {}
+    local current = inst
+    
+    if player then
+        while current and current ~= player.Character do
+            table.insert(parts, 1, current.Name:match("^[%a_][%w_]*$") and ("." .. current.Name) or string.format(':FindFirstChild("%s")', current.Name))
+            current = current.Parent
+        end
+        return (player == LocalPlayer and 'game:GetService("Players").LocalPlayer.Character' or string.format('game:GetService("Players"):FindFirstChild("%s").Character', player.Name)) .. table.concat(parts)
+    end
+    
+    local ok, result = pcall(function()
+        while current and current.Parent ~= game do
+            if not current.Parent then return string.format('getNil("%s", "%s")', inst.Name, inst.ClassName) end
+            table.insert(parts, 1, current.Name:match("^[%a_][%w_]*$") and ("." .. current.Name) or string.format(':FindFirstChild("%s")', current.Name))
+            current = current.Parent
+        end
+        if current and current.Parent == game then
+            local svc = current.ClassName
+            if pcall(function() return game:GetService(svc) end) then
+                return string.format('game:GetService("%s")%s', svc, table.concat(parts))
+            end
+            return "game." .. current.Name .. table.concat(parts)
+        end
+        return "game"
+    end)
+    return ok and result or tostring(inst)
+end
+
+local function deepSerialize(val, depth)
+    depth = depth or 0
+    if depth > 4 then return "..." end
+    
+    if LazyFix then
+        local ok, result = pcall(function() return LazyFix.Convert(val, true) end)
+        if ok and result then return result end
+    end
+    
+    local t = typeof(val)
+    local spacing = string.rep("    ", depth)
+    local nextSpacing = string.rep("    ", depth + 1)
+    
+    if t == "nil" then return "nil"
+    elseif t == "string" then return string.format("%q", #val > 150 and val:sub(1,150).."..." or val)
+    elseif t == "number" then return val == math.huge and "math.huge" or val == -math.huge and "-math.huge" or val ~= val and "0/0" or tostring(val)
+    elseif t == "boolean" then return tostring(val)
+    elseif t == "Instance" then return instanceToPath(val)
+    elseif t == "Vector3" then return string.format("Vector3.new(%s, %s, %s)", val.X, val.Y, val.Z)
+    elseif t == "CFrame" then return string.format("CFrame.new(%s)", table.concat({val:GetComponents()}, ", "))
+    elseif t == "Color3" then return string.format("Color3.new(%s, %s, %s)", val.R, val.G, val.B)
+    elseif t == "UDim2" then return string.format("UDim2.new(%s, %s, %s, %s)", val.X.Scale, val.X.Offset, val.Y.Scale, val.Y.Offset)
+    elseif t == "EnumItem" then return tostring(val)
+    elseif t == "function" then return "function() end"
+    elseif t == "table" then
+        local parts = {}
+        local count = 0
+        for k, v in pairs(val) do
+            count = count + 1
+            if count > 15 then table.insert(parts, nextSpacing .. "-- ...") break end
+            local ks = type(k) == "string" and k:match("^[%a_][%w_]*$") and k or ("[" .. deepSerialize(k, depth + 1) .. "]")
+            table.insert(parts, nextSpacing .. ks .. " = " .. deepSerialize(v, depth + 1))
+        end
+        return #parts == 0 and "{}" or "{\n" .. table.concat(parts, ",\n") .. "\n" .. spacing .. "}"
+    else return "<" .. t .. ">" end
+end
+
+local function generateScript(data)
+    local tags = {}
+    if data.IsHidden then table.insert(tags, "HIDDEN") end
+    if data.IsDeprecated then table.insert(tags, "DEPRECATED") end
+    
+    local script = "-- Signal: " .. (data.ClassName or "?") .. "." .. data.SignalName
+    if #tags > 0 then script = script .. " [" .. table.concat(tags, ", ") .. "]" end
+    if data.AccessMethod and data.AccessMethod ~= "direct" then
+        script = script .. "\n-- Access: " .. data.AccessMethod
+        if data.UsedSetScriptable then script = script .. " (setscriptable used)" end
+    end
+    script = script .. "\n-- Instance: " .. instanceToPath(data.Instance)
+    script = script .. "\n-- Calls: " .. tostring(data.CallCount or 1) .. "\n\n"
+    
+    local path = instanceToPath(data.Instance)
+    if path:find("getNil") then
+        script = 'local function getNil(n,c) for _,v in ipairs(getnilinstances()) do if v.ClassName==c and v.Name==n then return v end end end\n\n' .. script
+    end
+    
+    if data.UsedSetScriptable then
+        script = script .. "-- Enable scriptable access first:\n"
+        script = script .. "setscriptable(" .. path .. ', "' .. data.SignalName .. '", true)\n\n'
+    end
+    
+    if data.Args and #data.Args > 0 then
+        script = script .. "local args = " .. deepSerialize(data.Args) .. "\n\n"
+    end
+    
+    local signalAccess
+    if data.AccessMethod == "gethiddenproperty" then
+        signalAccess = 'gethiddenproperty(' .. path .. ', "' .. data.SignalName .. '")'
+    else
+        signalAccess = path .. "." .. data.SignalName
+    end
+    
+    script = script .. "local signal = " .. signalAccess .. "\n\n"
+    
+    if replicatesignal then
+        script = script .. "-- Replicate (recommended for hidden):\n"
+        script = script .. "replicatesignal(signal, unpack(args or {}))\n\n"
+    end
+    if firesignal then
+        script = script .. "-- Fire (may crash on hidden):\n"
+        script = script .. "-- firesignal(signal, unpack(args or {}))"
+    end
+    
+    return script
+end
+
+local function isSpammy(key)
+    if not CONFIG.FilterSpammy then return false end
+    local now = tick()
+    if not SpamHistory[key] then SpamHistory[key] = {count = 1, lastTime = now} return false end
+    local h = SpamHistory[key]
+    if now - h.lastTime > CONFIG.SpamTimeWindow then h.count = 1 else h.count = h.count + 1 end
+    h.lastTime = now
+    return h.count > CONFIG.SpamThreshold
+end
+--
+local SignalSpy = Create("ScreenGui", {ResetOnSpawn = false, Name = randomString(), ZIndexBehavior = Enum.ZIndexBehavior.Sibling})
+
+local Background = Create("Frame", {
+    Parent = SignalSpy,
+    BackgroundTransparency = 1,
+    Position = UDim2.new(0, 500, 0, 200),
+    Size = UDim2.new(0, 480, 0, 320)
+})
+
+Background.Draggable = true
+Background.Active = true
+
+local TopBar = Create("Frame", {Parent = Background, BackgroundColor3 = COLORS.TopBar, BorderSizePixel = 0, Size = UDim2.new(0, 480, 0, 19), ZIndex = 2})
+local LeftPanel = Create("Frame", {Parent = Background, BackgroundColor3 = COLORS.Panel, BorderSizePixel = 0, Position = UDim2.new(0, 0, 0, 19), Size = UDim2.new(0, 131, 0, 301), ClipsDescendants = true})
+local PanelResizer = Create("Frame", {Parent = Background, BackgroundColor3 = COLORS.Accent, BackgroundTransparency = 0.7, BorderSizePixel = 0, Position = UDim2.new(0, 129, 0, 19), Size = UDim2.new(0, 4, 0, 301), ZIndex = 5})
+Create("TextLabel", {Parent = PanelResizer, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 1, 0), Font = Enum.Font.SourceSansBold, Text = "⋮", TextColor3 = COLORS.Text, TextSize = 14, ZIndex = 5})
+
+local SearchFrame = Create("Frame", {Parent = LeftPanel, BackgroundColor3 = COLORS.Darker, BorderSizePixel = 0, Position = UDim2.new(0, 5, 0, 5), Size = UDim2.new(1, -10, 0, 22)})
+Create("UICorner", {CornerRadius = UDim.new(0, 4), Parent = SearchFrame})
+local SearchBox = Create("TextBox", {Parent = SearchFrame, BackgroundTransparency = 1, Position = UDim2.new(0, 5, 0, 0), Size = UDim2.new(1, -10, 1, 0), Font = Enum.Font.SourceSans, PlaceholderText = "Search...", PlaceholderColor3 = COLORS.TextDark, Text = "", TextColor3 = COLORS.Text, TextSize = 12, ClearTextOnFocus = false})
+
+local LogList = Create("ScrollingFrame", {Parent = LeftPanel, BackgroundTransparency = 1, BorderSizePixel = 0, Position = UDim2.new(0, 0, 0, 32), Size = UDim2.new(1, 0, 1, -40), CanvasSize = UDim2.new(0, 0, 0, 0), ScrollBarThickness = 4, ScrollBarImageColor3 = COLORS.Accent, ClipsDescendants = true})
+local UIListLayout = Create("UIListLayout", {Parent = LogList, HorizontalAlignment = Enum.HorizontalAlignment.Center, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 1)})
+
+local RightPanel = Create("Frame", {Parent = Background, BackgroundColor3 = COLORS.Background, BorderSizePixel = 0, Position = UDim2.new(0, 133, 0, 19), Size = UDim2.new(0, 347, 0, 301), ClipsDescendants = true})
+local CodeBox = Create("Frame", {Parent = RightPanel, BackgroundColor3 = COLORS.Darker, BorderSizePixel = 0, Size = UDim2.new(1, 0, 0.5, 0)})
+local ButtonsFrame = Create("ScrollingFrame", {Parent = RightPanel, BackgroundTransparency = 1, Position = UDim2.new(0, 0, 0.5, 0), Size = UDim2.new(1, 0, 0.5, -9), CanvasSize = UDim2.new(0, 0, 0, 0), ScrollBarThickness = 4, ScrollBarImageColor3 = COLORS.Accent})
+local UIGridLayout = Create("UIGridLayout", {Parent = ButtonsFrame, HorizontalAlignment = Enum.HorizontalAlignment.Center, SortOrder = Enum.SortOrder.LayoutOrder, CellSize = UDim2.new(0, 94, 0, 27)})
+
+local TitleButton = Create("TextButton", {Parent = TopBar, BackgroundTransparency = 1, Position = UDim2.new(0, 5, 0, 0), Size = UDim2.new(0, 80, 0, 18), Font = Enum.Font.SourceSansBold, Text = "SignalSpy", TextColor3 = COLORS.Green, TextSize = 14, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 2})
+local StatusLabel = Create("TextLabel", {Parent = TopBar, BackgroundTransparency = 1, Position = UDim2.new(0, 90, 0, 0), Size = UDim2.new(0, 180, 0, 18), Font = Enum.Font.SourceSans, Text = "[Loading...]", TextColor3 = COLORS.TextDark, TextSize = 10, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 2})
+
+local CloseButton = Create("TextButton", {Parent = TopBar, BackgroundColor3 = COLORS.TopBar, BorderSizePixel = 0, Position = UDim2.new(1, -19, 0, 0), Size = UDim2.new(0, 19, 0, 19), Text = "", ZIndex = 2})
+Create("ImageLabel", {Parent = CloseButton, BackgroundTransparency = 1, Position = UDim2.new(0, 5, 0, 5), Size = UDim2.new(0, 9, 0, 9), Image = "rbxassetid://5597086202", ZIndex = 2})
+local MaximizeButton = Create("TextButton", {Parent = TopBar, BackgroundColor3 = COLORS.TopBar, BorderSizePixel = 0, Position = UDim2.new(1, -38, 0, 0), Size = UDim2.new(0, 19, 0, 19), Text = "", ZIndex = 2})
+Create("ImageLabel", {Parent = MaximizeButton, BackgroundTransparency = 1, Position = UDim2.new(0, 5, 0, 5), Size = UDim2.new(0, 9, 0, 9), Image = "rbxassetid://5597108117", ZIndex = 2})
+local MinimizeButton = Create("TextButton", {Parent = TopBar, BackgroundColor3 = COLORS.TopBar, BorderSizePixel = 0, Position = UDim2.new(1, -57, 0, 0), Size = UDim2.new(0, 19, 0, 19), Text = "", ZIndex = 2})
+Create("ImageLabel", {Parent = MinimizeButton, BackgroundTransparency = 1, Position = UDim2.new(0, 5, 0, 5), Size = UDim2.new(0, 9, 0, 9), Image = "rbxassetid://5597105827", ZIndex = 2})
+
+local ToolTip = Create("Frame", {Parent = SignalSpy, BackgroundColor3 = Color3.fromRGB(20, 20, 22), BorderSizePixel = 1, BorderColor3 = COLORS.Accent, Size = UDim2.new(0, 200, 0, 50), ZIndex = 100, Visible = false})
+local ToolTipText = Create("TextLabel", {Parent = ToolTip, BackgroundTransparency = 1, Position = UDim2.new(0, 4, 0, 4), Size = UDim2.new(1, -8, 1, -8), ZIndex = 100, Font = Enum.Font.SourceSans, Text = "", TextColor3 = COLORS.Text, TextSize = 13, TextWrapped = true, TextXAlignment = Enum.TextXAlignment.Left, TextYAlignment = Enum.TextYAlignment.Top})
+
+local ConnectionViewer = Create("Frame", {Parent = SignalSpy, BackgroundColor3 = COLORS.Panel, BorderSizePixel = 0, Position = UDim2.new(0.5, -220, 0.5, -200), Size = UDim2.new(0, 440, 0, 400), Visible = false, ZIndex = 60})
+Create("UICorner", {CornerRadius = UDim.new(0, 6), Parent = ConnectionViewer})
+local CVTitle = Create("Frame", {Parent = ConnectionViewer, BackgroundColor3 = COLORS.TopBar, BorderSizePixel = 0, Size = UDim2.new(1, 0, 0, 28), ZIndex = 60})
+Create("UICorner", {CornerRadius = UDim.new(0, 6), Parent = CVTitle})
+Create("TextLabel", {Parent = CVTitle, BackgroundTransparency = 1, Position = UDim2.new(0, 10, 0, 0), Size = UDim2.new(0.7, 0, 1, 0), Font = Enum.Font.SourceSansBold, Text = "Connection Viewer", TextColor3 = COLORS.Text, TextSize = 14, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 60})
+local CVClose = Create("TextButton", {Parent = CVTitle, BackgroundColor3 = COLORS.TopBar, BorderSizePixel = 0, Position = UDim2.new(1, -28, 0, 0), Size = UDim2.new(0, 28, 0, 28), Font = Enum.Font.SourceSansBold, Text = "×", TextColor3 = COLORS.Text, TextSize = 20, ZIndex = 61})
+local CVWarning = Create("TextLabel", {Parent = ConnectionViewer, BackgroundTransparency = 1, Position = UDim2.new(0, 10, 0, 28), Size = UDim2.new(1, -20, 0, 18), Font = Enum.Font.SourceSans, Text = "", TextColor3 = COLORS.Yellow, TextSize = 10, ZIndex = 60})
+local CVInfo = Create("TextLabel", {Parent = ConnectionViewer, BackgroundTransparency = 1, Position = UDim2.new(0, 10, 0, 46), Size = UDim2.new(1, -20, 0, 20), Font = Enum.Font.SourceSans, Text = "Signal: -", TextColor3 = COLORS.TextDark, TextSize = 12, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 60})
+local CVList = Create("ScrollingFrame", {Parent = ConnectionViewer, BackgroundColor3 = COLORS.Darker, BorderSizePixel = 0, Position = UDim2.new(0, 10, 0, 70), Size = UDim2.new(1, -20, 1, -80), CanvasSize = UDim2.new(0, 0, 0, 0), ScrollBarThickness = 4, ScrollBarImageColor3 = COLORS.Accent, ZIndex = 60})
+Create("UICorner", {CornerRadius = UDim.new(0, 4), Parent = CVList})
+local CVListLayout = Create("UIListLayout", {Parent = CVList, Padding = UDim.new(0, 3)})
+
+local cvDragging, cvDragStart, cvStartPos = false, nil, nil
+CVTitle.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then cvDragging, cvDragStart, cvStartPos = true, input.Position, ConnectionViewer.Position end end)
+CVTitle.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then cvDragging = false end end)
+CVClose.MouseButton1Click:Connect(function() ConnectionViewer.Visible = false connectionViewerOpen = false end)
+CVClose.MouseEnter:Connect(function() CVClose.BackgroundColor3 = COLORS.Red end)
+CVClose.MouseLeave:Connect(function() CVClose.BackgroundColor3 = COLORS.TopBar end)
+
+local function createConnectionEntry(conn, index, signalKey, isHiddenSignal)
+    local Entry = Create("Frame", {Parent = CVList, BackgroundColor3 = Color3.fromRGB(45, 45, 48), BorderSizePixel = 0, Size = UDim2.new(1, -8, 0, 60), ZIndex = 60})
+    Create("UICorner", {CornerRadius = UDim.new(0, 4), Parent = Entry})
+    
+    local funcInfo = "Unknown"
+    if type(getinfo) == "function" and conn.Function then
+        local ok, info = pcall(function() return getinfo(conn.Function) end)
+        if ok and info then funcInfo = (info.source or "?") .. ":" .. (info.currentline or info.linedefined or "?") end
+    end
+    
+    local isEnabled = true
+    pcall(function() isEnabled = conn.Enabled end)
+    
+    Create("TextLabel", {Parent = Entry, BackgroundTransparency = 1, Position = UDim2.new(0, 8, 0, 3), Size = UDim2.new(1, -16, 0, 16), Font = Enum.Font.SourceSansBold, Text = "#" .. index .. " - " .. (isEnabled and "ENABLED" or "DISABLED"), TextColor3 = isEnabled and COLORS.Green or COLORS.Red, TextSize = 12, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 60})
+    Create("TextLabel", {Parent = Entry, BackgroundTransparency = 1, Position = UDim2.new(0, 8, 0, 20), Size = UDim2.new(1, -16, 0, 14), Font = Enum.Font.SourceSans, Text = "Src: " .. funcInfo, TextColor3 = COLORS.TextDark, TextSize = 10, TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd, ZIndex = 60})
+    
+    local isCClosure = false
+    pcall(function() isCClosure = iscclosure(conn.Function) end)
+    Create("TextLabel", {Parent = Entry, BackgroundTransparency = 1, Position = UDim2.new(0, 8, 0, 34), Size = UDim2.new(1, -16, 0, 12), Font = Enum.Font.SourceSans, Text = "Type: " .. (isCClosure and "C Closure" or "Lua"), TextColor3 = COLORS.TextDark, TextSize = 10, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 60})
+    
+    local ButtonFrame = Create("Frame", {Parent = Entry, BackgroundTransparency = 1, Position = UDim2.new(0, 8, 0, 44), Size = UDim2.new(1, -16, 0, 14), ZIndex = 60})
+    Create("UIListLayout", {Parent = ButtonFrame, FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 5)})
+    
+    local ToggleBtn = Create("TextButton", {Parent = ButtonFrame, BackgroundColor3 = isEnabled and COLORS.Yellow or COLORS.Green, BorderSizePixel = 0, Size = UDim2.new(0, 55, 0, 14), Font = Enum.Font.SourceSans, Text = isEnabled and "Disable" or "Enable", TextColor3 = COLORS.Darker, TextSize = 10, ZIndex = 61})
+    Create("UICorner", {CornerRadius = UDim.new(0, 3), Parent = ToggleBtn})
+    
+    local DisconnectBtn = Create("TextButton", {Parent = ButtonFrame, BackgroundColor3 = COLORS.Red, BorderSizePixel = 0, Size = UDim2.new(0, 60, 0, 14), Font = Enum.Font.SourceSans, Text = "Disconnect", TextColor3 = COLORS.Text, TextSize = 10, ZIndex = 61})
+    Create("UICorner", {CornerRadius = UDim.new(0, 3), Parent = DisconnectBtn})
+    
+    ToggleBtn.MouseButton1Click:Connect(function()
+        pcall(function()
+            conn.Enabled = not conn.Enabled
+            local newState = conn.Enabled
+            ToggleBtn.Text = newState and "Disable" or "Enable"
+            ToggleBtn.BackgroundColor3 = newState and COLORS.Yellow or COLORS.Green
+        end)
+    end)
+    
+    DisconnectBtn.MouseButton1Click:Connect(function()
+        pcall(function() conn:Disconnect() Entry:Destroy() end)
+    end)
+    
+    return Entry
+end
+
+local function openConnectionViewer(data)
+    if not data or not data.Signal then return end
+    
+    for _, child in ipairs(CVList:GetChildren()) do
+        if child:IsA("Frame") then child:Destroy() end
+    end
+    
+    local signalKey = (data.ClassName or "?") .. "." .. data.SignalName
+    local tags = {}
+    if data.IsHidden then table.insert(tags, "HIDDEN") end
+    if data.IsDeprecated then table.insert(tags, "DEPRECATED") end
+    
+    CVInfo.Text = "Signal: " .. signalKey .. (#tags > 0 and " [" .. table.concat(tags, ", ") .. "]" or "")
+    CVInfo.TextColor3 = data.IsHidden and COLORS.Orange or (data.IsDeprecated and COLORS.Purple or COLORS.Text)
+    
+    if data.IsHidden then
+        CVWarning.Text = "⚠ WARNING: getconnections() on Hidden signals may CRASH!"
+        CVWarning.TextColor3 = COLORS.Red
+    else
+        CVWarning.Text = ""
+    end
+    
+    if not getconnections then
+        CVInfo.Text = "getconnections() not available!"
+        CVInfo.TextColor3 = COLORS.Red
+        ConnectionViewer.Visible = true
+        connectionViewerOpen = true
+        return
+    end
+    
+    local ok, connections = pcall(function() return getconnections(data.Signal) end)
+    if not ok or not connections then
+        CVInfo.Text = "Failed to get connections! (May have crashed)"
+        CVInfo.TextColor3 = COLORS.Red
+        ConnectionViewer.Visible = true
+        connectionViewerOpen = true
+        return
+    end
+    
+    for i, conn in ipairs(connections) do
+        pcall(function() createConnectionEntry(conn, i, signalKey, data.IsHidden) end)
+    end
+    
+    CVList.CanvasSize = UDim2.new(0, 0, 0, CVListLayout.AbsoluteContentSize.Y + 10)
+    ConnectionViewer.Visible = true
+    connectionViewerOpen = true
+end
+
+local ClassBrowserFrame = Create("Frame", {Parent = SignalSpy, BackgroundColor3 = COLORS.Panel, BorderSizePixel = 0, Position = UDim2.new(0.5, -210, 0.5, -190), Size = UDim2.new(0, 420, 0, 380), Visible = false, ZIndex = 50})
+Create("UICorner", {CornerRadius = UDim.new(0, 6), Parent = ClassBrowserFrame})
+local ClassBrowserTitle = Create("Frame", {Parent = ClassBrowserFrame, BackgroundColor3 = COLORS.TopBar, BorderSizePixel = 0, Size = UDim2.new(1, 0, 0, 28), ZIndex = 50})
+Create("UICorner", {CornerRadius = UDim.new(0, 6), Parent = ClassBrowserTitle})
+Create("TextLabel", {Parent = ClassBrowserTitle, BackgroundTransparency = 1, Position = UDim2.new(0, 10, 0, 0), Size = UDim2.new(0, 90, 1, 0), Font = Enum.Font.SourceSansBold, Text = "Class Browser", TextColor3 = COLORS.Text, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 50})
+
+local HiddenToggle = Create("TextButton", {Parent = ClassBrowserTitle, BackgroundColor3 = COLORS.Darker, BorderSizePixel = 0, Position = UDim2.new(0, 105, 0, 4), Size = UDim2.new(0, 65, 0, 20), Font = Enum.Font.SourceSans, Text = "[H] OFF", TextColor3 = COLORS.Red, TextSize = 10, ZIndex = 51})
+Create("UICorner", {CornerRadius = UDim.new(0, 4), Parent = HiddenToggle})
+
+local DeprecatedToggle = Create("TextButton", {Parent = ClassBrowserTitle, BackgroundColor3 = COLORS.Darker, BorderSizePixel = 0, Position = UDim2.new(0, 175, 0, 4), Size = UDim2.new(0, 65, 0, 20), Font = Enum.Font.SourceSans, Text = "[D] OFF", TextColor3 = COLORS.Red, TextSize = 10, ZIndex = 51})
+Create("UICorner", {CornerRadius = UDim.new(0, 4), Parent = DeprecatedToggle})
+
+local SafeModeToggle = Create("TextButton", {Parent = ClassBrowserTitle, BackgroundColor3 = COLORS.Darker, BorderSizePixel = 0, Position = UDim2.new(0, 245, 0, 4), Size = UDim2.new(0, 65, 0, 20), Font = Enum.Font.SourceSans, Text = "Safe ON", TextColor3 = COLORS.Green, TextSize = 10, ZIndex = 51})
+Create("UICorner", {CornerRadius = UDim.new(0, 4), Parent = SafeModeToggle})
+
+local ClassBrowserClose = Create("TextButton", {Parent = ClassBrowserTitle, BackgroundColor3 = COLORS.TopBar, BorderSizePixel = 0, Position = UDim2.new(1, -28, 0, 0), Size = UDim2.new(0, 28, 0, 28), Font = Enum.Font.SourceSansBold, Text = "×", TextColor3 = COLORS.Text, TextSize = 20, ZIndex = 51})
+
+local CapabilitiesLabel = Create("TextLabel", {Parent = ClassBrowserFrame, BackgroundTransparency = 1, Position = UDim2.new(0, 10, 0, 30), Size = UDim2.new(1, -20, 0, 14), Font = Enum.Font.SourceSans, Text = "", TextColor3 = COLORS.TextDark, TextSize = 9, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 50})
+
+local ClassSearchFrame = Create("Frame", {Parent = ClassBrowserFrame, BackgroundColor3 = COLORS.Darker, BorderSizePixel = 0, Position = UDim2.new(0, 10, 0, 46), Size = UDim2.new(1, -20, 0, 24), ZIndex = 50})
+Create("UICorner", {CornerRadius = UDim.new(0, 4), Parent = ClassSearchFrame})
+local ClassSearchBox = Create("TextBox", {Parent = ClassSearchFrame, BackgroundTransparency = 1, Position = UDim2.new(0, 8, 0, 0), Size = UDim2.new(1, -16, 1, 0), Font = Enum.Font.SourceSans, PlaceholderText = "Search classes...", PlaceholderColor3 = COLORS.TextDark, Text = "", TextColor3 = COLORS.Text, TextSize = 12, ClearTextOnFocus = false, ZIndex = 50})
+
+local ClassListFrame = Create("ScrollingFrame", {Parent = ClassBrowserFrame, BackgroundColor3 = COLORS.Darker, BorderSizePixel = 0, Position = UDim2.new(0, 10, 0, 75), Size = UDim2.new(1, -20, 0, 255), CanvasSize = UDim2.new(0, 0, 0, 0), ScrollBarThickness = 4, ScrollBarImageColor3 = COLORS.Accent, ZIndex = 50})
+Create("UICorner", {CornerRadius = UDim.new(0, 4), Parent = ClassListFrame})
+local ClassListLayout = Create("UIListLayout", {Parent = ClassListFrame, Padding = UDim.new(0, 2)})
+
+local ApplyButton = Create("TextButton", {Parent = ClassBrowserFrame, BackgroundColor3 = COLORS.Green, BorderSizePixel = 0, Position = UDim2.new(0, 10, 1, -38), Size = UDim2.new(0.5, -15, 0, 28), Font = Enum.Font.SourceSansBold, Text = "Apply & Rehook", TextColor3 = COLORS.Darker, TextSize = 13, ZIndex = 50})
+Create("UICorner", {CornerRadius = UDim.new(0, 4), Parent = ApplyButton})
+local SelectedCountLabel = Create("TextLabel", {Parent = ClassBrowserFrame, BackgroundTransparency = 1, Position = UDim2.new(0.5, 5, 1, -38), Size = UDim2.new(0.5, -15, 0, 28), Font = Enum.Font.SourceSans, Text = "Selected: 0", TextColor3 = COLORS.TextDark, TextSize = 12, ZIndex = 50})
+
+HiddenToggle.MouseButton1Click:Connect(function()
+    getgenv().CaptureHidden = not getgenv().CaptureHidden
+    HiddenToggle.Text = getgenv().CaptureHidden and "[H] ON" or "[H] OFF"
+    HiddenToggle.TextColor3 = getgenv().CaptureHidden and COLORS.Orange or COLORS.Red
+end)
+
+DeprecatedToggle.MouseButton1Click:Connect(function()
+    getgenv().CaptureDeprecated = not getgenv().CaptureDeprecated
+    DeprecatedToggle.Text = getgenv().CaptureDeprecated and "[D] ON" or "[D] OFF"
+    DeprecatedToggle.TextColor3 = getgenv().CaptureDeprecated and COLORS.Purple or COLORS.Red
+end)
+
+SafeModeToggle.MouseButton1Click:Connect(function()
+    CONFIG.SafeMode = not CONFIG.SafeMode
+    SafeModeToggle.Text = CONFIG.SafeMode and "Safe ON" or "Safe OFF"
+    SafeModeToggle.TextColor3 = CONFIG.SafeMode and COLORS.Green or COLORS.Red
+end)
+
+local cbDragging, cbDragStart, cbStartPos = false, nil, nil
+ClassBrowserTitle.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then cbDragging, cbDragStart, cbStartPos = true, input.Position, ClassBrowserFrame.Position end end)
+ClassBrowserTitle.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then cbDragging = false end end)
+ClassBrowserClose.MouseButton1Click:Connect(function() ClassBrowserFrame.Visible = false classBrowserOpen = false end)
+ClassBrowserClose.MouseEnter:Connect(function() ClassBrowserClose.BackgroundColor3 = COLORS.Red end)
+ClassBrowserClose.MouseLeave:Connect(function() ClassBrowserClose.BackgroundColor3 = COLORS.TopBar end)
+
+if Highlight then
+    codebox = Highlight.new(CodeBox)
+    local caps = {}
+    for k, v in pairs(ExploitCapabilities) do if v then table.insert(caps, k) end end
+    codebox:setRaw("-- SignalSpy v4\n-- Capabilities: " .. table.concat(caps, ", ") .. "\n-- Classes: " .. table.concat(getgenv().CaptureClasses or {}, ", "))
+end
+
+local function updateLogCanvas() task.defer(function() LogList.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 5) end) end
+local function updateButtonCanvas() ButtonsFrame.CanvasSize = UDim2.new(0, 0, 0, UIGridLayout.AbsoluteContentSize.Y) end
+local function setCode(text) if codebox then codebox:setRaw(text) end end
+local function getCode() return codebox and codebox:getString() or "" end
+
+local function updatePanelSizes(speed)
+    speed = speed or 0.05
+    local leftWidth = CONFIG.LeftPanelWidth
+    TweenService:Create(LeftPanel, TweenInfo.new(speed), {Size = UDim2.fromOffset(leftWidth, Background.AbsoluteSize.Y - 19)}):Play()
+    TweenService:Create(PanelResizer, TweenInfo.new(speed), {Position = UDim2.fromOffset(leftWidth - 2, 19), Size = UDim2.fromOffset(4, Background.AbsoluteSize.Y - 19)}):Play()
+    TweenService:Create(RightPanel, TweenInfo.new(speed), {Position = UDim2.fromOffset(leftWidth + 2, 19), Size = UDim2.fromOffset(Background.AbsoluteSize.X - leftWidth - 2, Background.AbsoluteSize.Y - 19)}):Play()
+    TweenService:Create(TopBar, TweenInfo.new(speed), {Size = UDim2.fromOffset(Background.AbsoluteSize.X, 19)}):Play()
+end
+
+local function minimizeSize(speed)
+    speed = speed or 0.05
+    TweenService:Create(RightPanel, TweenInfo.new(speed), {Size = UDim2.fromOffset(0, Background.AbsoluteSize.Y - 19)}):Play()
+    TweenService:Create(PanelResizer, TweenInfo.new(speed), {Size = UDim2.fromOffset(0, 0)}):Play()
+    TweenService:Create(TopBar, TweenInfo.new(speed), {Size = UDim2.fromOffset(CONFIG.LeftPanelWidth, 19)}):Play()
+end
+
+local function closeAllPopups() ClassBrowserFrame.Visible = false classBrowserOpen = false ConnectionViewer.Visible = false connectionViewerOpen = false end
+
+local function makeToolTip(enable, text)
+    if enable and text then
+        ToolTipText.Text = text
+        local size = TextService:GetTextSize(text, 13, Enum.Font.SourceSans, Vector2.new(250, math.huge))
+        ToolTip.Size = UDim2.new(0, math.min(size.X + 12, 260), 0, math.min(size.Y + 12, 150))
+        ToolTip.Visible = true
+        if Connections["ToolTip"] then Connections["ToolTip"]:Disconnect() end
+        Connections["ToolTip"] = RunService.RenderStepped:Connect(function()
+            local mousePos = UserInputService:GetMouseLocation()
+            local x, y = mousePos.X + 15, mousePos.Y - 10 - GuiInset.Y
+            local viewSize = workspace.CurrentCamera.ViewportSize
+            if x + ToolTip.AbsoluteSize.X > viewSize.X then x = mousePos.X - ToolTip.AbsoluteSize.X - 10 end
+            if y + ToolTip.AbsoluteSize.Y > viewSize.Y - 50 then y = viewSize.Y - ToolTip.AbsoluteSize.Y - 50 end
+            ToolTip.Position = UDim2.new(0, x, 0, y)
+        end)
+    else
+        ToolTip.Visible = false
+        if Connections["ToolTip"] then Connections["ToolTip"]:Disconnect() end
+    end
+end
+
+local function newButton(name, description, onClick)
+    local Template = Create("Frame", {Parent = ButtonsFrame, BackgroundTransparency = 1, Size = UDim2.new(0, 117, 0, 23)})
+    Create("Frame", {Parent = Template, BackgroundColor3 = COLORS.Accent, BorderSizePixel = 0, Position = UDim2.new(0, 7, 0, 10), Size = UDim2.new(0, 7, 0, 18), ZIndex = 3})
+    Create("TextLabel", {Parent = Template, BackgroundTransparency = 1, Position = UDim2.new(0, 19, 0, 10), Size = UDim2.new(0, 69, 0, 18), Font = Enum.Font.SourceSans, Text = name, TextColor3 = COLORS.Text, TextSize = 14, TextXAlignment = Enum.TextXAlignment.Left})
+    local Btn = Create("TextButton", {Parent = Template, BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = 0.7, Position = UDim2.new(0, 7, 0, 10), Size = UDim2.new(0, 80, 0, 18), AutoButtonColor = false, Text = ""})
+    Btn.MouseEnter:Connect(function() makeToolTip(true, type(description) == "function" and description() or description) end)
+    Btn.MouseLeave:Connect(function() makeToolTip(false) end)
+    Btn.MouseButton1Click:Connect(function() pcall(onClick) end)
+    updateButtonCanvas()
+end
+
+local SelectedClasses = {}
+local ClassCheckboxes = {}
+
+local function updateSelectedCount()
+    local count = 0
+    for _ in pairs(SelectedClasses) do count = count + 1 end
+    SelectedCountLabel.Text = "Selected: " .. count
+end
+
+local function createClassEntry(className, normalCount, hiddenCount, deprecatedCount)
+    local isSelected = SelectedClasses[className] == true
+    local Entry = Create("Frame", {Parent = ClassListFrame, BackgroundColor3 = isSelected and Color3.fromRGB(50, 80, 50) or Color3.fromRGB(40, 40, 43), BorderSizePixel = 0, Size = UDim2.new(1, -4, 0, 26), ZIndex = 50})
+    Create("UICorner", {CornerRadius = UDim.new(0, 4), Parent = Entry})
+    local Checkbox = Create("TextButton", {Parent = Entry, BackgroundColor3 = isSelected and COLORS.Green or Color3.fromRGB(55, 55, 58), BorderSizePixel = 0, Position = UDim2.new(0, 5, 0.5, -8), Size = UDim2.new(0, 16, 0, 16), Font = Enum.Font.SourceSansBold, Text = isSelected and "✓" or "", TextColor3 = COLORS.Text, TextSize = 12, ZIndex = 51})
+    Create("UICorner", {CornerRadius = UDim.new(0, 4), Parent = Checkbox})
+    Create("TextLabel", {Parent = Entry, BackgroundTransparency = 1, Position = UDim2.new(0, 26, 0, 0), Size = UDim2.new(1, -120, 1, 0), Font = Enum.Font.SourceSans, Text = className, TextColor3 = COLORS.Text, TextSize = 12, TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd, ZIndex = 50})
+    
+    local evtText = normalCount .. "e"
+    local evtColor = COLORS.TextDark
+    if hiddenCount > 0 then evtText = evtText .. " +" .. hiddenCount .. "h" evtColor = COLORS.Orange end
+    if deprecatedCount > 0 then evtText = evtText .. " +" .. deprecatedCount .. "d" end
+    Create("TextLabel", {Parent = Entry, BackgroundTransparency = 1, Position = UDim2.new(1, -92, 0, 0), Size = UDim2.new(0, 88, 1, 0), Font = Enum.Font.SourceSans, Text = evtText, TextColor3 = evtColor, TextSize = 9, TextXAlignment = Enum.TextXAlignment.Right, ZIndex = 50})
+    
+    ClassCheckboxes[className] = {Entry = Entry, Checkbox = Checkbox}
+    local function toggle()
+        SelectedClasses[className] = not SelectedClasses[className]
+        local sel = SelectedClasses[className]
+        Checkbox.Text = sel and "✓" or ""
+        Checkbox.BackgroundColor3 = sel and COLORS.Green or Color3.fromRGB(55, 55, 58)
+        Entry.BackgroundColor3 = sel and Color3.fromRGB(50, 80, 50) or Color3.fromRGB(40, 40, 43)
+        updateSelectedCount()
+    end
+    Checkbox.MouseButton1Click:Connect(toggle)
+    Entry.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then toggle() end end)
+end
+
+local function refreshClassList()
+    for _, child in ipairs(ClassListFrame:GetChildren()) do if child:IsA("Frame") then child:Destroy() end end
+    ClassCheckboxes = {}
+    local query = (classSearchQuery or ""):lower()
+    
+    local function addClassIfMatch(className)
+        if CachedAPIEvents[className] and (query == "" or className:lower():find(query, 1, true)) then
+            local classData = CachedAPIEvents[className]
+            local normalCount = #(classData.Events or {})
+            local hiddenCount = #(classData.HiddenEvents or {})
+            local deprecatedCount = #(classData.DeprecatedEvents or {})
+            if normalCount > 0 or hiddenCount > 0 or deprecatedCount > 0 then
+                createClassEntry(className, normalCount, hiddenCount, deprecatedCount)
+            end
+        end
+    end
+    
+    for _, popClass in ipairs(POPULAR_CLASSES) do addClassIfMatch(popClass) end
+    if query ~= "" then
+        for name in pairs(CachedAPIEvents) do
+            local isPop = false
+            for _, p in ipairs(POPULAR_CLASSES) do if p == name then isPop = true break end end
+            if not isPop then addClassIfMatch(name) end
+        end
+    end
+    ClassListFrame.CanvasSize = UDim2.new(0, 0, 0, ClassListLayout.AbsoluteContentSize.Y + 10)
+end
+
+local function openClassBrowser()
+    SelectedClasses = {}
+    for _, className in ipairs(getgenv().CaptureClasses or {}) do SelectedClasses[className] = true end
+    classSearchQuery = ""
+    ClassSearchBox.Text = ""
+    HiddenToggle.Text = getgenv().CaptureHidden and "[H] ON" or "[H] OFF"
+    HiddenToggle.TextColor3 = getgenv().CaptureHidden and COLORS.Orange or COLORS.Red
+    DeprecatedToggle.Text = getgenv().CaptureDeprecated and "[D] ON" or "[D] OFF"
+    DeprecatedToggle.TextColor3 = getgenv().CaptureDeprecated and COLORS.Purple or COLORS.Red
+    SafeModeToggle.Text = CONFIG.SafeMode and "Safe ON" or "Safe OFF"
+    SafeModeToggle.TextColor3 = CONFIG.SafeMode and COLORS.Green or COLORS.Red
+    
+    local caps = {}
+    if ExploitCapabilities.setscriptable then table.insert(caps, "setscriptable✓") end
+    if ExploitCapabilities.gethiddenproperty then table.insert(caps, "gethidden✓") end
+    if ExploitCapabilities.replicatesignal then table.insert(caps, "replicate✓") end
+    if ExploitCapabilities.firesignal then table.insert(caps, "fire✓") end
+    CapabilitiesLabel.Text = "Caps: " .. (#caps > 0 and table.concat(caps, " ") or "none")
+    
+    refreshClassList()
+    updateSelectedCount()
+    ClassBrowserFrame.Visible = true
+    classBrowserOpen = true
+end
+
+ClassSearchBox:GetPropertyChangedSignal("Text"):Connect(function() classSearchQuery = ClassSearchBox.Text refreshClassList() end)
+--
+local function eventSelect(data)
+    if selected and selected.Button then
+        TweenService:Create(selected.Button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.new(0, 0, 0)}):Play()
+    end
+    selected = data
+    if selected.Button then
+        TweenService:Create(selected.Button, TweenInfo.new(0.2), {BackgroundColor3 = COLORS.Selected}):Play()
+    end
+    selected.GenScript = selected.GenScript or generateScript(selected)
+    setCode(selected.GenScript)
+    if sideClosed then sideClosed = false updatePanelSizes(0.3) end
+end
+
+local function createGroupEntry(className, signalName, isHidden, isDeprecated)
+    local groupKey = className .. "." .. signalName
+    if groupedLogs[groupKey] then return groupedLogs[groupKey] end
+    if layoutOrderNum < 1 then layoutOrderNum = 999999999 end
+    
+    local group = {SignalName = signalName, ClassName = className, Logs = {}, Expanded = false, CallCount = 0, IsHidden = isHidden, IsDeprecated = isDeprecated}
+    local color = isHidden and COLORS.Orange or (isDeprecated and COLORS.Purple or COLORS.Accent)
+    
+    local GroupFrame = Create("Frame", {Parent = LogList, BackgroundTransparency = 1, Size = UDim2.new(1, -8, 0, 22), LayoutOrder = layoutOrderNum, ClipsDescendants = true})
+    local GroupLayout = Create("UIListLayout", {Parent = GroupFrame, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 1)})
+    GroupLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        GroupFrame.Size = UDim2.new(1, -8, 0, GroupLayout.AbsoluteContentSize.Y)
+        task.defer(updateLogCanvas)
+    end)
+    
+    local HeaderFrame = Create("Frame", {Parent = GroupFrame, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 22), LayoutOrder = -999999})
+    local ExpandButton = Create("TextButton", {Parent = HeaderFrame, BackgroundTransparency = 1, Size = UDim2.new(0, 14, 0, 18), Position = UDim2.new(0, 0, 0, 2), Font = Enum.Font.SourceSansBold, Text = ">", TextColor3 = color, TextSize = 13})
+    Create("Frame", {Parent = HeaderFrame, BackgroundColor3 = color, BorderSizePixel = 0, Position = UDim2.new(0, 14, 0, 2), Size = UDim2.new(0, 4, 0, 18)})
+    
+    local displayText = CONFIG.ShowClassName and groupKey or signalName
+    local tags = {}
+    if isHidden then table.insert(tags, "H") end
+    if isDeprecated then table.insert(tags, "D") end
+    if #tags > 0 then displayText = displayText .. " [" .. table.concat(tags) .. "]" end
+    
+    Create("TextLabel", {Parent = HeaderFrame, BackgroundTransparency = 1, Position = UDim2.new(0, 22, 0, 2), Size = UDim2.new(1, -48, 0, 18), Font = Enum.Font.SourceSans, Text = displayText, TextColor3 = color, TextSize = 12, TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd})
+    local CountLabel = Create("TextLabel", {Parent = HeaderFrame, BackgroundTransparency = 1, Position = UDim2.new(1, -24, 0, 2), Size = UDim2.new(0, 22, 0, 18), Font = Enum.Font.SourceSans, Text = "0", TextColor3 = COLORS.TextDark, TextSize = 11, TextXAlignment = Enum.TextXAlignment.Right})
+    local HeaderButton = Create("TextButton", {Parent = HeaderFrame, BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = 0.8, Size = UDim2.new(1, 0, 0, 18), Position = UDim2.new(0, 0, 0, 2), AutoButtonColor = false, Text = ""})
+    
+    group.Frame = GroupFrame
+    group.CountLabel = CountLabel
+    group.ExpandButton = ExpandButton
+    
+    local function toggleExpand()
+        group.Expanded = not group.Expanded
+        ExpandButton.Text = group.Expanded and "v" or ">"
+        for _, logData in ipairs(group.Logs) do if logData.LogFrame then logData.LogFrame.Visible = group.Expanded end end
+        task.defer(function() GroupFrame.Size = UDim2.new(1, -8, 0, GroupLayout.AbsoluteContentSize.Y) updateLogCanvas() end)
+    end
+    
+    ExpandButton.MouseButton1Click:Connect(toggleExpand)
+    HeaderButton.MouseButton2Click:Connect(toggleExpand)
+    HeaderButton.MouseButton1Click:Connect(function() if #group.Logs > 0 then eventSelect(group.Logs[1]) end end)
+    
+    groupedLogs[groupKey] = group
+    layoutOrderNum = layoutOrderNum - 1
+    updateLogCanvas()
+    return group
+end
+
+local function newSignalLog(data)
+    if CONFIG.FilterHiddenOnly and not data.IsHidden then return end
+    if CONFIG.FilterDeprecatedOnly and not data.IsDeprecated then return end
+    
+    local className = data.ClassName or "?"
+    local signalName = data.SignalName
+    local groupKey = className .. "." .. signalName
+    local group = createGroupEntry(className, signalName, data.IsHidden, data.IsDeprecated)
+    
+    group.CallCount = group.CallCount + 1
+    group.CountLabel.Text = tostring(group.CallCount)
+    data.CallCount = group.CallCount
+    
+    SignalStats[groupKey] = (SignalStats[groupKey] or 0) + 1
+    TotalCalls = TotalCalls + 1
+    StatusLabel.Text = "[" .. TotalHookedCount .. "/" .. HiddenHookedCount .. "h/" .. DeprecatedHookedCount .. "d | " .. TotalCalls .. "c]"
+    
+    local color = data.IsHidden and COLORS.Orange or (data.IsDeprecated and COLORS.Purple or Color3.fromRGB(190, 190, 190))
+    local LogFrame = Create("Frame", {Parent = group.Frame, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 19), LayoutOrder = -group.CallCount, Visible = group.Expanded})
+    Create("TextLabel", {Parent = LogFrame, BackgroundTransparency = 1, Position = UDim2.new(0, 5, 0, 0), Size = UDim2.new(0, 22, 1, 0), Font = Enum.Font.SourceSans, Text = "#" .. tostring(group.CallCount - 1), TextColor3 = COLORS.TextDark, TextSize = 10, TextXAlignment = Enum.TextXAlignment.Left})
+    Create("TextLabel", {Parent = LogFrame, BackgroundTransparency = 1, Position = UDim2.new(0, 28, 0, 0), Size = UDim2.new(1, -30, 1, 0), Font = Enum.Font.SourceSans, Text = CONFIG.ShowClassName and groupKey or signalName, TextColor3 = color, TextSize = 11, TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd})
+    local LogButton = Create("TextButton", {Parent = LogFrame, BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = 0.88, Size = UDim2.new(1, 0, 1, 0), AutoButtonColor = false, Text = ""})
+    
+    data.LogFrame = LogFrame
+    data.Button = LogButton
+    data.id = #logs + 1
+    table.insert(group.Logs, 1, data)
+    table.insert(logs, 1, data)
+    LogButton.MouseButton1Click:Connect(function() eventSelect(data) end)
+    if #logs > CONFIG.MaxLogs then local oldest = table.remove(logs) if oldest and oldest.LogFrame then oldest.LogFrame:Destroy() end end
+end
+
+local function logSignal(instance, signalName, signal, args, isHidden, isDeprecated, accessMethod, usedSetScriptable)
+    if not CONFIG.Enabled then return end
+    local ok, className = pcall(function() return instance.ClassName end)
+    className = ok and className or "?"
+    local key = className .. "." .. signalName .. "." .. tostring(instance)
+    local groupKey = className .. "." .. signalName
+    if blacklist[key] or blacklist[signalName] or blacklist[groupKey] then return end
+    if blocklist[key] or blocklist[signalName] or blocklist[groupKey] then return end
+    if isSpammy(key) then return end
+    
+    newSignalLog({
+        SignalName = signalName, Instance = instance, Signal = signal, ClassName = className,
+        Args = deepClone(args or {}), Timestamp = os.time(), IsHidden = isHidden, IsDeprecated = isDeprecated,
+        AccessMethod = accessMethod, UsedSetScriptable = usedSetScriptable,
+    })
+end
+
+local function hookSignal(instance, signalName, isHidden, isDeprecated)
+    local ok, className = pcall(function() return instance.ClassName end)
+    className = ok and className or "Unknown"
+    local key = className .. "." .. signalName .. "." .. tostring(instance)
+    if HookedSignals[key] then return false end
+    
+    HookAttempts[className .. "." .. signalName] = (HookAttempts[className .. "." .. signalName] or 0) + 1
+    
+    local signal, accessMethod, usedSetScriptable = getSignalFromInstance(instance, signalName, isHidden, isDeprecated)
+    if not signal then
+        local failType = isHidden and "hidden" or (isDeprecated and "deprecated" or "normal")
+        FailedHooks[failType][className .. "." .. signalName] = (FailedHooks[failType][className .. "." .. signalName] or 0) + 1
+        return false
+    end
+    
+    HookedSignals[key] = true
+    TotalHookedCount = TotalHookedCount + 1
+    if isHidden then HiddenHookedCount = HiddenHookedCount + 1 end
+    if isDeprecated then DeprecatedHookedCount = DeprecatedHookedCount + 1 end
+    
+    local conn = signal:Connect(function(...)
+        logSignal(instance, signalName, signal, {...}, isHidden, isDeprecated, accessMethod, usedSetScriptable)
+    end)
+    table.insert(Connections, conn)
+    return true
+end
+
+local function hookInstanceByClass(instance)
+    local captureClasses = getgenv().CaptureClasses
+    if not captureClasses or type(captureClasses) ~= "table" then return end
+    for _, className in ipairs(captureClasses) do
+        local ok, isClass = pcall(function() return instance:IsA(className) end)
+        if ok and isClass then
+            local events = GetClassEvents(className, getgenv().CaptureHidden, getgenv().CaptureDeprecated)
+            for _, eventData in ipairs(events) do
+                pcall(function() hookSignal(instance, eventData.name, eventData.hidden, eventData.deprecated) end)
+            end
+        end
+    end
+end
+
+local function rehookAll()
+    TotalHookedCount, HiddenHookedCount, DeprecatedHookedCount = 0, 0, 0
+    HookedSignals = {}
+    FailedHooks = {hidden = {}, deprecated = {}, normal = {}}
+    HookAttempts = {}
+    for _, conn in pairs(Connections) do if typeof(conn) == "RBXScriptConnection" then pcall(function() conn:Disconnect() end) end end
+    Connections = {}
+    StatusLabel.Text = "[Rehooking...]"
+    StatusLabel.TextColor3 = COLORS.Yellow
+    
+    task.spawn(function()
+        task.wait(0.1)
+        local count = 0
+        for _, desc in ipairs(game:GetDescendants()) do
+            count = count + 1
+            if count % 1000 == 0 then task.wait() end
+            pcall(function() hookInstanceByClass(desc) end)
+        end
+        if LocalPlayer then pcall(function() hookSignal(LocalPlayer, "Idled", false, false) end) end
+        Connections["DescAdded"] = game.DescendantAdded:Connect(function(desc) task.defer(function() pcall(function() hookInstanceByClass(desc) end) end) end)
+        StatusLabel.Text = "[" .. TotalHookedCount .. "/" .. HiddenHookedCount .. "h/" .. DeprecatedHookedCount .. "d]"
+        StatusLabel.TextColor3 = COLORS.Green
+        
+        print("[SignalSpy] === HOOK RESULTS ===")
+        print("[SignalSpy] Total:", TotalHookedCount, "| Hidden:", HiddenHookedCount, "| Deprecated:", DeprecatedHookedCount)
+        if HiddenHookedCount > 0 then print("[SignalSpy] SUCCESS: Hidden signals hooked via setscriptable!") end
+        local failedHidden = 0 for _ in pairs(FailedHooks.hidden) do failedHidden = failedHidden + 1 end
+        if failedHidden > 0 then print("[SignalSpy] Failed hidden:", failedHidden) end
+    end)
+end
+
+ApplyButton.MouseButton1Click:Connect(function()
+    local newClasses = {}
+    for className, sel in pairs(SelectedClasses) do if sel then table.insert(newClasses, className) end end
+    if #newClasses == 0 then setCode("-- Select at least 1 class!") return end
+    getgenv().CaptureClasses = newClasses
+    ClassBrowserFrame.Visible = false
+    classBrowserOpen = false
+    rehookAll()
+    setCode("-- Rehooked!\n-- Hidden: " .. (getgenv().CaptureHidden and "ON" or "OFF") .. "\n-- Deprecated: " .. (getgenv().CaptureDeprecated and "ON" or "OFF") .. "\n-- Classes: " .. table.concat(newClasses, ", "))
+end)
+
+local function matchesSearch(key) if searchQuery == "" then return true end return key:lower():find(searchQuery:lower(), 1, true) ~= nil end
+local function refreshLogList()
+    for key, group in pairs(groupedLogs) do
+        local visible = matchesSearch(key)
+        if CONFIG.FilterHiddenOnly and not group.IsHidden then visible = false end
+        if CONFIG.FilterDeprecatedOnly and not group.IsDeprecated then visible = false end
+        if group.Frame then group.Frame.Visible = visible end
+    end
+    updateLogCanvas()
+end
+SearchBox:GetPropertyChangedSignal("Text"):Connect(function() searchQuery = SearchBox.Text refreshLogList() end)
+
+local dragging, resizing, panelResizing = false, false, false
+local dragStart, startPos, resizeType
+
+local function isMouseInBackground(mousePos) local bgPos, bgSize = Background.AbsolutePosition, Background.AbsoluteSize return mousePos.X >= bgPos.X and mousePos.X <= bgPos.X + bgSize.X and mousePos.Y >= bgPos.Y and mousePos.Y <= bgPos.Y + bgSize.Y end
+local function isInResizeRange(mousePos) if not isMouseInBackground(mousePos) then return false, nil end local rel = mousePos - Background.AbsolutePosition local w, h = Background.AbsoluteSize.X, Background.AbsoluteSize.Y if rel.X >= w - 10 and rel.Y >= h - 10 then return true, "BR" end if rel.X >= w - 10 then return true, "R" end if rel.Y >= h - 10 then return true, "B" end return false, nil end
+local function isInDragRange(mousePos) if not isMouseInBackground(mousePos) then return false end local rel = mousePos - Background.AbsolutePosition return rel.X >= 0 and rel.X <= TopBar.AbsoluteSize.X - 60 and rel.Y >= 0 and rel.Y <= 19 end
+local function isInPanelResizerRange(mousePos) local resPos, resSize = PanelResizer.AbsolutePosition, PanelResizer.AbsoluteSize return mousePos.X >= resPos.X - 3 and mousePos.X <= resPos.X + resSize.X + 3 and mousePos.Y >= resPos.Y and mousePos.Y <= resPos.Y + resSize.Y end
+
+UserInputService.InputBegan:Connect(function(input)
+    if classBrowserOpen or connectionViewerOpen then return end
+    if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
+    local mousePos = UserInputService:GetMouseLocation() - GuiInset
+    if isInPanelResizerRange(mousePos) and not sideClosed and not closed then panelResizing, dragStart, startPos = true, input.Position, Vector2.new(CONFIG.LeftPanelWidth, 0) return end
+    local inResize, rType = isInResizeRange(mousePos)
+    if inResize and not closed then resizing, resizeType, dragStart, startPos = true, rType, input.Position, Background.AbsoluteSize
+    elseif isInDragRange(mousePos) then dragging, dragStart, startPos = true, input.Position, Background.Position end
+end)
+
+UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging, resizing, panelResizing, resizeType = false, false, false, nil end end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input.UserInputType ~= Enum.UserInputType.MouseMovement then return end
+    if cbDragging then local delta = input.Position - cbDragStart ClassBrowserFrame.Position = UDim2.new(cbStartPos.X.Scale, cbStartPos.X.Offset + delta.X, cbStartPos.Y.Scale, cbStartPos.Y.Offset + delta.Y) return end
+    if cvDragging then local delta = input.Position - cvDragStart ConnectionViewer.Position = UDim2.new(cvStartPos.X.Scale, cvStartPos.X.Offset + delta.X, cvStartPos.Y.Scale, cvStartPos.Y.Offset + delta.Y) return end
+    if not dragStart then return end
+    local delta = input.Position - dragStart
+    local viewSize = workspace.CurrentCamera.ViewportSize
+    if panelResizing then CONFIG.LeftPanelWidth = math.clamp(startPos.X + delta.X, 80, Background.AbsoluteSize.X - 100) updatePanelSizes(0) return end
+    if dragging then Background.Position = UDim2.new(0, math.clamp(startPos.X.Offset + delta.X, 0, viewSize.X - Background.AbsoluteSize.X), 0, math.clamp(startPos.Y.Offset + delta.Y, 0, viewSize.Y - Background.AbsoluteSize.Y - 36))
+    elseif resizing then
+        local newW, newH = math.clamp(startPos.X + delta.X, 350, viewSize.X - Background.AbsolutePosition.X), math.clamp(startPos.Y + delta.Y, 200, viewSize.Y - Background.AbsolutePosition.Y - 36)
+        if resizeType == "BR" then Background.Size = UDim2.fromOffset(sideClosed and CONFIG.LeftPanelWidth or newW, newH)
+        elseif resizeType == "R" and not sideClosed then Background.Size = UDim2.fromOffset(newW, Background.AbsoluteSize.Y)
+        elseif resizeType == "B" then Background.Size = UDim2.fromOffset(Background.AbsoluteSize.X, newH) end
+        if sideClosed then minimizeSize() else updatePanelSizes() end
+    end
+end)
+--
+MinimizeButton.MouseButton1Click:Connect(function()
+    if mainClosing then return end
+    mainClosing = true
+    closed = not closed
+    closeAllPopups()
+    SearchFrame.Visible = not closed
+    LogList.Visible = not closed
+    TweenService:Create(LeftPanel, TweenInfo.new(0.3), {Size = UDim2.new(0, CONFIG.LeftPanelWidth, 0, closed and 0 or 301)}):Play()
+    TweenService:Create(PanelResizer, TweenInfo.new(0.3), {Size = UDim2.new(0, 4, 0, closed and 0 or 301)}):Play()
+    if not sideClosed then
+        TweenService:Create(RightPanel, TweenInfo.new(0.3), {Size = UDim2.new(0, 347, 0, closed and 0 or 301)}):Play()
+    end
+    task.delay(0.3, function()
+        mainClosing = false
+        if not closed then
+            SearchFrame.Visible = true
+            LogList.Visible = true
+        end
+    end)
+end)
+
+MaximizeButton.MouseButton1Click:Connect(function()
+    if sideClosing or closed then return end
+    sideClosing = true
+    sideClosed = not sideClosed
+    if sideClosed then minimizeSize(0.3) else updatePanelSizes(0.3) end
+    task.delay(0.3, function() sideClosing = false end)
+end)
+
+TitleButton.MouseButton1Click:Connect(function()
+    CONFIG.Enabled = not CONFIG.Enabled
+    TweenService:Create(TitleButton, TweenInfo.new(0.3), {TextColor3 = CONFIG.Enabled and COLORS.Green or COLORS.Red}):Play()
+end)
+
+CloseButton.MouseEnter:Connect(function() TweenService:Create(CloseButton, TweenInfo.new(0.2), {BackgroundColor3 = COLORS.Red}):Play() end)
+CloseButton.MouseLeave:Connect(function() TweenService:Create(CloseButton, TweenInfo.new(0.2), {BackgroundColor3 = COLORS.TopBar}):Play() end)
+
+local function shutdown()
+    getgenv().SignalSpyExecuted = false
+    for _, conn in pairs(Connections) do
+        if typeof(conn) == "RBXScriptConnection" then
+            pcall(function() conn:Disconnect() end)
+        end
+    end
+    pcall(function() SignalSpy:Destroy() end)
+end
+
+CloseButton.MouseButton1Click:Connect(shutdown)
+getgenv().SignalSpyShutdown = shutdown
+
+newButton("Copy", "Copy code", function()
+    if everyClipboard then everyClipboard(getCode()) end
+    makeToolTip(true, "Copied!")
+    task.delay(1, function() makeToolTip(false) end)
+end)
+
+newButton("View Full", "Full signal info", function()
+    if not selected then return end
+    local info = "-- SIGNAL INFO\n"
+    info = info .. "Signal = " .. selected.ClassName .. "." .. selected.SignalName .. "\n"
+    if selected.IsHidden then info = info .. "-- [HIDDEN]\n" end
+    if selected.IsDeprecated then info = info .. "-- [DEPRECATED]\n" end
+    info = info .. "Access = " .. (selected.AccessMethod or "direct") .. "\n"
+    if selected.UsedSetScriptable then info = info .. "-- Used setscriptable()\n" end
+    info = info .. "Instance = " .. instanceToPath(selected.Instance) .. "\n"
+    info = info .. "Calls = " .. tostring(selected.CallCount) .. "\n\n"
+    info = info .. "Args = " .. deepSerialize(selected.Args or {})
+    setCode(info)
+end)
+
+newButton("Fire", "Fire signal (may crash on hidden)", function()
+    if selected and selected.Signal and firesignal then
+        if selected.IsHidden then
+            makeToolTip(true, "WARNING: May crash!")
+            task.wait(0.5)
+        end
+        pcall(function() firesignal(selected.Signal, unpack(selected.Args or {})) end)
+        makeToolTip(true, "Fired!")
+    else
+        makeToolTip(true, "N/A")
+    end
+    task.delay(1, function() makeToolTip(false) end)
+end)
+
+newButton("Replicate", "Replicate (safer for hidden)", function()
+    if selected and selected.Signal and replicatesignal then
+        pcall(function() replicatesignal(selected.Signal, unpack(selected.Args or {})) end)
+        makeToolTip(true, "Replicated!")
+    else
+        makeToolTip(true, "N/A")
+    end
+    task.delay(1, function() makeToolTip(false) end)
+end)
+
+newButton("Connections", "View connections (crash risk on hidden)", function()
+    if selected then
+        if selected.IsHidden then
+            makeToolTip(true, "WARNING: May crash on hidden!")
+            task.wait(1)
+        end
+        openConnectionViewer(selected)
+    else
+        makeToolTip(true, "Select signal!")
+        task.delay(1, function() makeToolTip(false) end)
+    end
+end)
+
+newButton("Classes", "Class Browser", openClassBrowser)
+
+newButton("Refresh", "Rehook all", function()
+    rehookAll()
+    makeToolTip(true, "Rehooking...")
+    task.delay(2, function() makeToolTip(false) end)
+end)
+
+newButton("Clr Logs", "Clear logs", function()
+    for _, g in pairs(groupedLogs) do
+        if g.Frame then g.Frame:Destroy() end
+    end
+    groupedLogs = {}
+    logs = {}
+    selected = nil
+    layoutOrderNum = 999999999
+    TotalCalls = 0
+    setCode("-- Cleared")
+    updateLogCanvas()
+end)
+
+newButton("Exclude (i)", "Exclude instance", function()
+    if selected then
+        blacklist[selected.ClassName .. "." .. selected.SignalName .. "." .. tostring(selected.Instance)] = true
+        makeToolTip(true, "Excluded!")
+    end
+    task.delay(1, function() makeToolTip(false) end)
+end)
+
+newButton("Exclude (n)", "Exclude by name", function()
+    if selected then
+        blacklist[selected.ClassName .. "." .. selected.SignalName] = true
+        makeToolTip(true, "Excluded!")
+    end
+    task.delay(1, function() makeToolTip(false) end)
+end)
+
+newButton("Clr Exclude", "Clear exclusions", function()
+    blacklist = {}
+    makeToolTip(true, "Cleared!")
+    task.delay(1, function() makeToolTip(false) end)
+end)
+
+newButton("Block (i)", "Block + disconnect", function()
+    if selected and getconnections then
+        local key = selected.ClassName .. "." .. selected.SignalName .. "." .. tostring(selected.Instance)
+        blocklist[key] = true
+        if not selected.IsHidden then
+            pcall(function()
+                for _, conn in ipairs(getconnections(selected.Signal)) do
+                    conn:Disconnect()
+                end
+            end)
+        end
+        makeToolTip(true, "Blocked!")
+    else
+        makeToolTip(true, "N/A")
+    end
+    task.delay(1, function() makeToolTip(false) end)
+end)
+
+newButton("Block (n)", "Block by name", function()
+    if selected then
+        blocklist[selected.ClassName .. "." .. selected.SignalName] = true
+        makeToolTip(true, "Blocked!")
+    else
+        makeToolTip(true, "N/A")
+    end
+    task.delay(1, function() makeToolTip(false) end)
+end)
+
+newButton("Clr Blocks", "Clear blocks", function()
+    blocklist = {}
+    BlockedConnections = {}
+    makeToolTip(true, "Cleared!")
+    task.delay(1, function() makeToolTip(false) end)
+end)
+
+newButton("Filter", function()
+    return "Spam: " .. (CONFIG.FilterSpammy and "ON" or "OFF")
+end, function()
+    CONFIG.FilterSpammy = not CONFIG.FilterSpammy
+    SpamHistory = {}
+end)
+
+newButton("Filter [H]", function()
+    return "Hidden only: " .. (CONFIG.FilterHiddenOnly and "ON" or "OFF")
+end, function()
+    CONFIG.FilterHiddenOnly = not CONFIG.FilterHiddenOnly
+    if CONFIG.FilterHiddenOnly then CONFIG.FilterDeprecatedOnly = false end
+    refreshLogList()
+end)
+
+newButton("Filter [D]", function()
+    return "Deprecated only: " .. (CONFIG.FilterDeprecatedOnly and "ON" or "OFF")
+end, function()
+    CONFIG.FilterDeprecatedOnly = not CONFIG.FilterDeprecatedOnly
+    if CONFIG.FilterDeprecatedOnly then CONFIG.FilterHiddenOnly = false end
+    refreshLogList()
+end)
+
+newButton("Expand", "Expand all", function()
+    for _, g in pairs(groupedLogs) do
+        g.Expanded = true
+        if g.ExpandButton then g.ExpandButton.Text = "v" end
+        for _, l in ipairs(g.Logs) do
+            if l.LogFrame then l.LogFrame.Visible = true end
+        end
+    end
+    task.defer(updateLogCanvas)
+end)
+
+newButton("Collapse", "Collapse all", function()
+    for _, g in pairs(groupedLogs) do
+        g.Expanded = false
+        if g.ExpandButton then g.ExpandButton.Text = ">" end
+        for _, l in ipairs(g.Logs) do
+            if l.LogFrame then l.LogFrame.Visible = false end
+        end
+    end
+    task.defer(updateLogCanvas)
+end)
+
+newButton("Stats", "Statistics", function()
+    local sorted = {}
+    for key, count in pairs(SignalStats) do
+        table.insert(sorted, {key = key, count = count})
+    end
+    table.sort(sorted, function(a, b) return a.count > b.count end)
+    
+    local info = "-- STATISTICS\n"
+    info = info .. "-- Hooks: " .. TotalHookedCount .. " (H:" .. HiddenHookedCount .. " D:" .. DeprecatedHookedCount .. ")\n"
+    info = info .. "-- Calls: " .. TotalCalls .. "\n"
+    info = info .. "-- setscriptable: " .. (ExploitCapabilities.setscriptable and "YES" or "NO") .. "\n\n"
+    info = info .. "-- TOP SIGNALS:\n"
+    
+    for i, data in ipairs(sorted) do
+        if i > 15 then break end
+        info = info .. "-- " .. data.key .. ": " .. data.count .. "\n"
+    end
+    setCode(info)
+end)
+
+newButton("Debug", "Debug info", function()
+    local info = "-- DEBUG INFO\n\n"
+    info = info .. "-- CAPABILITIES:\n"
+    for k, v in pairs(ExploitCapabilities) do
+        info = info .. "--   " .. k .. ": " .. (v and "YES" or "NO") .. "\n"
+    end
+    
+    info = info .. "\n-- FAILED HOOKS:\n"
+    info = info .. "-- Hidden failed:\n"
+    local hc = 0
+    for sig, cnt in pairs(FailedHooks.hidden) do
+        hc = hc + 1
+        if hc <= 10 then info = info .. "--   " .. sig .. " (" .. cnt .. "x)\n" end
+    end
+    if hc == 0 then info = info .. "--   (none)\n" end
+    
+    info = info .. "-- Deprecated failed:\n"
+    local dc = 0
+    for sig, cnt in pairs(FailedHooks.deprecated) do
+        dc = dc + 1
+        if dc <= 10 then info = info .. "--   " .. sig .. " (" .. cnt .. "x)\n" end
+    end
+    if dc == 0 then info = info .. "--   (none)\n" end
+    
+    setCode(info)
+end)
+
+local guiParent = CoreGui
+if gethui then
+    guiParent = gethui()
+elseif protect_gui then
+    protect_gui(SignalSpy)
+end
+SignalSpy.Parent = guiParent
+
+task.spawn(function()
+    StatusLabel.Text = "[Loading API...]"
+    CachedAPIEvents = FetchAPIEvents()
+    
+    local classCount = 0
+    for _ in pairs(CachedAPIEvents) do classCount = classCount + 1 end
+    
+    if classCount == 0 then
+        StatusLabel.Text = "[API FAIL]"
+        StatusLabel.TextColor3 = COLORS.Red
+        return
+    end
+    
+    task.wait(0.2)
+    rehookAll()
+    
+    print("[SignalSpy v4] Loaded!")
+    print("[SignalSpy] setscriptable:", ExploitCapabilities.setscriptable and "YES" or "NO")
+    print("[SignalSpy] Hooks:", TotalHookedCount, "| Hidden:", HiddenHookedCount, "| Deprecated:", DeprecatedHookedCount)
+end)
+
+getgenv().SignalSpy = {
+    CONFIG = CONFIG,
+    logs = logs,
+    blacklist = blacklist,
+    blocklist = blocklist,
+    shutdown = shutdown,
+    hookSignal = hookSignal,
+    rehookAll = rehookAll,
+    newButton = newButton,
+    openClassBrowser = openClassBrowser,
+    FailedHooks = FailedHooks,
+    ExploitCapabilities = ExploitCapabilities,
+}
