@@ -170,6 +170,125 @@ function library:CreateWindow(name, version, icon)
 		end
 	end)
 
+	-- [PASTE THIS SECTION AFTER THE MINIMIZE BUTTON LOGIC] --
+
+	local ResizeBtn = Instance.new("ImageButton")
+	local Resizers = Instance.new("Frame")
+	local isResizing = false
+	
+	-- Setup Resize Button (Placed to the left of Minimize)
+	ResizeBtn.Name = "ResizeBtn"
+	ResizeBtn.Parent = TitleBar
+	ResizeBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	ResizeBtn.BackgroundTransparency = 1.000
+	ResizeBtn.Position = UDim2.new(0.953, -48, -0.2, 6) -- Offset left of minimize
+	ResizeBtn.Size = UDim2.new(0, 26, 0, 30)
+	ResizeBtn.Image = "rbxassetid://4458905391" -- Resize Icon
+    ResizeBtn.ImageColor3 = Color3.fromRGB(200, 200, 200)
+
+	-- Setup Resizer Container
+	Resizers.Name = "Resizers"
+	Resizers.Parent = Window
+	Resizers.BackgroundTransparency = 1
+	Resizers.Size = UDim2.new(1, 0, 1, 0)
+	Resizers.Visible = false
+	Resizers.ZIndex = 10 -- Ensure it's above other elements
+
+	local function CreateCorner(alignX, alignY)
+		local Corner = Instance.new("ImageLabel")
+		Corner.Name = alignX .. alignY
+		Corner.Parent = Resizers
+		Corner.BackgroundColor3 = Color3.fromRGB(135, 255, 135)
+		Corner.BackgroundTransparency = 0.5
+		Corner.Size = UDim2.new(0, 15, 0, 15)
+		Corner.Position = UDim2.new(alignX == "Right" and 1 or 0, alignX == "Right" and -15 or 0, alignY == "Bottom" and 1 or 0, alignY == "Bottom" and -15 or 0)
+		Corner.ZIndex = 11
+        Corner.Image = "" -- Make it a solid block or add an image if desired
+		
+		-- Logic for resizing
+		local Dragging = false
+		local StartPos, StartSize, StartMousePos
+		
+		Corner.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 then
+				Dragging = true
+				StartPos = Window.AbsolutePosition
+				StartSize = Window.AbsoluteSize
+				StartMousePos = UIS:GetMouseLocation()
+				
+				input.Changed:Connect(function()
+					if input.UserInputState == Enum.UserInputState.End then
+						Dragging = false
+					end
+				end)
+			end
+		end)
+		
+		UIS.InputChanged:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseMovement and Dragging then
+				local CurrentMousePos = UIS:GetMouseLocation()
+				local Delta = CurrentMousePos - StartMousePos
+				
+				local NewSizeX = StartSize.X
+				local NewSizeY = StartSize.Y
+				local NewPosX = StartPos.X
+				local NewPosY = StartPos.Y
+				
+				-- Calculate Size/Pos based on corner
+				if alignX == "Right" then
+					NewSizeX = math.max(200, StartSize.X + Delta.X)
+				else -- Left
+					local ProposedWidth = math.max(200, StartSize.X - Delta.X)
+					NewPosX = StartPos.X + (StartSize.X - ProposedWidth)
+					NewSizeX = ProposedWidth
+				end
+				
+				if alignY == "Bottom" then
+					NewSizeY = math.max(100, StartSize.Y + Delta.Y)
+				else -- Top
+					local ProposedHeight = math.max(100, StartSize.Y - Delta.Y)
+					NewPosY = StartPos.Y + (StartSize.Y - ProposedHeight)
+					NewSizeY = ProposedHeight
+				end
+				
+				Window.Position = UDim2.fromOffset(NewPosX, NewPosY)
+				Window.Size = UDim2.fromOffset(NewSizeX, NewSizeY)
+			end
+		end)
+	end
+	
+	-- Generate 4 Corners
+	CreateCorner("Left", "Top")
+	CreateCorner("Right", "Top")
+	CreateCorner("Left", "Bottom")
+	CreateCorner("Right", "Bottom")
+
+	-- Toggle Logic
+	ResizeBtn.MouseButton1Click:Connect(function()
+		-- Prevent showing handles if window is currently minimized (height check)
+		if Window.AbsoluteSize.Y < 50 then 
+			Resizers.Visible = false
+			isResizing = false
+			return 
+		end
+		
+		isResizing = not isResizing
+		Resizers.Visible = isResizing
+        ResizeBtn.ImageColor3 = isResizing and Color3.fromRGB(135, 255, 135) or Color3.fromRGB(200, 200, 200)
+	end)
+
+    -- Auto-hide handles if the window gets minimized externally
+    Window:GetPropertyChangedSignal("Size"):Connect(function()
+        if Window.AbsoluteSize.Y < 50 and Resizers.Visible then
+            Resizers.Visible = false
+            -- We don't toggle isResizing bool here so it comes back when maximized if it was on
+        elseif Window.AbsoluteSize.Y > 50 and isResizing then
+            Resizers.Visible = true
+        end
+    end)
+
+	-- [END OF ADDITION] --
+
 
 	function dragify(Frame)
 		dragToggle = nil
